@@ -29,6 +29,20 @@ class TransactionsTest < ApplicationSystemTestCase
     visit transactions_url(per_page: @page_size)
   end
 
+  test "labels the selected transactions from the selection bar" do
+    category = categories(:food_and_drink)
+    visit transactions_url(q: { categories: [ Category::UNCATEGORIZED_FILTER_VALUE ] })
+
+    find("#" + dom_id(@uncategorized_transaction, "selection")).check
+    within "#entry-selection-bar" do
+      select category.name, from: I18n.t("transactions.selection_bar.label_as")
+      click_button I18n.t("transactions.selection_bar.apply")
+    end
+
+    assert_no_selector "#" + dom_id(@uncategorized_transaction)
+    assert_equal category, @uncategorized_transaction.reload.entryable.category
+  end
+
   test "can search for a transaction" do
     assert_selector "h1", text: "Transactions"
 

@@ -1,4 +1,36 @@
 module TransactionsHelper
+  # @param q [Hash] the search params
+  # @return [Date, nil] the month the list is narrowed to, when the date
+  #   filter covers exactly one calendar month
+  def transactions_filter_month(q)
+    start_date = Date.iso8601(q[:start_date].to_s)
+    end_date = Date.iso8601(q[:end_date].to_s)
+    start_date if start_date == start_date.beginning_of_month && end_date == start_date.end_of_month
+  rescue Date::Error
+    nil
+  end
+
+  # @param q [Hash] the search params to link to
+  # @return [String] the transactions list with those filters. An empty
+  #   filter says so explicitly, or the list would restore the last one.
+  def transactions_filter_path(q)
+    q = q.to_h.compact_blank
+    q.empty? ? transactions_path(filter_cleared: "1") : transactions_path(q: q)
+  end
+
+  # @param q [Hash] the search params
+  # @param month [Date] the month to narrow to
+  # @return [String] the list narrowed to that month, other filters kept
+  def transactions_month_path(q, month)
+    transactions_filter_path(q.to_h.merge("start_date" => month.iso8601, "end_date" => month.end_of_month.iso8601))
+  end
+
+  # @param q [Hash] the search params
+  # @return [Boolean] whether the list shows only transactions with no label
+  def transactions_unlabelled_filter?(q)
+    Array(q[:categories]) == [ Category::UNCATEGORIZED_FILTER_VALUE ]
+  end
+
   # @param exclude [Array<String>] filter keys to leave out (e.g. the account
   #   tab doesn't apply to the account activity feed, which is already scoped
   #   to one account)

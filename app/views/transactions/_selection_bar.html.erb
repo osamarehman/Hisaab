@@ -1,15 +1,32 @@
-<div class="fixed bottom-[calc(5rem_+_env(safe-area-inset-bottom))] md:bottom-6 z-50 flex items-center justify-between rounded-xl bg-surface-inset border-secondary shadow-border-xs px-4 text-sm text-primary md:w-[420px] w-[90%] py-1.5">
+<div class="fixed bottom-[calc(5rem_+_env(safe-area-inset-bottom))] md:bottom-6 z-50 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-sm border border-solid bg-container px-4 py-2 text-sm text-primary w-[calc(100%-2rem)] md:w-auto md:max-w-[calc(100%-3rem)]">
   <div class="flex items-center gap-2">
     <%= check_box_tag "entry_selection", 1, true, class: "checkbox checkbox--light", data: { action: "bulk-select#deselectAll" } %>
 
     <p data-bulk-select-target="selectionBarText"></p>
   </div>
 
+  <%# Labels every selected row in one go, the quick path through a
+      freshly imported statement. The edit drawer still covers the rest. %>
+  <%= form_with url: transactions_bulk_update_path, scope: :bulk_update, data: { turbo_frame: "_top" }, class: "flex items-center gap-2" do |form| %>
+    <%= form.label :category_id, t("transactions.selection_bar.label_as"), class: "hidden sm:block text-secondary" %>
+    <%= form.collection_select :category_id,
+          Current.family.categories.alphabetically_by_hierarchy, :id, :name,
+          { prompt: t("transactions.selection_bar.choose_label") },
+          required: true,
+          class: "h-9 max-w-48 rounded-sm border border-solid bg-container pl-2 pr-8 text-sm text-primary focus-ring" %>
+    <%= render DS::Button.new(
+          text: t("transactions.selection_bar.apply"),
+          size: :sm,
+          type: "button",
+          data: { bulk_select_scope_param: "bulk_update", action: "bulk-select#submitBulkRequest" }
+        ) %>
+  <% end %>
+
   <div class="flex items-center gap-1 text-secondary">
     <%= turbo_frame_tag "bulk_transaction_edit_drawer" %>
 
     <%= link_to new_transaction_path,
-                class: "p-1.5 group/duplicate hover:bg-inverse flex items-center justify-center rounded-md hidden",
+                class: "p-1.5 group/duplicate hover:bg-inverse flex items-center justify-center rounded-sm hidden",
                 title: t("transactions.selection_bar.duplicate"),
                 data: {
                   turbo_frame: "modal",
@@ -19,14 +36,14 @@
     <% end %>
 
     <%= link_to new_transactions_bulk_update_path,
-                class: "p-1.5 group/edit hover:bg-inverse flex items-center justify-center rounded-md",
+                class: "p-1.5 group/edit hover:bg-inverse flex items-center justify-center rounded-sm",
                 title: t("transactions.selection_bar.edit"),
                 data: { turbo_frame: "bulk_transaction_edit_drawer" } do %>
       <%= icon "pencil-line", class: "group-hover/edit:text-inverse" %>
     <% end %>
 
     <%= form_with url: transactions_bulk_deletion_path, data: { turbo_confirm: true, turbo_frame: "_top" } do %>
-      <button type="button" data-bulk-select-scope-param="bulk_delete" data-action="bulk-select#submitBulkRequest" class="p-1.5 group/delete hover:bg-inverse flex items-center justify-center rounded-md" title="Delete">
+      <button type="button" data-bulk-select-scope-param="bulk_delete" data-action="bulk-select#submitBulkRequest" class="p-1.5 group/delete hover:bg-inverse flex items-center justify-center rounded-sm" title="Delete">
         <%= icon "trash-2", class: "group-hover/delete:text-inverse" %>
       </button>
     <% end %>

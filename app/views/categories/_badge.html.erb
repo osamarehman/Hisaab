@@ -1,20 +1,17 @@
-<%# locals: (category:) %>
+<%# locals: (category:, attention: false) %>
 <% category ||= Category.uncategorized %>
 
-<%# Canonical category badge: DS::Pill in badge mode carrying the category's
-    user-chosen hex (custom_color is the sanctioned escape hatch for hues that
-    are data, not design). truncate + this min-w-0 wrapper keep long names
-    ellipsizing inside tight columns (e.g. the transaction row's category
-    cell) instead of overflowing them. %>
+<%# Canonical category badge: the label's colour square and its name in a
+    hairline box. `attention: true` marks a transaction still waiting for a
+    label (amber, as on a statement review). truncate + min-w-0 keep long
+    names ellipsizing inside tight columns such as the transaction row. %>
 <div class="min-w-0">
-  <%= render DS::Pill.new(
-        label: category.display_name,
-        custom_color: category.color,
-        icon: category.lucide_icon.presence,
-        icon_size: "sm",
-        marker: false,
-        size: :md,
-        truncate: true,
-        label_testid: "category-name",
-        title: category.display_name) %>
+  <%= tag.span class: class_names(
+        "inline-flex max-w-full min-h-8 items-center gap-2 rounded-sm border px-2 text-sm text-primary",
+        attention ? "border-warning bg-warning/10" : "border-divider"
+      ),
+      title: category.display_name do %>
+    <%= render DS::LabelDot.new(color: category.color) %>
+    <span class="truncate" data-testid="category-name"><%= category.display_name %></span>
+  <% end %>
 </div>

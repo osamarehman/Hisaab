@@ -5,35 +5,10 @@
     bar in that case, though the transaction list still shows both types. %>
 <% show_transfers = totals.income_money.zero? && totals.expense_money.zero? &&
    (totals.transfer_inflow_money.amount > 0 || totals.transfer_outflow_money.amount > 0) %>
-<div class="grid grid-cols-1 md:grid-cols-3 bg-container rounded-xl shadow-border-xs md:divide-x divide-y md:divide-y-0 divide-alpha-black-100 theme-dark:divide-alpha-white-200">
-  <div class="p-4 space-y-2">
-    <p class="text-sm text-secondary"><%= t("transactions.summary.total_transactions") %></p>
-    <p class="text-primary font-medium text-xl privacy-sensitive" id="total-transactions"><%= totals.count.round(0) %></p>
-  </div>
-  <div class="p-4 space-y-2">
-    <% if show_transfers %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.inflow") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-income">
-        <%= (totals.income_money + totals.transfer_inflow_money).format %>
-      </p>
-    <% else %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.income") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-income">
-        <%= totals.income_money.format %>
-      </p>
-    <% end %>
-  </div>
-  <div class="p-4 space-y-2">
-    <% if show_transfers %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.outflow") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-expense">
-        <%= (totals.expense_money + totals.transfer_outflow_money).format %>
-      </p>
-    <% else %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.expenses") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-expense">
-        <%= totals.expense_money.format %>
-      </p>
-    <% end %>
-  </div>
-</div>
+<% income = show_transfers ? totals.income_money + totals.transfer_inflow_money : totals.income_money %>
+<% expense = show_transfers ? totals.expense_money + totals.transfer_outflow_money : totals.expense_money %>
+<%= render DS::StatGrid.new do |grid| %>
+  <% grid.with_tile(label: t("transactions.summary.total_transactions"), value: tag.span(totals.count.round(0), id: "total-transactions")) %>
+  <% grid.with_tile(label: t(show_transfers ? "transactions.summary.inflow" : "transactions.summary.income"), value: tag.span(income.format, id: "total-income"), tone: :in) %>
+  <% grid.with_tile(label: t(show_transfers ? "transactions.summary.outflow" : "transactions.summary.expenses"), value: tag.span(expense.format, id: "total-expense")) %>
+<% end %>

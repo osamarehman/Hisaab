@@ -24,6 +24,9 @@ en:
       duplicate: Duplicate
       edit: Edit
       selected: selected
+      label_as: Label as
+      choose_label: Choose label
+      apply: Apply
     form:
       details: Details
       account: Account
@@ -223,6 +226,11 @@ en:
       edit_merchants: "Edit merchants"
       edit_imports: "Edit imports"
       new_transaction: "New transaction"
+      show: "Show"
+      show_all: "All"
+      show_unlabelled: "Needs a label (%{count})"
+      by_month: "By month"
+      all_dates: "All dates"
       categorize_button:
         one: "Categorize (1)"
         other: "Categorize (%{count})"
