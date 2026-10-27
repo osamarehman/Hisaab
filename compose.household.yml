@@ -1,0 +1,101 @@
+# Household edition: builds this fork from source (the upstream image lacks
+# the household API) and serves it on 127.0.0.1 for a reverse proxy with TLS.
+# Secrets come from .env (copy .env.household.example). Deploy steps:
+# docs/redesign/DEPLOY_HANDOFF.md
+
+x-db-env: &db_env
+  POSTGRES_USER: ${POSTGRES_USER:-sure_user}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+  POSTGRES_DB: ${POSTGRES_DB:-sure_production}
+
+x-rails-env: &rails_env
+  <<: *db_env
+  SECRET_KEY_BASE: ${SECRET_KEY_BASE:?set SECRET_KEY_BASE in .env}
+  SELF_HOSTED: "true"
+  APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in .env}
+  RAILS_FORCE_SSL: "false"
+  RAILS_ASSUME_SSL: "true"
+  DB_HOST: db
+  DB_PORT: 5432
+  REDIS_URL: redis://redis:6379/1
+  DISABLE_BANK_SYNC: "true"
+  OPENAI_ACCESS_TOKEN: ${OPENAI_ACCESS_TOKEN:-}
+  OPENAI_URI_BASE: ${OPENAI_URI_BASE:-https://openrouter.ai/api/v1}
+  OPENAI_MODEL: ${OPENAI_MODEL:-google/gemma-4-31b-it:free}
+  OPENAI_EXTRA_HEADERS: ${OPENAI_EXTRA_HEADERS:-}
+  OPENAI_REQUEST_TIMEOUT: ${OPENAI_REQUEST_TIMEOUT:-90}
+  AI_RESPONSE_TIMEOUT: ${AI_RESPONSE_TIMEOUT:-180}
+
+services:
+  web:
+    build: .
+    image: sure-household:latest
+    volumes:
+      - app-storage:/rails/storage
+    ports:
+      - 127.0.0.1:${PORT:-3010}:3000
+    restart: unless-stopped
+    environment:
+      <<: *rails_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sure_net
+
+  worker:
+    image: sure-household:latest
+    command: bundle exec sidekiq
+    volumes:
+      - app-storage:/rails/storage
+    restart: unless-stopped
+    environment:
+      <<: *rails_env
+    depends_on:
+      web:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sure_net
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      <<: *db_env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sure_net
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sure_net
+
+volumes:
+  app-storage:
+  postgres-data:
+  redis-data:
+
+networks:
+  sure_net:
+    driver: bridge
