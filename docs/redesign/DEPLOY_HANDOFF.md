@@ -64,8 +64,17 @@ assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 ## Updating later
 
 ```bash
-cd /root/sure-household && git pull && docker compose -f compose.household.yml up -d --build
+cd /root/sure-household && git pull && docker compose -f compose.household.yml -f compose.server.yml up -d --build
 ```
+
+`compose.server.yml` exists only on the server (git-ignored). The web container
+joins Caddy's shared network, where the name `db` resolves to another app's
+Postgres, so the override points Sure at its own database and Redis. Keep it in
+every compose command.
+
+Live deployment (2026-10-27): `https://sure.shipdeck.dev`, `/root/sure-household`,
+port 3010, Caddy site `/root/core-stack/caddy.d/sure.caddy`, backups via
+`/root/scripts/sure-backup.sh` → `/root/backups/sure` (14 days).
 
 ## Mobile app
 
