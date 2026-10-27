@@ -103,6 +103,34 @@ RSpec.describe 'API V1 Accounts', type: :request do
         run_test!
       end
     end
+
+    post 'Create a manual account' do
+      tags 'Accounts'
+      security [ { apiKeyAuth: [] } ]
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :body, in: :body, required: true, schema: {
+        '$ref' => '#/components/schemas/AccountCreateRequest'
+      }
+
+      response '201', 'account created' do
+        schema '$ref' => '#/components/schemas/AccountDetail'
+
+        let(:body) do
+          { account: { name: 'Cash in hand', accountable_type: 'Depository', subtype: 'cash', balance: '5000' } }
+        end
+
+        run_test!
+      end
+
+      response '422', 'validation error' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:body) { { account: { name: 'Shares', accountable_type: 'Investment', balance: '100' } } }
+
+        run_test!
+      end
+    end
   end
 
   path '/api/v1/accounts/{id}' do
@@ -139,6 +167,64 @@ RSpec.describe 'API V1 Accounts', type: :request do
         let(:id) { checking_account.id }
         let(:'X-Api-Key') { api_key_without_read_scope.plain_key }
 
+        run_test!
+      end
+
+      response '404', 'account not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:id) { SecureRandom.uuid }
+
+        run_test!
+      end
+    end
+
+    patch 'Update an account' do
+      tags 'Accounts'
+      security [ { apiKeyAuth: [] } ]
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :body, in: :body, required: true, schema: {
+        '$ref' => '#/components/schemas/AccountUpdateRequest'
+      }
+
+      let(:id) { checking_account.id }
+
+      response '200', 'account updated' do
+        schema '$ref' => '#/components/schemas/AccountDetail'
+
+        let(:body) { { account: { name: 'HBL current', balance: '1750.25' } } }
+
+        run_test!
+      end
+
+      response '422', 'validation error' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:body) { { account: { balance: 'lots' } } }
+
+        run_test!
+      end
+
+      response '404', 'account not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:id) { SecureRandom.uuid }
+        let(:body) { { account: { name: 'Missing' } } }
+
+        run_test!
+      end
+    end
+
+    delete 'Delete a manual account' do
+      tags 'Accounts'
+      security [ { apiKeyAuth: [] } ]
+      produces 'application/json'
+      description 'Schedules the account for deletion in the background. Linked accounts return 422.'
+
+      let(:id) { savings_account.id }
+
+      response '204', 'account scheduled for deletion' do
         run_test!
       end
 

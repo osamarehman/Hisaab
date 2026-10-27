@@ -85,3 +85,33 @@ and family scoping.
 
 - New families default to `currency: "PKR"`, `country: "PK"`.
 - `DISABLE_BANK_SYNC=true` hides bank-provider connection UI and adapters.
+
+## Accounts
+
+The app lets the household create the accounts money is paid from and to.
+These use the web's creation and balance paths, so opening balances and
+balance changes are recorded as valuations exactly as on the web.
+
+- New: `POST /api/v1/accounts` with
+  `{ "account": { "name": "Cash in hand", "accountable_type": "Depository", "subtype": "cash", "balance": "5000" } }`
+  creates a manual account owned by the caller and returns `201` with the
+  account JSON (same as `GET /accounts/:id`).
+  - `accountable_type`: `Depository`, `CreditCard`, `Loan`, `OtherAsset` or
+    `OtherLiability`; anything else is `422`.
+  - `subtype` (optional) must be one of the type's subtypes, e.g. Depository
+    `cash`, `checking`, `savings`; Loan `other`; CreditCard `credit_card`.
+  - `balance` (optional, default `0`): decimal string. For liabilities it is
+    the positive amount owed.
+  - `currency` (optional): defaults to the family currency (PKR).
+  - `opening_balance_date` (optional, `YYYY-MM-DD`, not in the future):
+    defaults to two years ago, as on the web.
+  - `422` `validation_failed` for a blank name, unknown subtype/currency or a
+    non-numeric balance; `403` for a read-only key or a guest.
+- New: `PATCH /api/v1/accounts/:id` with `{ "account": { "name": "…", "balance": "…" } }`.
+  Both optional. A changed `balance` sets today's balance (a valuation), like
+  the web's balance update. `403` without owner/full-control permission on
+  the account, `404` outside the family, `422` for a blank name or
+  non-numeric balance.
+- New: `DELETE /api/v1/accounts/:id` → `204`. Like the web, the account is
+  marked `pending_deletion` and removed by a background job; linked
+  (bank-synced) accounts return `422`. Same `403`/`404` rules as update.

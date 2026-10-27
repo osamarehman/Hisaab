@@ -303,10 +303,273 @@ class Api::V1::AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_equal account_names.sort, account_names
   end
 
+  test "create requires read_write scope" do
+    assert_no_difference "Account.count" do
+      post "/api/v1/accounts", params: create_params, headers: api_headers(@api_key)
+    end
+
+    assert_response :forbidden
+    assert_equal "insufficient_scope", JSON.parse(response.body)["error"]
+  end
+
+  test "create requires authentication" do
+    post "/api/v1/accounts", params: create_params
+
+    assert_response :unauthorized
+  end
+
+  test "create makes a manual depository with an opening balance owned by the caller" do
+    assert_difference "Account.count", 1 do
+      post "/api/v1/accounts",
+           params: create_params(subtype: "savings", balance: "25000.50"),
+           headers: api_headers(write_key)
+    end
+
+    assert_response :created
+    body = JSON.parse(response.body)
+    account = Account.find(body["id"])
+
+    assert_equal "Meezan savings", body["name"]
+    assert_equal "depository", body["account_type"]
+    assert_equal "savings", body["subtype"]
+    assert_equal @user.family.currency, body["currency"]
+    assert_equal BigDecimal("25000.50"), account.balance
+    assert_equal @user, account.owner
+    assert_equal :owner, account.permission_for(@user)
+    assert account.manual?
+
+    opening = account.entries.valuations.order(:date).first
+    assert_not_nil opening
+    assert_equal BigDecimal("25000.50"), opening.amount
+    assert_equal Date.current - 2.years, opening.date
+  end
+
+  test "create honours opening_balance_date and currency" do
+    post "/api/v1/accounts",
+         params: create_params(currency: "usd", opening_balance_date: "2026-01-15"),
+         headers: api_headers(write_key)
+
+    assert_response :created
+    account = Account.find(JSON.parse(response.body)["id"])
+    assert_equal "USD", account.currency
+    assert_equal Date.new(2026, 1, 15), account.entries.valuations.order(:date).first.date
+  end
+
+  test "create stores a liability with the amount owed" do
+    post "/api/v1/accounts",
+         params: { account: { name: "Loan from Bilal", accountable_type: "OtherLiability", balance: "50000" } },
+         headers: api_headers(write_key)
+
+    assert_response :created
+    body = JSON.parse(response.body)
+    assert_equal "liability", body["classification"]
+    assert_equal BigDecimal("50000"), Account.find(body["id"]).balance
+  end
+
+  test "create defaults a missing balance to zero" do
+    post "/api/v1/accounts",
+         params: { account: { name: "Cash in hand", accountable_type: "Depository", subtype: "cash" } },
+         headers: api_headers(write_key)
+
+    assert_response :created
+    assert_equal 0, Account.find(JSON.parse(response.body)["id"]).balance
+  end
+
+  test "create rejects account types outside the allow-list" do
+    %w[Investment Property Crypto Vehicle Bogus].each do |type|
+      assert_no_difference "Account.count" do
+        post "/api/v1/accounts",
+             params: create_params(accountable_type: type),
+             headers: api_headers(write_key)
+      end
+      assert_response :unprocessable_entity
+      assert_equal "validation_failed", JSON.parse(response.body)["error"]
+    end
+  end
+
+  test "create rejects invalid params" do
+    [
+      create_params(name: ""),
+      create_params(subtype: "mortgage"),
+      create_params(balance: "lots"),
+      create_params(currency: "ZZZ"),
+      create_params(opening_balance_date: "15/01/2026"),
+      create_params(opening_balance_date: (Date.current + 1.day).iso8601)
+    ].each do |params|
+      assert_no_difference "Account.count" do
+        post "/api/v1/accounts", params: params, headers: api_headers(write_key)
+      end
+      assert_response :unprocessable_entity, "expected 422 for #{params.inspect}"
+    end
+  end
+
+  test "create rejects a missing account payload" do
+    post "/api/v1/accounts", params: {}, headers: api_headers(write_key)
+
+    assert_response :unprocessable_entity
+  end
+
+  test "guests cannot create accounts" do
+    guest = @user.family.users.create!(
+      email: "guest-#{SecureRandom.hex(4)}@example.com",
+      password: "password123",
+      role: :guest
+    )
+
+    assert_no_difference "Account.count" do
+      post "/api/v1/accounts", params: create_params, headers: api_headers(write_key(guest))
+    end
+
+    assert_response :forbidden
+  end
+
+  test "update renames an account" do
+    account = accounts(:depository)
+
+    patch "/api/v1/accounts/#{account.id}",
+          params: { account: { name: "HBL current" } },
+          headers: api_headers(write_key)
+
+    assert_response :success
+    assert_equal "HBL current", JSON.parse(response.body)["name"]
+    assert_equal "HBL current", account.reload.name
+  end
+
+  test "update sets the current balance like the web" do
+    account = accounts(:depository)
+
+    patch "/api/v1/accounts/#{account.id}",
+          params: { account: { balance: "1234.56" } },
+          headers: api_headers(write_key)
+
+    assert_response :success
+    assert_equal BigDecimal("1234.56"), account.reload.balance
+  end
+
+  test "update records today's valuation for a non-cash account" do
+    account = accounts(:other_asset)
+
+    patch "/api/v1/accounts/#{account.id}",
+          params: { account: { balance: "1234.56" } },
+          headers: api_headers(write_key)
+
+    assert_response :success
+    assert_equal BigDecimal("1234.56"), account.reload.balance
+    assert_equal BigDecimal("1234.56"), account.entries.valuations.find_by!(date: Date.current).amount
+  end
+
+  test "update rejects invalid params" do
+    account = accounts(:depository)
+    original_name = account.name
+
+    patch "/api/v1/accounts/#{account.id}", params: { account: { name: " " } }, headers: api_headers(write_key)
+    assert_response :unprocessable_entity
+
+    patch "/api/v1/accounts/#{account.id}", params: { account: { balance: "abc" } }, headers: api_headers(write_key)
+    assert_response :unprocessable_entity
+
+    assert_equal original_name, account.reload.name
+  end
+
+  test "update requires write permission on the account" do
+    account = accounts(:credit_card) # shared read-only with family_member
+
+    patch "/api/v1/accounts/#{account.id}",
+          params: { account: { name: "Mine now" } },
+          headers: api_headers(write_key(users(:family_member)))
+
+    assert_response :forbidden
+    assert_not_equal "Mine now", account.reload.name
+  end
+
+  test "update allows full_control shares" do
+    account = accounts(:depository) # shared full_control with family_member
+
+    patch "/api/v1/accounts/#{account.id}",
+          params: { account: { name: "Shared rename" } },
+          headers: api_headers(write_key(users(:family_member)))
+
+    assert_response :success
+  end
+
+  test "update requires read_write scope" do
+    patch "/api/v1/accounts/#{accounts(:depository).id}",
+          params: { account: { name: "Nope" } },
+          headers: api_headers(@api_key)
+
+    assert_response :forbidden
+  end
+
+  test "update returns 404 for other family accounts and bad ids" do
+    patch "/api/v1/accounts/#{accounts(:depository).id}",
+          params: { account: { name: "Nope" } },
+          headers: api_headers(write_key(@other_family_user))
+    assert_response :not_found
+
+    patch "/api/v1/accounts/not-a-uuid", params: { account: { name: "Nope" } }, headers: api_headers(write_key)
+    assert_response :not_found
+  end
+
+  test "destroy schedules deletion of a manual account" do
+    account = accounts(:other_asset)
+
+    assert_enqueued_with(job: DestroyJob) do
+      delete "/api/v1/accounts/#{account.id}", headers: api_headers(write_key)
+    end
+
+    assert_response :no_content
+    assert account.reload.pending_deletion?
+
+    delete "/api/v1/accounts/#{account.id}", headers: api_headers(write_key)
+    assert_response :not_found
+  end
+
+  test "destroy refuses linked accounts" do
+    account = accounts(:connected)
+
+    delete "/api/v1/accounts/#{account.id}", headers: api_headers(write_key)
+
+    assert_response :unprocessable_entity
+    assert_not account.reload.pending_deletion?
+  end
+
+  test "destroy requires write permission and scope" do
+    delete "/api/v1/accounts/#{accounts(:credit_card).id}", headers: api_headers(write_key(users(:family_member)))
+    assert_response :forbidden
+
+    delete "/api/v1/accounts/#{accounts(:depository).id}", headers: api_headers(@api_key)
+    assert_response :forbidden
+
+    assert_not accounts(:credit_card).reload.pending_deletion?
+    assert_not accounts(:depository).reload.pending_deletion?
+  end
+
   private
 
     def api_headers(api_key)
       { "X-Api-Key" => api_key.plain_key }
+    end
+
+    def write_key(user = @user)
+      @write_keys ||= {}
+      @write_keys[user.id] ||= ApiKey.create!(
+        user: user,
+        name: "Test Write Key",
+        scopes: [ "read_write" ],
+        source: "mobile",
+        display_key: "test_write_#{SecureRandom.hex(8)}"
+      )
+    end
+
+    def create_params(overrides = {})
+      {
+        account: {
+          name: "Meezan savings",
+          accountable_type: "Depository",
+          subtype: "checking",
+          balance: "1000"
+        }.merge(overrides)
+      }
     end
 
     def money_cents(money)

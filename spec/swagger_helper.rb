@@ -376,6 +376,55 @@ RSpec.configure do |config|
               updated_at: { type: :string, format: :'date-time' }
             }
           },
+          AccountCreateRequest: {
+            type: :object,
+            required: %w[account],
+            properties: {
+              account: {
+                type: :object,
+                required: %w[name accountable_type],
+                properties: {
+                  name: { type: :string },
+                  accountable_type: {
+                    type: :string,
+                    enum: %w[Depository CreditCard Loan OtherAsset OtherLiability],
+                    description: 'Manual account type. Other types are rejected with 422.'
+                  },
+                  subtype: {
+                    type: :string,
+                    nullable: true,
+                    description: "Must be one of the type's subtypes, e.g. Depository: cash, checking, savings."
+                  },
+                  balance: {
+                    type: :string,
+                    description: 'Opening/current balance as a decimal string (default 0). For liabilities, the positive amount owed.'
+                  },
+                  currency: { type: :string, description: 'ISO currency code. Defaults to the family currency.' },
+                  opening_balance_date: {
+                    type: :string,
+                    format: :date,
+                    description: 'Date of the opening balance (YYYY-MM-DD, not in the future). Defaults to two years ago.'
+                  }
+                }
+              }
+            }
+          },
+          AccountUpdateRequest: {
+            type: :object,
+            required: %w[account],
+            properties: {
+              account: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  balance: {
+                    type: :string,
+                    description: "New current balance as a decimal string; recorded as today's valuation."
+                  }
+                }
+              }
+            }
+          },
           AccountCollection: {
             type: :object,
             required: %w[accounts pagination],
