@@ -580,6 +580,59 @@ components:
         updated_at:
           type: string
           format: date-time
+    AccountCreateRequest:
+      type: object
+      required:
+      - account
+      properties:
+        account:
+          type: object
+          required:
+          - name
+          - accountable_type
+          properties:
+            name:
+              type: string
+            accountable_type:
+              type: string
+              enum:
+              - Depository
+              - CreditCard
+              - Loan
+              - OtherAsset
+              - OtherLiability
+              description: Manual account type. Other types are rejected with 422.
+            subtype:
+              type: string
+              nullable: true
+              description: 'Must be one of the type''s subtypes, e.g. Depository:
+                cash, checking, savings.'
+            balance:
+              type: string
+              description: Opening/current balance as a decimal string (default 0).
+                For liabilities, the positive amount owed.
+            currency:
+              type: string
+              description: ISO currency code. Defaults to the family currency.
+            opening_balance_date:
+              type: string
+              format: date
+              description: Date of the opening balance (YYYY-MM-DD, not in the future).
+                Defaults to two years ago.
+    AccountUpdateRequest:
+      type: object
+      required:
+      - account
+      properties:
+        account:
+          type: object
+          properties:
+            name:
+              type: string
+            balance:
+              type: string
+              description: New current balance as a decimal string; recorded as today's
+                valuation.
     AccountCollection:
       type: object
       required:
@@ -4833,6 +4886,32 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/AccountCollection"
+    post:
+      summary: Create a manual account
+      tags:
+      - Accounts
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: account created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountDetail"
+        '422':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AccountCreateRequest"
+        required: true
   "/api/v1/accounts/{id}":
     parameters:
     - name: id
@@ -4874,6 +4953,55 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: account not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update an account
+      tags:
+      - Accounts
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: account updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountDetail"
+        '422':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: account not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AccountUpdateRequest"
+        required: true
+    delete:
+      summary: Delete a manual account
+      tags:
+      - Accounts
+      security:
+      - apiKeyAuth: []
+      description: Schedules the account for deletion in the background. Linked accounts
+        return 422.
+      responses:
+        '204':
+          description: account scheduled for deletion
         '404':
           description: account not found
           content:

@@ -472,22 +472,24 @@ class Api::V1::AccountsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update requires write permission on the account" do
-    account = accounts(:credit_card) # shared read-only with family_member
+    account = accounts(:credit_card)
+    member = member_sharing(account, permission: "read_only")
 
     patch "/api/v1/accounts/#{account.id}",
           params: { account: { name: "Mine now" } },
-          headers: api_headers(write_key(users(:family_member)))
+          headers: api_headers(write_key(member))
 
     assert_response :forbidden
     assert_not_equal "Mine now", account.reload.name
   end
 
   test "update allows full_control shares" do
-    account = accounts(:depository) # shared full_control with family_member
+    account = accounts(:depository)
+    member = member_sharing(account, permission: "full_control")
 
     patch "/api/v1/accounts/#{account.id}",
           params: { account: { name: "Shared rename" } },
-          headers: api_headers(write_key(users(:family_member)))
+          headers: api_headers(write_key(member))
 
     assert_response :success
   end
@@ -534,7 +536,8 @@ class Api::V1::AccountsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "destroy requires write permission and scope" do
-    delete "/api/v1/accounts/#{accounts(:credit_card).id}", headers: api_headers(write_key(users(:family_member)))
+    member = member_sharing(accounts(:credit_card), permission: "read_only")
+    delete "/api/v1/accounts/#{accounts(:credit_card).id}", headers: api_headers(write_key(member))
     assert_response :forbidden
 
     delete "/api/v1/accounts/#{accounts(:depository).id}", headers: api_headers(@api_key)
@@ -559,6 +562,18 @@ class Api::V1::AccountsControllerTest < ActionDispatch::IntegrationTest
         source: "mobile",
         display_key: "test_write_#{SecureRandom.hex(8)}"
       )
+    end
+
+    # setup moves family_member to another family, so share with a fresh member.
+    def member_sharing(account, permission:)
+      member = @user.family.users.create!(
+        email: "member-#{SecureRandom.hex(4)}@example.com",
+        password: "password123",
+        role: :member
+      )
+      account.account_shares.where(user: member).destroy_all
+      account.share_with!(member, permission: permission)
+      member
     end
 
     def create_params(overrides = {})

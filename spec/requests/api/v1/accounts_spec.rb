@@ -49,6 +49,7 @@ RSpec.describe 'API V1 Accounts', type: :request do
   let!(:checking_account) do
     Account.create!(
       family: family,
+      owner: user,
       name: 'Checking Account',
       balance: 1500.50,
       currency: 'USD',
@@ -59,6 +60,7 @@ RSpec.describe 'API V1 Accounts', type: :request do
   let!(:savings_account) do
     Account.create!(
       family: family,
+      owner: user,
       name: 'Savings Account',
       balance: 10000.00,
       currency: 'USD',
@@ -69,6 +71,7 @@ RSpec.describe 'API V1 Accounts', type: :request do
   let!(:credit_card) do
     Account.create!(
       family: family,
+      owner: user,
       name: 'Credit Card',
       balance: -500.00,
       currency: 'USD',
