@@ -7,9 +7,9 @@ import 'package:flutter/painting.dart';
 class SureTokens {
   const SureTokens._();
 
-  static const String version = '2.1.0';
-  static const String fontSans = 'Geist';
-  static const String fontMono = 'Geist Mono';
+  static const String version = '3.0.0';
+  static const String fontSans = 'IBM Plex Sans';
+  static const String fontMono = 'IBM Plex Mono';
 
   // Keep the existing Flutter fallback behavior until native mobile font assets
   // are registered. The canonical web stack remains in sure.tokens.json.
@@ -19,82 +19,82 @@ class SureTokens {
     'sans-serif',
   ];
 
-  static const double radiusMd = 8.0;
-  static const double radiusLg = 10.0;
+  static const double radiusMd = 2.0;
+  static const double radiusLg = 2.0;
 
   static const FontWeight weightMedium = FontWeight.w500;
   static const FontWeight weightSemibold = FontWeight.w600;
 
   static const light = SureTokenPalette(
-    surface: Color(0xFFF7F7F7),
-    surfaceHover: Color(0xFFF0F0F0),
-    surfaceInset: Color(0xFFF0F0F0),
-    surfaceInsetHover: Color(0xFFE7E7E7),
-    container: Color(0xFFFFFFFF),
-    containerHover: Color(0xFFF7F7F7),
-    containerInset: Color(0xFFF7F7F7),
-    containerInsetHover: Color(0xFFF0F0F0),
-    success: Color(0xFF078C52),
-    warning: Color(0xFFDC6803),
+    surface: Color(0xFFF3F4EF),
+    surfaceHover: Color(0xFFE9EAE4),
+    surfaceInset: Color(0xFFE9EAE4),
+    surfaceInsetHover: Color(0xFFD9DBD4),
+    container: Color(0xFFFBFBF8),
+    containerHover: Color(0xFFF3F4EF),
+    containerInset: Color(0xFFF3F4EF),
+    containerInsetHover: Color(0xFFE9EAE4),
+    success: Color(0xFF2445C8),
+    warning: Color(0xFF9A4F06),
     destructive: Color(0xFFF13636),
     destructiveSubtle: Color(0xFFFEB9B3),
-    info: Color(0xFF1570EF),
-    link: Color(0xFF1570EF),
-    shadow: Color(0x0F0B0B0B),
-    focusRing: Color(0x800B0B0B),
-    bgInverse: Color(0xFF242424),
-    textPrimary: Color(0xFF171717),
+    info: Color(0xFF2445C8),
+    link: Color(0xFF2445C8),
+    shadow: Color(0x0F0B0D0C),
+    focusRing: Color(0x800B0D0C),
+    bgInverse: Color(0xFF222522),
+    textPrimary: Color(0xFF121413),
     textInverse: Color(0xFFFFFFFF),
-    textSecondary: Color(0xFF737373),
-    textSubdued: Color(0xFF9E9E9E),
-    borderPrimary: Color(0x260B0B0B),
-    borderSecondary: Color(0x1A0B0B0B),
-    borderSubdued: Color(0x0D0B0B0B),
-    buttonPrimary: Color(0xFF171717),
-    buttonPrimaryHover: Color(0xFF242424),
+    textSecondary: Color(0xFF6B716C),
+    textSubdued: Color(0xFF8A8F8A),
+    borderPrimary: Color(0x260B0D0C),
+    borderSecondary: Color(0x1A0B0D0C),
+    borderSubdued: Color(0x0D0B0D0C),
+    buttonPrimary: Color(0xFF121413),
+    buttonPrimaryHover: Color(0xFF222522),
     buttonDestructive: Color(0xFFEC2222),
     buttonDestructiveHover: Color(0xFFC91313),
-    shadowXs: [BoxShadow(color: Color(0x0F0B0B0B), offset: Offset(0.0, 1.0), blurRadius: 2.0, spreadRadius: 0.0)],
-    shadowSm: [BoxShadow(color: Color(0x0F0B0B0B), offset: Offset(0.0, 1.0), blurRadius: 6.0, spreadRadius: 0.0)],
-    shadowMd: [BoxShadow(color: Color(0x0F0B0B0B), offset: Offset(0.0, 4.0), blurRadius: 8.0, spreadRadius: -2.0)],
-    shadowLg: [BoxShadow(color: Color(0x0F0B0B0B), offset: Offset(0.0, 12.0), blurRadius: 16.0, spreadRadius: -4.0)],
-    shadowXl: [BoxShadow(color: Color(0x0F0B0B0B), offset: Offset(0.0, 20.0), blurRadius: 24.0, spreadRadius: -4.0)],
+    shadowXs: [BoxShadow(color: Color(0x000B0D0C), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowSm: [BoxShadow(color: Color(0x000B0D0C), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowMd: [BoxShadow(color: Color(0x000B0D0C), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowLg: [BoxShadow(color: Color(0x000B0D0C), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowXl: [BoxShadow(color: Color(0x000B0D0C), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
   );
 
   static const dark = SureTokenPalette(
-    surface: Color(0xFF0B0B0B),
-    surfaceHover: Color(0xFF242424),
-    surfaceInset: Color(0xFF242424),
-    surfaceInsetHover: Color(0xFF242424),
-    container: Color(0xFF171717),
-    containerHover: Color(0xFF242424),
-    containerInset: Color(0xFF242424),
-    containerInsetHover: Color(0xFF363636),
-    success: Color(0xFF32D583),
+    surface: Color(0xFF0B0D0C),
+    surfaceHover: Color(0xFF222522),
+    surfaceInset: Color(0xFF222522),
+    surfaceInsetHover: Color(0xFF222522),
+    container: Color(0xFF121413),
+    containerHover: Color(0xFF222522),
+    containerInset: Color(0xFF222522),
+    containerInsetHover: Color(0xFF333733),
+    success: Color(0xFF6F88E2),
     warning: Color(0xFFFDB022),
     destructive: Color(0xFFED4E4E),
     destructiveSubtle: Color(0xFFA40E0E),
-    info: Color(0xFF2E90FA),
-    link: Color(0xFF2E90FA),
+    info: Color(0xFF4A6BE0),
+    link: Color(0xFF4A6BE0),
     shadow: Color(0x14FFFFFF),
     focusRing: Color(0x80FFFFFF),
     bgInverse: Color(0xFFFFFFFF),
     textPrimary: Color(0xFFFFFFFF),
-    textInverse: Color(0xFF171717),
-    textSecondary: Color(0xFFCFCFCF),
-    textSubdued: Color(0xFF9E9E9E),
+    textInverse: Color(0xFF121413),
+    textSecondary: Color(0xFFC2C5BD),
+    textSubdued: Color(0xFF8A8F8A),
     borderPrimary: Color(0x4DFFFFFF),
     borderSecondary: Color(0x33FFFFFF),
     borderSubdued: Color(0x1AFFFFFF),
     buttonPrimary: Color(0xFFFFFFFF),
-    buttonPrimaryHover: Color(0xFFF7F7F7),
+    buttonPrimaryHover: Color(0xFFF3F4EF),
     buttonDestructive: Color(0xFFED4E4E),
     buttonDestructiveHover: Color(0xFFF13636),
-    shadowXs: [BoxShadow(color: Color(0x14FFFFFF), offset: Offset(0.0, 1.0), blurRadius: 2.0, spreadRadius: 0.0)],
-    shadowSm: [BoxShadow(color: Color(0x14FFFFFF), offset: Offset(0.0, 1.0), blurRadius: 6.0, spreadRadius: 0.0)],
-    shadowMd: [BoxShadow(color: Color(0x14FFFFFF), offset: Offset(0.0, 4.0), blurRadius: 8.0, spreadRadius: -2.0)],
-    shadowLg: [BoxShadow(color: Color(0x14FFFFFF), offset: Offset(0.0, 12.0), blurRadius: 16.0, spreadRadius: -4.0)],
-    shadowXl: [BoxShadow(color: Color(0x14FFFFFF), offset: Offset(0.0, 20.0), blurRadius: 24.0, spreadRadius: -4.0)],
+    shadowXs: [BoxShadow(color: Color(0x00FFFFFF), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowSm: [BoxShadow(color: Color(0x00FFFFFF), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowMd: [BoxShadow(color: Color(0x00FFFFFF), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowLg: [BoxShadow(color: Color(0x00FFFFFF), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
+    shadowXl: [BoxShadow(color: Color(0x00FFFFFF), offset: Offset(0.0, 0.0), blurRadius: 0.0, spreadRadius: 0.0)],
   );
 }
 
