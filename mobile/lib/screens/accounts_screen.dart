@@ -9,10 +9,13 @@ import '../services/balance_sheet_service.dart';
 import '../utils/money_masker.dart';
 import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
+import '../widgets/no_accounts_prompt.dart';
+import 'account_form_screen.dart';
 import 'statements_screen.dart';
 
 /// Balance sheet: net worth, then "what we have" / "what we owe" grouped by
-/// kind of account. Bank and card accounts offer "Add statement".
+/// kind of account. Bank and card accounts offer "Add statement"; tapping an
+/// account edits it.
 class AccountsScreen extends StatefulWidget {
   const AccountsScreen({super.key});
 
@@ -127,6 +130,11 @@ class _AccountsScreenState extends State<AccountsScreen> {
     if (mounted) _load();
   }
 
+  Future<void> _openForm({Account? account}) async {
+    await openAccountForm(context, account: account);
+    if (mounted) _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
@@ -162,6 +170,19 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     child: Text('Add statement',
                         style: LedgerText.body(size: 14, color: c.moneyIn)),
                   ),
+                  TextButton(
+                    key: const ValueKey('accounts-add-account'),
+                    onPressed: () => _openForm(),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      foregroundColor: c.moneyIn,
+                    ),
+                    child: Text('+ Add',
+                        style: LedgerText.body(
+                            size: 14,
+                            color: c.moneyIn,
+                            weight: FontWeight.w600)),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -172,6 +193,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 )
               else if (_error != null)
                 Text(_error!, style: LedgerText.body(color: c.moneyOut))
+              else if (_accounts.isEmpty)
+                NoAccountsPrompt(onCreated: (_) => _load())
               else ...[
                 _netWorthBlock(c),
                 const SizedBox(height: 24),
@@ -266,57 +289,61 @@ class _AccountsScreenState extends State<AccountsScreen> {
           trailing: cents(g.totalCents, _currency),
         ),
         for (final a in g.accounts)
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: c.hairline)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          InkWell(
+            onTap: () => _openForm(account: a),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: c.hairline)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(a.name, style: LedgerText.body(color: c.ink)),
+                        const SizedBox(height: 2),
+                        Text(
+                          a.institutionName ?? a.displayAccountType,
+                          style: LedgerText.body(size: 13, color: c.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(a.name, style: LedgerText.body(color: c.ink)),
-                      const SizedBox(height: 2),
                       Text(
-                        a.institutionName ?? a.displayAccountType,
-                        style: LedgerText.body(size: 13, color: c.muted),
+                        a.balanceCents == null
+                            ? MoneyMasker.mask(a.balance, hidden: hidden)
+                            : cents(a.balanceCents!.abs(), a.currency),
+                        style: LedgerText.figures(size: 16, color: c.ink),
                       ),
+                      if (_takesStatements(a))
+                        TextButton(
+                          onPressed: () => _openStatements(a.id),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(44, 36),
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.padded,
+                          ),
+                          child: Text('Add statement',
+                              style:
+                                  LedgerText.body(size: 13, color: c.moneyIn)),
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text('Edit',
+                              style: LedgerText.body(size: 13, color: c.muted)),
+                        ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      a.balanceCents == null
-                          ? MoneyMasker.mask(a.balance, hidden: hidden)
-                          : cents(a.balanceCents!.abs(), a.currency),
-                      style: LedgerText.figures(size: 16, color: c.ink),
-                    ),
-                    if (_takesStatements(a))
-                      TextButton(
-                        onPressed: () => _openStatements(a.id),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(44, 36),
-                          padding: EdgeInsets.zero,
-                          tapTargetSize: MaterialTapTargetSize.padded,
-                        ),
-                        child: Text('Add statement',
-                            style: LedgerText.body(size: 13, color: c.moneyIn)),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text('Manual',
-                            style: LedgerText.body(size: 13, color: c.muted)),
-                      ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
       ],

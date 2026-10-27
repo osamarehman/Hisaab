@@ -14,6 +14,8 @@ import '../services/imports_service.dart';
 import '../services/transactions_service.dart';
 import '../theme/sure_tokens.dart';
 import '../widgets/ledger/ledger.dart';
+import '../widgets/no_accounts_prompt.dart';
+import 'account_form_screen.dart';
 import 'statement_review_screen.dart';
 
 /// Statements tab: pick an account, upload a PDF/CSV statement, watch the
@@ -383,10 +385,12 @@ class _StatementsScreenState extends State<StatementsScreen> {
     }
     if (_accounts.isEmpty) {
       return [
-        Text(
-          'There is no bank account yet. Add one on the Sure website, then '
-          'come back here to add its statements.',
-          style: LedgerText.body(color: c.muted),
+        NoAccountsPrompt(
+          kind: AccountKind.bank,
+          onCreated: (account) {
+            _accountId = account.id;
+            _load();
+          },
         ),
       ];
     }

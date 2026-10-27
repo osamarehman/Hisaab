@@ -54,6 +54,15 @@ class SureTheme {
       borderSide: BorderSide(color: ink),
     );
 
+    // A button's textStyle replaces the inherited text style rather than
+    // merging with it, so without the family it renders in Roboto.
+    TextStyle buttonText(double size, FontWeight weight) => TextStyle(
+          fontFamily: SureTokens.fontSans,
+          fontFamilyFallback: SureTokens.fontFallback,
+          fontSize: size,
+          fontWeight: weight,
+        );
+
     final base = ThemeData(
       fontFamily: SureTokens.fontSans,
       fontFamilyFallback: SureTokens.fontFallback,
@@ -109,7 +118,7 @@ class SureTheme {
           foregroundColor: tokens.textInverse,
           disabledBackgroundColor: tokens.containerInset,
           disabledForegroundColor: tokens.textSubdued,
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: buttonText(16, FontWeight.w600),
           shape: shape,
         ),
       ),
@@ -118,7 +127,7 @@ class SureTheme {
           minimumSize: const Size(64, 52),
           backgroundColor: tokens.buttonPrimary,
           foregroundColor: tokens.textInverse,
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: buttonText(16, FontWeight.w600),
           shape: shape,
         ),
       ),
@@ -127,7 +136,7 @@ class SureTheme {
           minimumSize: const Size(64, 48),
           foregroundColor: ink,
           side: BorderSide(color: ink),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          textStyle: buttonText(15, FontWeight.w500),
           shape: shape,
         ),
       ),
@@ -135,6 +144,7 @@ class SureTheme {
         style: TextButton.styleFrom(
           minimumSize: const Size(44, 44),
           foregroundColor: tokens.link,
+          textStyle: buttonText(15, FontWeight.w500),
           shape: shape,
         ),
       ),

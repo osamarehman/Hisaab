@@ -78,4 +78,17 @@ void main() {
     expect(materialApp.darkTheme?.colorScheme.surface, SureTokens.dark.surface);
     expect(materialApp.themeMode, ThemeMode.system);
   });
+
+  test('button text uses IBM Plex Sans, not the platform font', () {
+    final theme = SureTheme.light;
+    final styles = [
+      theme.elevatedButtonTheme.style,
+      theme.filledButtonTheme.style,
+      theme.outlinedButtonTheme.style,
+      theme.textButtonTheme.style,
+    ];
+    for (final style in styles) {
+      expect(style?.textStyle?.resolve({})?.fontFamily, SureTokens.fontSans);
+    }
+  });
 }

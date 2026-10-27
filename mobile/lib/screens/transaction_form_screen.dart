@@ -18,6 +18,8 @@ import '../services/log_service.dart';
 import '../utils/amount_parser.dart';
 import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
+import '../widgets/no_accounts_prompt.dart';
+import 'account_form_screen.dart';
 import 'labels_screen.dart';
 
 /// Add expense / income. Saves offline-first, then uploads the receipt once
@@ -86,6 +88,14 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       MaterialPageRoute<void>(builder: (_) => const LabelsScreen()),
     );
     if (mounted) await _load(forceLabels: true);
+  }
+
+  /// Dropdown value for "+ New account"; never an account id.
+  static const _newAccountValue = '__new_account__';
+
+  Future<void> _addAccount() async {
+    final account = await openAccountForm(context);
+    if (account != null && mounted) setState(() => _accountId = account.id);
   }
 
   Future<void> _pickDate() async {
@@ -215,6 +225,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
           children: [
+            if (accounts.isEmpty && !accountsProvider.isLoading) ...[
+              NoAccountsPrompt(
+                onCreated: (a) => setState(() => _accountId = a.id),
+              ),
+              const SizedBox(height: 26),
+            ],
             Text(l.transactionFormAmountLabel,
                 style: TextStyle(fontSize: 14, color: c.muted)),
             const SizedBox(height: 6),
@@ -271,10 +287,17 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     c,
                     isIncome ? l.formPaidInto : l.formPaidFrom,
                     accounts.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            child: Text(l.formNoAccounts,
-                                style: TextStyle(color: c.muted)),
+                        ? Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              onPressed: _addAccount,
+                              style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(44, 48)),
+                              child: Text('+ Add an account',
+                                  style: TextStyle(
+                                      fontSize: 16, color: c.moneyIn)),
+                            ),
                           )
                         : DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -288,9 +311,19 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                     child: Text(a.name,
                                         overflow: TextOverflow.ellipsis),
                                   ),
+                                DropdownMenuItem(
+                                  value: _newAccountValue,
+                                  child: Text('+ New account',
+                                      style: TextStyle(color: c.moneyIn)),
+                                ),
                               ],
-                              onChanged: (id) =>
-                                  setState(() => _accountId = id),
+                              onChanged: (id) {
+                                if (id == _newAccountValue) {
+                                  _addAccount();
+                                } else {
+                                  setState(() => _accountId = id);
+                                }
+                              },
                             ),
                           ),
                   ),

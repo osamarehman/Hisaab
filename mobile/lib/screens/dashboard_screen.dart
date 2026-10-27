@@ -16,6 +16,7 @@ import '../services/transactions_service.dart';
 import '../utils/money_format.dart';
 import '../widgets/connectivity_banner.dart';
 import '../widgets/ledger/ledger.dart';
+import '../widgets/no_accounts_prompt.dart';
 import 'budgets_screen.dart';
 import 'settings_screen.dart';
 import 'statement_review_screen.dart';
@@ -302,6 +303,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     _header(l, c),
                     const SizedBox(height: 28),
+                    if (_noAccounts(context)) ...[
+                      NoAccountsPrompt(onCreated: (_) => reload()),
+                      const SizedBox(height: 28),
+                    ],
                     if (_loading && _cashFlow == null && _transactions.isEmpty)
                       const Padding(
                         padding: EdgeInsets.only(top: 80),
@@ -319,6 +324,15 @@ class DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  /// True once accounts have loaded and there are none.
+  bool _noAccounts(BuildContext context) {
+    final accounts = context.watch<AccountsProvider>();
+    return !accounts.isInitializing &&
+        !accounts.isLoading &&
+        accounts.errorMessage == null &&
+        accounts.accounts.isEmpty;
   }
 
   Widget _header(AppLocalizations l, LedgerColors c) {

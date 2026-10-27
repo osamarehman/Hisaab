@@ -223,6 +223,39 @@ class AccountsProvider with ChangeNotifier {
     }
   }
 
+  /// Puts a created or edited account into the list (and the offline cache)
+  /// so every screen shows it before the next server refresh.
+  Future<void> upsertAccount(Account account) async {
+    final index = _accounts.indexWhere((a) => a.id == account.id);
+    _accounts = [..._accounts];
+    if (index == -1) {
+      _accounts.add(account);
+    } else {
+      _accounts[index] = account;
+    }
+    _errorMessage = null;
+    notifyListeners();
+    await _saveCache();
+  }
+
+  Future<void> removeAccount(String accountId) async {
+    _accounts = _accounts.where((a) => a.id != accountId).toList();
+    notifyListeners();
+    await _saveCache();
+  }
+
+  Future<void> _saveCache() async {
+    try {
+      await _offlineStorage.clearAccounts();
+      await _offlineStorage.saveAccounts(_accounts);
+    } catch (e) {
+      _log.error(
+        'AccountsProvider',
+        'Saving accounts cache failed with ${e.runtimeType}',
+      );
+    }
+  }
+
   void clearAccounts() {
     _accounts = [];
     _pagination = null;
