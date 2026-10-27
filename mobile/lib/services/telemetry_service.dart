@@ -106,9 +106,9 @@ class TelemetryService {
           options.sendDefaultPii = false;
           options.attachScreenshot = false;
           options.maxRequestBodySize = MaxRequestBodySize.never;
-          options.maxResponseBodySize = MaxResponseBodySize.never;
           options.beforeSend = filterEvent;
-          options.beforeSendTransaction = filterTransaction;
+          options.beforeSendTransaction =
+              (transaction, _) => filterTransaction(transaction);
           options.beforeBreadcrumb = filterBreadcrumb;
           _initialized = true;
         },

@@ -215,10 +215,10 @@ void main() {
 
     test('sanitizes event messages, exceptions, request data, and tags', () {
       final event = SentryEvent(
-        message: const SentryMessage(
+        message: SentryMessage(
           'Failed for email=user@example.com amount=123.45',
         ),
-        exceptions: const [
+        exceptions: [
           SentryException(
             type: 'StateError',
             value: 'backendUrl=https://sure.example.test',
@@ -261,7 +261,7 @@ void main() {
 
     test('collapses local database exception details before sending', () {
       final event = SentryEvent(
-        exceptions: const [
+        exceptions: [
           SentryException(
             type: 'DatabaseException',
             value: 'DatabaseException(no such table: transactions) '
