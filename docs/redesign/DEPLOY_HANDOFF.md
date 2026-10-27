@@ -23,7 +23,7 @@ assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 - VPS `109.123.247.217` (root). It already runs **SureCaller** under
   `/root/surecaller` — do not touch its containers, volumes, ports or proxy
   config beyond adding a new site.
-- Suggested hostname: `sure.shipdeck.dev` (confirm with the owner; DNS
+- Hostname: `sure.shipdeck.dev` (the APK defaults to it; DNS
   A record → 109.123.247.217 must exist before TLS can issue).
 
 ## Steps
@@ -72,8 +72,8 @@ cd /root/sure-household && git pull && docker compose -f compose.household.yml u
 - APK is built locally from `mobile/` (`flutter build apk --release`); it is
   signed with the build machine's debug key, so later updates must be built on
   the same machine (or set up a release keystore via `mobile/android/key.properties`).
-- The app defaults to `https://demo.sure.am`. On first launch, use the server
-  settings on the sign-in screen to enter `https://$APP_DOMAIN`. To ship a build
+- The app defaults to `https://sure.shipdeck.dev`. For another host, use the server
+  settings on the sign-in screen. To ship a build
   that already points at the server, change `_defaultBaseUrl` in
   `mobile/lib/services/api_config.dart` before building.
 
