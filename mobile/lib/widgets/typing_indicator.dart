@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Animated 3-dot "Thinking..." indicator shown while the AI generates a response.
-/// Each dot bounces up in sequence, giving the classic chat typing indicator feel.
+import '../l10n/app_localizations.dart';
+import 'ledger/ledger.dart';
+
+/// Quiet "Thinking" label with three small square dots that rise in turn,
+/// shown while the assistant writes a reply.
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
 
@@ -30,19 +33,15 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final dotColor = colorScheme.onSurfaceVariant;
+    final c = LedgerColors.of(context);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          'Thinking',
-          style: TextStyle(
-            color: colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.italic,
-          ),
+          AppLocalizations.of(context).assistantThinking,
+          style: LedgerText.figures(size: 13, color: c.muted),
         ),
         const SizedBox(width: 6),
         SizedBox(
@@ -59,14 +58,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                     padding: EdgeInsets.only(right: index < 2 ? 5 : 0),
                     child: Transform.translate(
                       offset: Offset(0, offset),
-                      child: Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: dotColor.withValues(alpha: 0.75),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      child: Container(width: 5, height: 5, color: c.muted),
                     ),
                   );
                 },
@@ -82,7 +74,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
   /// controller's current [value] in [0, 1).
   /// Each dot is delayed by 1/3 of the cycle so they bounce in sequence.
   double _dotOffset(int index, double value) {
-    const bounceHeight = 5.0;
+    const bounceHeight = 4.0;
     const dotCount = 3;
     final phase = (value - index / dotCount + 1.0) % 1.0;
 

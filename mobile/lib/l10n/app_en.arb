@@ -28,18 +28,6 @@
   "commonUndo": "Undo",
   "@commonUndo": { "description": "Generic undo action label." },
 
-  "chatSuggestionNetWorth": "What is my current net worth?",
-  "@chatSuggestionNetWorth": { "description": "Suggested chat prompt on the empty assistant screen." },
-
-  "chatSuggestionSpending": "How has my spending changed this month?",
-  "@chatSuggestionSpending": { "description": "Suggested chat prompt on the empty assistant screen." },
-
-  "chatSuggestionSavings": "How can I improve my savings rate?",
-  "@chatSuggestionSavings": { "description": "Suggested chat prompt on the empty assistant screen." },
-
-  "chatSuggestionExpenses": "What are my biggest expenses lately?",
-  "@chatSuggestionExpenses": { "description": "Suggested chat prompt on the empty assistant screen." },
-
   "loginEmailLabel": "Email",
   "@loginEmailLabel": { "description": "Label for the email text field on the login screen." },
 
@@ -109,25 +97,19 @@
   "dashboardFilterEmpty": "No accounts match the current filter",
   "@dashboardFilterEmpty": { "description": "Empty state when the active account filter returns no results." },
 
-  "chatListTitle": "Chats",
-  "@chatListTitle": { "description": "Title for the chat list screen / app bar." },
-
-  "chatListNewChat": "New chat",
+  "chatListNewChat": "Ask a question",
   "@chatListNewChat": { "description": "FAB tooltip for creating a new chat." },
 
-  "chatListEmpty": "No chats yet",
-  "@chatListEmpty": { "description": "Empty-state heading on the chat list screen." },
-
-  "chatListEmptySubtitle": "Start a conversation with your AI assistant",
+  "chatListEmptySubtitle": "Nothing asked yet. Your questions will show here.",
   "@chatListEmptySubtitle": { "description": "Empty-state subtitle on the chat list screen." },
 
   "chatListDeleteTitle": "Delete Chat",
   "@chatListDeleteTitle": { "description": "Title for the delete-chat confirmation dialog." },
 
-  "chatConversationNewTitle": "New Conversation",
+  "chatConversationNewTitle": "New question",
   "@chatConversationNewTitle": { "description": "Placeholder title for a new conversation before it is saved." },
 
-  "chatConversationMessageHint": "Ask anything about your finances…",
+  "chatConversationMessageHint": "Ask about your money…",
   "@chatConversationMessageHint": { "description": "Hint text inside the chat message input field." },
 
   "chatConversationGreetingWithName": "Hi {firstName}, how can I help?",
@@ -385,33 +367,6 @@
   "ssoOnboardingAcceptInvitation": "Accept Invitation",
   "@ssoOnboardingAcceptInvitation": { "description": "Tab and submit button label when the user has a pending household invitation to accept." },
 
-  "calendarTitle": "Account Calendar",
-  "@calendarTitle": { "description": "App bar title for the account calendar screen." },
-
-  "calendarAccountTypeSection": "Account Type",
-  "@calendarAccountTypeSection": { "description": "Section header for the account-type selector on the calendar screen." },
-
-  "calendarSegmentAssets": "Assets",
-  "@calendarSegmentAssets": { "description": "Segment label for asset-type accounts on the calendar." },
-
-  "calendarSegmentLiabilities": "Liabilities",
-  "@calendarSegmentLiabilities": { "description": "Segment label for liability-type accounts on the calendar." },
-
-  "calendarSelectAccount": "Select Account",
-  "@calendarSelectAccount": { "description": "Placeholder shown in the account dropdown when none is selected." },
-
-  "calendarMonthlyChange": "Monthly Change",
-  "@calendarMonthlyChange": { "description": "Label for the monthly-change metric on the calendar screen." },
-
-  "calendarNoTransactions": "No transactions on this day",
-  "@calendarNoTransactions": { "description": "Empty-state message when no transactions exist for the selected day." },
-
-  "moreCalendar": "Account Calendar",
-  "@moreCalendar": { "description": "Menu item title for Account Calendar in the More screen." },
-
-  "moreCalendarSubtitle": "View monthly balance changes by account",
-  "@moreCalendarSubtitle": { "description": "Subtitle for the Account Calendar menu item in the More screen." },
-
   "moreRecentTransactions": "Recent Transactions",
   "@moreRecentTransactions": { "description": "Menu item title for Recent Transactions in the More screen." },
 
@@ -667,18 +622,6 @@
   "settingsUserFallback": "User",
   "@settingsUserFallback": { "description": "Fallback display name when the user has no name set." },
 
-  "chatListDeleteMultiContent": "{count, plural, one{Delete {count} chat? This cannot be undone.} other{Delete {count} chats? This cannot be undone.}}",
-  "@chatListDeleteMultiContent": {
-    "description": "Body text for the multi-chat delete confirmation dialog.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-
-  "chatListDeletedSuccess": "Chats deleted",
-  "@chatListDeletedSuccess": { "description": "Snackbar shown after multiple chats are deleted." },
-
-  "chatListDeleteFailed": "Failed to delete chats",
-  "@chatListDeleteFailed": { "description": "Snackbar shown when deleting multiple chats fails." },
-
   "chatListError": "Failed to load chats",
   "@chatListError": { "description": "Error-state heading on the chat list screen." },
 
@@ -859,14 +802,11 @@
   "chatConversationLoadError": "Failed to load chat",
   "@chatConversationLoadError": { "description": "Error-state heading when a chat fails to load." },
 
-  "navEnableAiChatTitle": "Turn on AI Chat?",
+  "navEnableAiChatTitle": "Turn on the assistant?",
   "@navEnableAiChatTitle": { "description": "Title for the dialog prompting the user to enable AI chat." },
 
-  "navEnableAiChatContent": "AI Chat is currently disabled in your account settings. Would you like to turn it on now?",
+  "navEnableAiChatContent": "The assistant reads your entries to answer questions about your money. It is off for your account right now.",
   "@navEnableAiChatContent": { "description": "Body text for the enable-AI-chat dialog." },
-
-  "navEnableAiChatNotNow": "Not now",
-  "@navEnableAiChatNotNow": { "description": "Dismiss button in the enable-AI-chat dialog." },
 
   "navEnableAiChatConfirm": "Turn on AI",
   "@navEnableAiChatConfirm": { "description": "Confirm button in the enable-AI-chat dialog." },
@@ -1325,5 +1265,62 @@
   "@loginNewHere": {"description": "Prefix before the create-account link."},
 
   "loginCreateAccount": "Create an account",
-  "@loginCreateAccount": {"description": "Link to sign up."}
+  "@loginCreateAccount": {"description": "Link to sign up."},
+
+  "activityViewList": "List",
+  "@activityViewList": {"description": "Activity view toggle: list of entries."},
+
+  "activityViewCalendar": "Calendar",
+  "@activityViewCalendar": {"description": "Activity view toggle: month calendar."},
+
+  "activityImportStatement": "Import statement",
+  "@activityImportStatement": {"description": "Activity header link to the statement upload screen."},
+
+  "activityPickDay": "Tap a day to see its payments.",
+  "@activityPickDay": {"description": "Calendar hint when no day is selected."},
+
+  "activityPayments": "{count, plural, =0{No payments} one{1 payment} other{{count} payments}}",
+  "@activityPayments": {"description": "Calendar day header: number of payments (money going out).", "placeholders": {"count": {"type": "int"}}},
+
+  "activityNothingThisDay": "Nothing on this day.",
+  "@activityNothingThisDay": {"description": "Calendar: selected day has no entries."},
+
+  "homeStatementsHint": "Add a bank or card statement",
+  "@homeStatementsHint": {"description": "Home link to the statements screen."},
+
+  "homeNotesForYou": "Notes for you",
+  "@homeNotesForYou": {"description": "Home section listing generated insights."},
+
+  "homeInsightAsk": "Tell me more: {title}",
+  "@homeInsightAsk": {"description": "First Assistant question when a Home note is tapped.", "placeholders": {"title": {"type": "String"}}},
+
+  "assistantIntro": "Ask about your money in plain words. Answers come from your own entries.",
+  "@assistantIntro": {"description": "Assistant tab intro line."},
+
+  "assistantEarlier": "Earlier questions",
+  "@assistantEarlier": {"description": "Assistant tab: past conversations header."},
+
+  "assistantTryAsking": "Try asking",
+  "@assistantTryAsking": {"description": "Header over suggested questions."},
+
+  "assistantThinking": "Thinking",
+  "@assistantThinking": {"description": "Shown while the assistant writes a reply."},
+
+  "assistantSend": "Send",
+  "@assistantSend": {"description": "Accessibility label for the send button."},
+
+  "assistantLookedUp": "Looked up {subject}",
+  "@assistantLookedUp": {"description": "Quiet note that the assistant used a tool, e.g. 'Looked up transactions'.", "placeholders": {"subject": {"type": "String"}}},
+
+  "chatSuggestionGroceries": "How much did we spend on groceries this month?",
+  "@chatSuggestionGroceries": {"description": "Suggested assistant question."},
+
+  "chatSuggestionDay": "What did I pay on 15 October?",
+  "@chatSuggestionDay": {"description": "Suggested assistant question."},
+
+  "chatSuggestionBills": "Which bills went up compared to last month?",
+  "@chatSuggestionBills": {"description": "Suggested assistant question."},
+
+  "chatSuggestionSave": "Where can we save next month?",
+  "@chatSuggestionSave": {"description": "Suggested assistant question."}
 }

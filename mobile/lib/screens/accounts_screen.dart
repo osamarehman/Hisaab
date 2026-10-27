@@ -118,6 +118,15 @@ class _AccountsScreenState extends State<AccountsScreen> {
     return groups.values.toList();
   }
 
+  Future<void> _openStatements(String? accountId) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StatementsScreen(initialAccountId: accountId),
+      ),
+    );
+    if (mounted) _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
@@ -137,7 +146,24 @@ class _AccountsScreenState extends State<AccountsScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 32, 20, 40),
             children: [
-              Text('Accounts', style: LedgerText.title(color: c.ink)),
+              Row(
+                children: [
+                  Expanded(
+                    child:
+                        Text('Accounts', style: LedgerText.title(color: c.ink)),
+                  ),
+                  TextButton(
+                    key: const ValueKey('accounts-add-statement'),
+                    onPressed: () => _openStatements(null),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      foregroundColor: c.moneyIn,
+                    ),
+                    child: Text('Add statement',
+                        style: LedgerText.body(size: 14, color: c.moneyIn)),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
               if (_loading)
                 const Padding(
@@ -273,12 +299,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     ),
                     if (_takesStatements(a))
                       TextButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                StatementsScreen(initialAccountId: a.id),
-                          ),
-                        ),
+                        onPressed: () => _openStatements(a.id),
                         style: TextButton.styleFrom(
                           minimumSize: const Size(44, 36),
                           padding: EdgeInsets.zero,

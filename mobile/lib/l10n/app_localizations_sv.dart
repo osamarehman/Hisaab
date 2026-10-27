@@ -36,20 +36,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonUndo => 'Ångra';
 
   @override
-  String get chatSuggestionNetWorth => 'Vad är min nettoförmögenhet just nu?';
-
-  @override
-  String get chatSuggestionSpending =>
-      'Hur har mina utgifter förändrats den här månaden?';
-
-  @override
-  String get chatSuggestionSavings => 'Hur kan jag öka min sparkvot?';
-
-  @override
-  String get chatSuggestionExpenses =>
-      'Vilka är mina största utgifter på sistone?';
-
-  @override
   String get loginEmailLabel => 'E-post';
 
   @override
@@ -121,13 +107,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dashboardFilterEmpty => 'Inga konton matchar det aktuella filtret';
 
   @override
-  String get chatListTitle => 'Chattar';
-
-  @override
   String get chatListNewChat => 'Ny chatt';
-
-  @override
-  String get chatListEmpty => 'Inga chattar än';
 
   @override
   String get chatListEmptySubtitle =>
@@ -416,33 +396,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ssoOnboardingAcceptInvitation => 'Acceptera inbjudan';
 
   @override
-  String get calendarTitle => 'Kontokalender';
-
-  @override
-  String get calendarAccountTypeSection => 'Kontotyp';
-
-  @override
-  String get calendarSegmentAssets => 'Tillgångar';
-
-  @override
-  String get calendarSegmentLiabilities => 'Skulder';
-
-  @override
-  String get calendarSelectAccount => 'Välj konto';
-
-  @override
-  String get calendarMonthlyChange => 'Månadsförändring';
-
-  @override
-  String get calendarNoTransactions => 'Inga transaktioner den här dagen';
-
-  @override
-  String get moreCalendar => 'Kontokalender';
-
-  @override
-  String get moreCalendarSubtitle => 'Se månatliga saldoförändringar per konto';
-
-  @override
   String get moreRecentTransactions => 'Senaste transaktioner';
 
   @override
@@ -719,23 +672,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsUserFallback => 'Användare';
 
   @override
-  String chatListDeleteMultiContent(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Radera $count chattar? Det går inte att ångra.',
-      one: 'Radera $count chatt? Det går inte att ångra.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get chatListDeletedSuccess => 'Chattarna har raderats';
-
-  @override
-  String get chatListDeleteFailed => 'Det gick inte att radera chattarna';
-
-  @override
   String get chatListError => 'Det gick inte att läsa in chattar';
 
   @override
@@ -927,9 +863,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get navEnableAiChatContent =>
       'AI-chatt är för närvarande avstängd i dina kontoinställningar. Vill du aktivera den nu?';
-
-  @override
-  String get navEnableAiChatNotNow => 'Inte nu';
 
   @override
   String get navEnableAiChatConfirm => 'Aktivera AI';
@@ -1417,4 +1350,77 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loginCreateAccount => 'Create an account';
+
+  @override
+  String get activityViewList => 'List';
+
+  @override
+  String get activityViewCalendar => 'Calendar';
+
+  @override
+  String get activityImportStatement => 'Import statement';
+
+  @override
+  String get activityPickDay => 'Tap a day to see its payments.';
+
+  @override
+  String activityPayments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count payments',
+      one: '1 payment',
+      zero: 'No payments',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get activityNothingThisDay => 'Nothing on this day.';
+
+  @override
+  String get homeStatementsHint => 'Add a bank or card statement';
+
+  @override
+  String get homeNotesForYou => 'Notes for you';
+
+  @override
+  String homeInsightAsk(String title) {
+    return 'Tell me more: $title';
+  }
+
+  @override
+  String get assistantIntro =>
+      'Ask about your money in plain words. Answers come from your own entries.';
+
+  @override
+  String get assistantEarlier => 'Earlier questions';
+
+  @override
+  String get assistantTryAsking => 'Try asking';
+
+  @override
+  String get assistantThinking => 'Thinking';
+
+  @override
+  String get assistantSend => 'Send';
+
+  @override
+  String assistantLookedUp(String subject) {
+    return 'Looked up $subject';
+  }
+
+  @override
+  String get chatSuggestionGroceries =>
+      'How much did we spend on groceries this month?';
+
+  @override
+  String get chatSuggestionDay => 'What did I pay on 15 October?';
+
+  @override
+  String get chatSuggestionBills =>
+      'Which bills went up compared to last month?';
+
+  @override
+  String get chatSuggestionSave => 'Where can we save next month?';
 }

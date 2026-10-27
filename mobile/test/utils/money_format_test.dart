@@ -22,6 +22,14 @@ void main() {
       expect(MoneyFormat.format(0, signed: true), 'Rs 0');
     });
 
+    test('compact shortens figures for calendar cells', () {
+      expect(MoneyFormat.compact(850), '850');
+      expect(MoneyFormat.compact(4800), '4.8k');
+      expect(MoneyFormat.compact(5000), '5k');
+      expect(MoneyFormat.compact(48200), '48k');
+      expect(MoneyFormat.compact(-1250000), '1.3M');
+    });
+
     test('uses symbols for other currencies', () {
       expect(MoneyFormat.format(1234.5, currency: 'USD'), r'$1,234.50');
       expect(MoneyFormat.symbol(null), 'Rs');

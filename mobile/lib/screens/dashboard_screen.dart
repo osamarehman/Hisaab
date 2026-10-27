@@ -10,6 +10,7 @@ import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/balance_sheet_service.dart';
 import '../services/cash_flow_service.dart';
+import '../services/insights_service.dart';
 import '../services/log_service.dart';
 import '../services/transactions_service.dart';
 import '../utils/money_format.dart';
@@ -18,6 +19,7 @@ import '../widgets/ledger/ledger.dart';
 import 'budgets_screen.dart';
 import 'settings_screen.dart';
 import 'statement_review_screen.dart';
+import 'statements_screen.dart';
 import 'transactions_list_screen.dart';
 
 /// One label's share of a month's spending.
@@ -31,11 +33,19 @@ class _LabelSpend {
 
 /// Home: the month at a glance (spent, in/out, labels, net worth).
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, this.onOpenActivity, this.onOpenAccounts});
+  const DashboardScreen({
+    super.key,
+    this.onOpenActivity,
+    this.onOpenAccounts,
+    this.onAskAssistant,
+  });
 
   /// Jump to Activity for [month], optionally filtered to a label.
   final void Function(DateTime month, String? categoryId)? onOpenActivity;
   final VoidCallback? onOpenAccounts;
+
+  /// Open the Assistant with [question] as the first message.
+  final ValueChanged<String>? onAskAssistant;
 
   @override
   DashboardScreenState createState() => DashboardScreenState();
@@ -45,6 +55,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   final _transactionsService = TransactionsService();
   final _cashFlowService = CashFlowService();
   final _balanceSheetService = BalanceSheetService();
+  final _insightsService = InsightsService();
   final _log = LogService.instance;
 
   DateTime _month = MonthSwitcher.firstOf(DateTime.now());
@@ -59,6 +70,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   double? _assets;
   double? _liabilities;
   String? _currency;
+  List<Insight> _insights = const [];
 
   @override
   void initState() {
@@ -81,6 +93,8 @@ class DashboardScreenState extends State<DashboardScreen> {
       await auth.logout();
       return;
     }
+
+    _loadInsights(accessToken, token);
 
     final month = _month;
     final start = DateFormat('yyyy-MM-dd').format(month);
@@ -147,6 +161,18 @@ class DashboardScreenState extends State<DashboardScreen> {
         });
       }
     }
+  }
+
+  /// Optional section: any failure (including preview features being off)
+  /// just hides it.
+  Future<void> _loadInsights(String accessToken, int token) async {
+    final result = await _insightsService.getInsights(accessToken: accessToken);
+    if (!mounted || token != _loadToken) return;
+    setState(() {
+      _insights = result['success'] == true
+          ? (result['insights'] as List<Insight>).take(3).toList()
+          : const [];
+    });
   }
 
   static double? _moneyAmount(dynamic money) {
@@ -233,6 +259,13 @@ class DashboardScreenState extends State<DashboardScreen> {
     navigator
         .push(route)
         .whenComplete(() => auth.removeListener(closeOnSignOut));
+  }
+
+  Future<void> _openStatements() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const StatementsScreen()),
+    );
+    if (mounted) reload();
   }
 
   Future<void> _openReview() async {
@@ -408,8 +441,10 @@ class DashboardScreenState extends State<DashboardScreen> {
 
       if (_unlabelled > 0) ...[
         _reviewBanner(l, c, sorted),
-        const SizedBox(height: 28),
+        const SizedBox(height: 4),
       ],
+      _statementsLink(l, c),
+      const SizedBox(height: 28),
 
       // Where it went.
       LedgerSectionHeader(
@@ -428,6 +463,12 @@ class DashboardScreenState extends State<DashboardScreen> {
       else
         for (final label in labels) _labelRow(label, maxLabel, currency, c),
       const SizedBox(height: 28),
+
+      if (_insights.isNotEmpty) ...[
+        LedgerSectionHeader(title: l.homeNotesForYou),
+        for (final insight in _insights) _insightRow(insight, l, c),
+        const SizedBox(height: 28),
+      ],
 
       // Net worth.
       LedgerSectionHeader(
@@ -485,6 +526,79 @@ class DashboardScreenState extends State<DashboardScreen> {
             child: RupeeAmount(value, currency: currency, color: color),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _statementsLink(AppLocalizations l, LedgerColors c) {
+    return InkWell(
+      key: const ValueKey('home-statements'),
+      onTap: _openStatements,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.hairline)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.description_outlined, size: 18, color: c.muted),
+            const SizedBox(width: 8),
+            Text(l.navStatements,
+                style: LedgerText.body(size: 15, color: c.ink)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                l.homeStatementsHint,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: LedgerText.body(size: 13, color: c.muted),
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 20, color: c.muted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _insightRow(Insight insight, AppLocalizations l, LedgerColors c) {
+    final ask = widget.onAskAssistant;
+    return InkWell(
+      onTap: ask == null ? null : () => ask(l.homeInsightAsk(insight.title)),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.hairline)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(insight.title,
+                      style: LedgerText.body(
+                          color: c.ink, weight: FontWeight.w600)),
+                  if (insight.body.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      insight.body,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: LedgerText.body(size: 14, color: c.muted),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (ask != null) ...[
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, size: 20, color: c.muted),
+            ],
+          ],
+        ),
       ),
     );
   }

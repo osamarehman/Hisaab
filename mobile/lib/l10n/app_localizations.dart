@@ -152,30 +152,6 @@ abstract class AppLocalizations {
   /// **'Undo'**
   String get commonUndo;
 
-  /// Suggested chat prompt on the empty assistant screen.
-  ///
-  /// In en, this message translates to:
-  /// **'What is my current net worth?'**
-  String get chatSuggestionNetWorth;
-
-  /// Suggested chat prompt on the empty assistant screen.
-  ///
-  /// In en, this message translates to:
-  /// **'How has my spending changed this month?'**
-  String get chatSuggestionSpending;
-
-  /// Suggested chat prompt on the empty assistant screen.
-  ///
-  /// In en, this message translates to:
-  /// **'How can I improve my savings rate?'**
-  String get chatSuggestionSavings;
-
-  /// Suggested chat prompt on the empty assistant screen.
-  ///
-  /// In en, this message translates to:
-  /// **'What are my biggest expenses lately?'**
-  String get chatSuggestionExpenses;
-
   /// Label for the email text field on the login screen.
   ///
   /// In en, this message translates to:
@@ -314,28 +290,16 @@ abstract class AppLocalizations {
   /// **'No accounts match the current filter'**
   String get dashboardFilterEmpty;
 
-  /// Title for the chat list screen / app bar.
-  ///
-  /// In en, this message translates to:
-  /// **'Chats'**
-  String get chatListTitle;
-
   /// FAB tooltip for creating a new chat.
   ///
   /// In en, this message translates to:
-  /// **'New chat'**
+  /// **'Ask a question'**
   String get chatListNewChat;
-
-  /// Empty-state heading on the chat list screen.
-  ///
-  /// In en, this message translates to:
-  /// **'No chats yet'**
-  String get chatListEmpty;
 
   /// Empty-state subtitle on the chat list screen.
   ///
   /// In en, this message translates to:
-  /// **'Start a conversation with your AI assistant'**
+  /// **'Nothing asked yet. Your questions will show here.'**
   String get chatListEmptySubtitle;
 
   /// Title for the delete-chat confirmation dialog.
@@ -347,13 +311,13 @@ abstract class AppLocalizations {
   /// Placeholder title for a new conversation before it is saved.
   ///
   /// In en, this message translates to:
-  /// **'New Conversation'**
+  /// **'New question'**
   String get chatConversationNewTitle;
 
   /// Hint text inside the chat message input field.
   ///
   /// In en, this message translates to:
-  /// **'Ask anything about your finances…'**
+  /// **'Ask about your money…'**
   String get chatConversationMessageHint;
 
   /// Greeting shown in a new conversation when the user's first name is known.
@@ -842,60 +806,6 @@ abstract class AppLocalizations {
   /// **'Accept Invitation'**
   String get ssoOnboardingAcceptInvitation;
 
-  /// App bar title for the account calendar screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Account Calendar'**
-  String get calendarTitle;
-
-  /// Section header for the account-type selector on the calendar screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Account Type'**
-  String get calendarAccountTypeSection;
-
-  /// Segment label for asset-type accounts on the calendar.
-  ///
-  /// In en, this message translates to:
-  /// **'Assets'**
-  String get calendarSegmentAssets;
-
-  /// Segment label for liability-type accounts on the calendar.
-  ///
-  /// In en, this message translates to:
-  /// **'Liabilities'**
-  String get calendarSegmentLiabilities;
-
-  /// Placeholder shown in the account dropdown when none is selected.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Account'**
-  String get calendarSelectAccount;
-
-  /// Label for the monthly-change metric on the calendar screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Monthly Change'**
-  String get calendarMonthlyChange;
-
-  /// Empty-state message when no transactions exist for the selected day.
-  ///
-  /// In en, this message translates to:
-  /// **'No transactions on this day'**
-  String get calendarNoTransactions;
-
-  /// Menu item title for Account Calendar in the More screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Account Calendar'**
-  String get moreCalendar;
-
-  /// Subtitle for the Account Calendar menu item in the More screen.
-  ///
-  /// In en, this message translates to:
-  /// **'View monthly balance changes by account'**
-  String get moreCalendarSubtitle;
-
   /// Menu item title for Recent Transactions in the More screen.
   ///
   /// In en, this message translates to:
@@ -1370,24 +1280,6 @@ abstract class AppLocalizations {
   /// **'User'**
   String get settingsUserFallback;
 
-  /// Body text for the multi-chat delete confirmation dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, one{Delete {count} chat? This cannot be undone.} other{Delete {count} chats? This cannot be undone.}}'**
-  String chatListDeleteMultiContent(int count);
-
-  /// Snackbar shown after multiple chats are deleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Chats deleted'**
-  String get chatListDeletedSuccess;
-
-  /// Snackbar shown when deleting multiple chats fails.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to delete chats'**
-  String get chatListDeleteFailed;
-
   /// Error-state heading on the chat list screen.
   ///
   /// In en, this message translates to:
@@ -1727,20 +1619,14 @@ abstract class AppLocalizations {
   /// Title for the dialog prompting the user to enable AI chat.
   ///
   /// In en, this message translates to:
-  /// **'Turn on AI Chat?'**
+  /// **'Turn on the assistant?'**
   String get navEnableAiChatTitle;
 
   /// Body text for the enable-AI-chat dialog.
   ///
   /// In en, this message translates to:
-  /// **'AI Chat is currently disabled in your account settings. Would you like to turn it on now?'**
+  /// **'The assistant reads your entries to answer questions about your money. It is off for your account right now.'**
   String get navEnableAiChatContent;
-
-  /// Dismiss button in the enable-AI-chat dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Not now'**
-  String get navEnableAiChatNotNow;
 
   /// Confirm button in the enable-AI-chat dialog.
   ///
@@ -2563,6 +2449,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create an account'**
   String get loginCreateAccount;
+
+  /// Activity view toggle: list of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get activityViewList;
+
+  /// Activity view toggle: month calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get activityViewCalendar;
+
+  /// Activity header link to the statement upload screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Import statement'**
+  String get activityImportStatement;
+
+  /// Calendar hint when no day is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a day to see its payments.'**
+  String get activityPickDay;
+
+  /// Calendar day header: number of payments (money going out).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No payments} one{1 payment} other{{count} payments}}'**
+  String activityPayments(int count);
+
+  /// Calendar: selected day has no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on this day.'**
+  String get activityNothingThisDay;
+
+  /// Home link to the statements screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bank or card statement'**
+  String get homeStatementsHint;
+
+  /// Home section listing generated insights.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes for you'**
+  String get homeNotesForYou;
+
+  /// First Assistant question when a Home note is tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me more: {title}'**
+  String homeInsightAsk(String title);
+
+  /// Assistant tab intro line.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about your money in plain words. Answers come from your own entries.'**
+  String get assistantIntro;
+
+  /// Assistant tab: past conversations header.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier questions'**
+  String get assistantEarlier;
+
+  /// Header over suggested questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Try asking'**
+  String get assistantTryAsking;
+
+  /// Shown while the assistant writes a reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get assistantThinking;
+
+  /// Accessibility label for the send button.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get assistantSend;
+
+  /// Quiet note that the assistant used a tool, e.g. 'Looked up transactions'.
+  ///
+  /// In en, this message translates to:
+  /// **'Looked up {subject}'**
+  String assistantLookedUp(String subject);
+
+  /// Suggested assistant question.
+  ///
+  /// In en, this message translates to:
+  /// **'How much did we spend on groceries this month?'**
+  String get chatSuggestionGroceries;
+
+  /// Suggested assistant question.
+  ///
+  /// In en, this message translates to:
+  /// **'What did I pay on 15 October?'**
+  String get chatSuggestionDay;
+
+  /// Suggested assistant question.
+  ///
+  /// In en, this message translates to:
+  /// **'Which bills went up compared to last month?'**
+  String get chatSuggestionBills;
+
+  /// Suggested assistant question.
+  ///
+  /// In en, this message translates to:
+  /// **'Where can we save next month?'**
+  String get chatSuggestionSave;
 }
 
 class _AppLocalizationsDelegate

@@ -13,7 +13,9 @@ import '../providers/transactions_provider.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
 import '../services/transactions_service.dart';
+import '../widgets/activity_calendar.dart';
 import '../widgets/ledger/ledger.dart';
+import 'statements_screen.dart';
 import 'transaction_edit_screen.dart';
 
 /// Sentinel filter values shared by Home and Activity.
@@ -55,6 +57,8 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
 
   DateTime _month = MonthSwitcher.firstOf(DateTime.now());
   String? _filter; // null = All, a category id, or TransactionsFilter.noLabel
+  bool _calendar = false;
+  DateTime? _day; // Selected calendar day; null = today when in this month.
   bool _loading = true;
   bool _offline = false;
   String? _error;
@@ -79,6 +83,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     setState(() {
       _month = MonthSwitcher.firstOf(month);
       _filter = categoryId;
+      _day = null;
       _searchController.clear();
     });
     reload();
@@ -205,6 +210,15 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     if (changed == true && mounted) reload();
   }
 
+  Future<void> _importStatement() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StatementsScreen(initialAccountId: widget.account?.id),
+      ),
+    );
+    if (mounted) reload();
+  }
+
   Future<void> _undo(OfflineTransaction t) async {
     final l = AppLocalizations.of(context);
     final provider = context.read<TransactionsProvider>();
@@ -310,7 +324,23 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _viewToggle(l, c),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: _importStatement,
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(44, 44),
+                          foregroundColor: c.moneyIn,
+                        ),
+                        child: Text(l.activityImportStatement,
+                            style: LedgerText.body(size: 14, color: c.moneyIn)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _searchController,
                     textInputAction: TextInputAction.search,
@@ -370,6 +400,9 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                       padding: EdgeInsets.only(top: 40),
                       child: Center(child: CircularProgressIndicator()),
                     )
+                  else if (_calendar)
+                    ..._calendarView(
+                        rows, l, c, accountNames, labelColors, currency)
                   else if (rows.isEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 24),
@@ -392,6 +425,117 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
         ),
       ),
     );
+  }
+
+  Widget _viewToggle(AppLocalizations l, LedgerColors c) {
+    Widget segment(String label, bool calendar) {
+      final on = _calendar == calendar;
+      return Semantics(
+        button: true,
+        selected: on,
+        child: InkWell(
+          key: ValueKey(calendar ? 'view-calendar' : 'view-list'),
+          onTap: () => setState(() => _calendar = calendar),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44, minWidth: 72),
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            color: on ? c.ink : null,
+            child: Text(
+              label,
+              style: LedgerText.body(
+                size: 14,
+                color: on ? c.onInk : c.ink,
+                weight: on ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: c.ink),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          segment(l.activityViewList, false),
+          segment(l.activityViewCalendar, true),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _calendarView(
+    List<_Row> rows,
+    AppLocalizations l,
+    LedgerColors c,
+    Map<String, String> accountNames,
+    Map<String, String?> labelColors,
+    String? currency,
+  ) {
+    final today = dayOf(DateTime.now());
+    final inMonth = today.year == _month.year && today.month == _month.month;
+    final day = _day ?? (inMonth ? today : null);
+    final live = rows.where((r) => !r.pendingDelete);
+    final totals = paymentsByDay(live.map((r) => r.tx));
+    final dayRows = day == null
+        ? const <_Row>[]
+        : rows.where((r) {
+            final d = DateTime.tryParse(r.tx.date);
+            return d != null && dayOf(d) == day;
+          }).toList();
+    final total = day == null ? null : totals[day] ?? const DayTotal();
+
+    return [
+      ActivityCalendar(
+        month: _month,
+        totals: totals,
+        selected: day,
+        onSelect: (d) => setState(() => _day = d),
+      ),
+      const SizedBox(height: 24),
+      if (day == null)
+        Text(l.activityPickDay, style: TextStyle(fontSize: 15, color: c.muted))
+      else ...[
+        Container(
+          padding: const EdgeInsets.only(bottom: 6),
+          decoration:
+              BoxDecoration(border: Border(bottom: BorderSide(color: c.ink))),
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  '${DateFormat('EEE d MMM', 'en_US').format(day)} · '
+                  '${l.activityPayments(total!.count)}'
+                  '${total.count == 0 ? '' : ' · '}',
+                  style: LedgerText.body(
+                      size: 14, color: c.ink, weight: FontWeight.w600),
+                ),
+              ),
+              if (total.count > 0)
+                RupeeAmount(total.out,
+                    currency: currency,
+                    size: 14,
+                    weight: FontWeight.w600,
+                    color: c.ink),
+            ],
+          ),
+        ),
+        if (dayRows.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Text(l.activityNothingThisDay,
+                style: TextStyle(fontSize: 15, color: c.muted)),
+          )
+        else
+          for (final r in dayRows)
+            _row(r, l, c, accountNames, labelColors, currency),
+      ],
+    ];
   }
 
   Widget _strip(

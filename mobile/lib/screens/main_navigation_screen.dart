@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/ledger/ledger.dart';
 import 'accounts_screen.dart';
+import 'chat_list_screen.dart';
 import 'dashboard_screen.dart';
-import 'statements_screen.dart';
 import 'transaction_form_screen.dart';
 import 'transactions_list_screen.dart';
 
-/// Household shell: Home, Activity, Add (centre), Statements, Accounts.
+/// Household shell: Home, Activity, Add (centre), Assistant, Accounts.
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -21,15 +21,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _page = 0;
   final _dashboardKey = GlobalKey<DashboardScreenState>();
   final _activityKey = GlobalKey<TransactionsListScreenState>();
+  final _assistantKey = GlobalKey<ChatListScreenState>();
 
   late final List<Widget> _pages = [
     DashboardScreen(
       key: _dashboardKey,
       onOpenActivity: _openActivity,
       onOpenAccounts: () => _select(3),
+      onAskAssistant: _askAssistant,
     ),
     TransactionsListScreen(key: _activityKey),
-    const StatementsScreen(),
+    ChatListScreen(key: _assistantKey),
     const AccountsScreen(),
   ];
 
@@ -38,6 +40,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     setState(() => _page = page);
     if (page == 0) _dashboardKey.currentState?.reload();
     if (page == 1) _activityKey.currentState?.reload();
+    if (page == 2) _assistantKey.currentState?.reload();
+  }
+
+  void _askAssistant(String question) {
+    setState(() => _page = 2);
+    _assistantKey.currentState?.ask(question);
   }
 
   void _openActivity(DateTime month, String? categoryId) {
@@ -70,7 +78,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         items: [
           _NavItem(Icons.home_outlined, l.navHome),
           _NavItem(Icons.notes, l.navActivity),
-          _NavItem(Icons.description_outlined, l.navStatements),
+          _NavItem(Icons.chat_bubble_outline, l.navAssistant),
           _NavItem(Icons.credit_card_outlined, l.navAccounts),
         ],
         addLabel: l.navAddExpense,

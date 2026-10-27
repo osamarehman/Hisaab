@@ -33,6 +33,21 @@ class MoneyFormat {
         : _fraction.format(rounded);
   }
 
+  /// Short unsigned figure for tight spaces: 850 → "850", 4800 → "4.8k",
+  /// 48200 → "48k", 1250000 → "1.3M".
+  static String compact(double value) {
+    final v = value.abs();
+    String trim(double x) {
+      final s = x.toStringAsFixed(1);
+      return s.endsWith('.0') ? s.substring(0, s.length - 2) : s;
+    }
+
+    if (v < 1000) return v.round().toString();
+    if (v < 10000) return '${trim(v / 1000)}k';
+    if (v < 999500) return '${(v / 1000).round()}k';
+    return '${trim(v / 1000000)}M';
+  }
+
   /// "Rs 182,400". With [signed], prefixes "+ " or "− " (true minus sign).
   static String format(double value, {String? currency, bool signed = false}) {
     final sym = symbol(currency);
