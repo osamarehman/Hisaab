@@ -51,3 +51,38 @@ class LedgerSectionHeader extends StatelessWidget {
     );
   }
 }
+
+/// Small-caps section head over a 1px ink rule ("YOUR LABELS ... uses this month").
+class LedgerCapsHeader extends StatelessWidget {
+  const LedgerCapsHeader({super.key, required this.label, this.trailing});
+
+  final String label;
+  final String? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = LedgerColors.of(context);
+    return Container(
+      padding: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.ink)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label.toUpperCase(),
+              style: LedgerText.body(
+                size: 12,
+                color: c.muted,
+                weight: FontWeight.w600,
+              ).copyWith(letterSpacing: 0.5),
+            ),
+          ),
+          if (trailing != null)
+            Text(trailing!, style: LedgerText.figures(size: 12, color: c.ink)),
+        ],
+      ),
+    );
+  }
+}

@@ -7,7 +7,8 @@ import '../providers/privacy_provider.dart';
 import '../services/accounts_service.dart';
 import '../services/balance_sheet_service.dart';
 import '../utils/money_masker.dart';
-import '../widgets/household/household_style.dart';
+import '../utils/money_format.dart';
+import '../widgets/ledger/ledger.dart';
 import 'statements_screen.dart';
 
 /// Balance sheet: net worth, then "what we have" / "what we owe" grouped by
@@ -119,11 +120,13 @@ class _AccountsScreenState extends State<AccountsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final hidden = context.watch<PrivacyProvider>().hidden;
     String money(num? v) => v == null
         ? '–'
-        : MoneyMasker.mask(formatMoney(v, _currency), hidden: hidden);
+        : MoneyMasker.mask(
+            MoneyFormat.format(v.toDouble(), currency: _currency),
+            hidden: hidden);
 
     return Scaffold(
       backgroundColor: c.paper,
@@ -134,7 +137,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 32, 20, 40),
             children: [
-              Text('Accounts', style: HouseholdText.title(c.ink)),
+              Text('Accounts', style: LedgerText.title(color: c.ink)),
               const SizedBox(height: 24),
               if (_loading)
                 const Padding(
@@ -142,9 +145,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   child: Center(child: CircularProgressIndicator()),
                 )
               else if (_error != null)
-                Text(_error!, style: HouseholdText.body(c.amber))
+                Text(_error!, style: LedgerText.body(color: c.moneyOut))
               else ...[
-                _netWorthBlock(c, hidden),
+                _netWorthBlock(c),
                 const SizedBox(height: 24),
                 _sideToggle(c, money),
                 const SizedBox(height: 24),
@@ -155,7 +158,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 if (_groups(owed: _showOwed).isEmpty)
                   Text(
                     _showOwed ? 'Nothing owed.' : 'No accounts yet.',
-                    style: HouseholdText.body(c.muted),
+                    style: LedgerText.body(color: c.muted),
                   ),
               ],
             ],
@@ -165,30 +168,22 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  Widget _netWorthBlock(HouseholdColors c, bool hidden) {
+  Widget _netWorthBlock(LedgerColors c) {
     final value = _netWorth;
-    final text = value == null
-        ? '–'
-        : MoneyMasker.mask(groupDigits(value), hidden: hidden);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Net worth', style: HouseholdText.body(c.muted, size: 14)),
+        Text('Net worth', style: LedgerText.body(size: 14, color: c.muted)),
         const SizedBox(height: 6),
-        Text.rich(
-          TextSpan(children: [
-            TextSpan(
-              text: value != null && value < 0 ? '- Rs ' : 'Rs ',
-              style: HouseholdText.bigNumber(c.muted, size: 22),
-            ),
-            TextSpan(text: text, style: HouseholdText.bigNumber(c.ink)),
-          ]),
-        ),
+        if (value == null)
+          Text('–', style: LedgerText.display(size: 42, color: c.ink))
+        else
+          HeadlineAmount(value.toDouble(), currency: _currency, size: 42),
       ],
     );
   }
 
-  Widget _sideToggle(HouseholdColors c, String Function(num?) money) {
+  Widget _sideToggle(LedgerColors c, String Function(num?) money) {
     Widget side(String label, num? total, bool owed) {
       final on = _showOwed == owed;
       return Expanded(
@@ -206,12 +201,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(label,
-                      style:
-                          HouseholdText.body(on ? c.onInk : c.ink, size: 13)),
+                      style: LedgerText.body(
+                          size: 13, color: on ? c.onInk : c.ink)),
                   const SizedBox(height: 2),
                   Text(money(total),
-                      style:
-                          HouseholdText.mono(on ? c.onInk : c.ink, size: 18)),
+                      style: LedgerText.figures(
+                          size: 18, color: on ? c.onInk : c.ink)),
                 ],
               ),
             ),
@@ -233,13 +228,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  Widget _groupSection(HouseholdColors c, _Group g, bool hidden) {
+  Widget _groupSection(LedgerColors c, _Group g, bool hidden) {
     String cents(int v, String currency) =>
-        MoneyMasker.mask(formatMoneyCents(v, currency), hidden: hidden);
+        MoneyMasker.mask(MoneyFormat.format(v / 100, currency: currency),
+            hidden: hidden);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        LedgerCapsHead(
+        LedgerCapsHeader(
           label: g.name,
           trailing: cents(g.totalCents, _currency),
         ),
@@ -256,11 +252,11 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(a.name, style: HouseholdText.body(c.ink)),
+                      Text(a.name, style: LedgerText.body(color: c.ink)),
                       const SizedBox(height: 2),
                       Text(
                         a.institutionName ?? a.displayAccountType,
-                        style: HouseholdText.body(c.muted, size: 13),
+                        style: LedgerText.body(size: 13, color: c.muted),
                       ),
                     ],
                   ),
@@ -273,7 +269,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       a.balanceCents == null
                           ? MoneyMasker.mask(a.balance, hidden: hidden)
                           : cents(a.balanceCents!.abs(), a.currency),
-                      style: HouseholdText.mono(c.ink, size: 16),
+                      style: LedgerText.figures(size: 16, color: c.ink),
                     ),
                     if (_takesStatements(a))
                       TextButton(
@@ -289,13 +285,13 @@ class _AccountsScreenState extends State<AccountsScreen> {
                           tapTargetSize: MaterialTapTargetSize.padded,
                         ),
                         child: Text('Add statement',
-                            style: HouseholdText.body(c.cobalt, size: 13)),
+                            style: LedgerText.body(size: 13, color: c.moneyIn)),
                       )
                     else
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text('Manual',
-                            style: HouseholdText.body(c.muted, size: 13)),
+                            style: LedgerText.body(size: 13, color: c.muted)),
                       ),
                   ],
                 ),

@@ -9,7 +9,8 @@ import '../providers/budgets_provider.dart';
 import '../providers/privacy_provider.dart';
 import '../services/connectivity_service.dart';
 import '../utils/money_masker.dart';
-import '../widgets/household/household_style.dart';
+import '../utils/money_format.dart';
+import '../widgets/ledger/ledger.dart';
 import 'budget_category_transactions_screen.dart';
 
 /// Monthly budget in the ledger style: month switcher, spent of planned with
@@ -122,7 +123,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   }
 
   Widget _buildScaffold(BuildContext context, BudgetsProvider provider) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final hideAmounts = context.watch<PrivacyProvider>().hidden;
 
     return Scaffold(
@@ -152,20 +153,18 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   }
 
   Widget _buildTitleRow(BuildContext context, BudgetsProvider provider) {
-    final l = AppLocalizations.of(context);
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final locale = Localizations.localeOf(context).toString();
     return Row(
       children: [
-        Expanded(child: Text('Budget', style: HouseholdText.title(c.ink))),
-        LedgerMonthSwitcher(
+        Expanded(child: Text('Budget', style: LedgerText.title(color: c.ink))),
+        MonthSwitcher(
+          month: provider.month,
           label: DateFormat.yMMM(locale).format(provider.month),
-          previousTooltip: l.budgetsPreviousMonth,
-          nextTooltip: l.budgetsNextMonth,
-          onPrevious: () => _changeMonth(provider.previousMonth),
-          onNext: provider.canGoNext
-              ? () => _changeMonth(provider.nextMonth)
-              : null,
+          canGoNext: provider.canGoNext,
+          onChanged: (m) => _changeMonth(m.isBefore(provider.month)
+              ? provider.previousMonth
+              : provider.nextMonth),
         ),
       ],
     );
@@ -228,7 +227,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
       ];
     }
 
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final widgets = <Widget>[];
 
     void notice(String text, {VoidCallback? onRetry}) {
@@ -237,7 +236,8 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
         child: Row(
           children: [
             Expanded(
-              child: Text(text, style: HouseholdText.body(c.muted, size: 13)),
+              child:
+                  Text(text, style: LedgerText.body(size: 13, color: c.muted)),
             ),
             if (onRetry != null)
               TextButton(onPressed: onRetry, child: Text(l.commonTryAgain)),
@@ -281,7 +281,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
     if (!budget.initialized) {
       widgets.add(const SizedBox(height: 16));
       widgets.add(Text(l.budgetsNotSetUpMessage,
-          style: HouseholdText.body(c.muted, size: 14)));
+          style: LedgerText.body(size: 14, color: c.muted)));
     }
 
     widgets.add(const SizedBox(height: 24));
@@ -321,10 +321,10 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
       }
     }
     if (rows.isEmpty) {
-      final c = HouseholdColors.of(context);
+      final c = LedgerColors.of(context);
       return [
         Text(AppLocalizations.of(context).budgetsNoCategories,
-            style: HouseholdText.body(c.muted)),
+            style: LedgerText.body(color: c.muted)),
       ];
     }
     return rows;
@@ -336,16 +336,16 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
     String? body,
     VoidCallback? onRetry,
   }) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LedgerHead(title: title),
+          LedgerSectionHeader(title: title),
           if (body != null && body.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(body, style: HouseholdText.body(c.muted, size: 15)),
+            Text(body, style: LedgerText.body(size: 15, color: c.muted)),
           ],
           if (onRetry != null) ...[
             const SizedBox(height: 16),
@@ -361,7 +361,8 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
 }
 
 String _money(int cents, String currency, bool hidden) =>
-    MoneyMasker.mask(formatMoneyCents(cents, currency), hidden: hidden);
+    MoneyMasker.mask(MoneyFormat.format(cents / 100, currency: currency),
+        hidden: hidden);
 
 /// "Spent of Rs 200,000 planned", big spent figure, bar with today marker.
 class _Summary extends StatelessWidget {
@@ -372,7 +373,7 @@ class _Summary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final planned =
         budget.budgetedSpendingCents ?? budget.allocatedSpendingCents ?? 0;
     final spent = budget.actualSpendingCents ?? 0;
@@ -413,18 +414,18 @@ class _Summary extends StatelessWidget {
                   planned > 0
                       ? 'Spent of ${_money(planned, currency, hidden)} planned'
                       : 'Spent',
-                  style: HouseholdText.body(c.muted, size: 14),
+                  style: LedgerText.body(size: 14, color: c.muted),
                 ),
               ),
               if (inPeriod)
                 Text('day $day of $days',
-                    style: HouseholdText.mono(c.muted, size: 13)),
+                    style: LedgerText.figures(size: 13, color: c.muted)),
             ],
           ),
           const SizedBox(height: 8),
           Text(_money(spent, currency, hidden),
-              style:
-                  HouseholdText.mono(c.ink, size: 30, weight: FontWeight.w500)),
+              style: LedgerText.figures(
+                  size: 30, weight: FontWeight.w500, color: c.ink)),
           const SizedBox(height: 8),
           if (!hidden)
             SizedBox(
@@ -446,7 +447,7 @@ class _Summary extends StatelessWidget {
                       top: 5,
                       height: 14,
                       width: box.maxWidth * share,
-                      child: ColoredBox(color: left < 0 ? c.amber : c.ink),
+                      child: ColoredBox(color: left < 0 ? c.moneyOut : c.ink),
                     ),
                     if (inPeriod)
                       Positioned(
@@ -454,7 +455,7 @@ class _Summary extends StatelessWidget {
                         top: 0,
                         bottom: 0,
                         width: 2,
-                        child: ColoredBox(color: c.cobalt),
+                        child: ColoredBox(color: c.moneyIn),
                       ),
                   ],
                 );
@@ -463,8 +464,10 @@ class _Summary extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             note,
-            style: HouseholdText.body(left < 0 ? c.amber : c.muted,
-                size: 14, weight: left < 0 ? FontWeight.w600 : FontWeight.w400),
+            style: LedgerText.body(
+                size: 14,
+                weight: left < 0 ? FontWeight.w600 : FontWeight.w400,
+                color: left < 0 ? c.moneyOut : c.muted),
           ),
         ],
       ),
@@ -491,13 +494,13 @@ class _BudgetLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final spent = line.actualSpendingCents ?? 0;
     final limit = line.inheritsParentBudget
         ? (line.sharedBudgetCents ?? line.effectiveBudgetCents)
         : spent + (line.availableToSpendCents ?? 0);
     final over = line.isOverBudget;
-    final dot = parseHexColor(line.category.color) ?? c.muted;
+    final dot = parseHexColor(line.category.color, c.muted);
 
     final String note;
     if (!line.isBudgeted) {
@@ -520,15 +523,15 @@ class _BudgetLine extends StatelessWidget {
           children: [
             Row(
               children: [
-                LabelSquare(color: dot),
+                LabelDot(color: dot),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(line.name,
-                      style:
-                          HouseholdText.body(c.ink, size: indented ? 15 : 16)),
+                      style: LedgerText.body(
+                          size: indented ? 15 : 16, color: c.ink)),
                 ),
                 Text(_money(spent, currency, hidden),
-                    style: HouseholdText.mono(c.ink, size: 15)),
+                    style: LedgerText.figures(size: 15, color: c.ink)),
               ],
             ),
             const SizedBox(height: 6),
@@ -543,7 +546,7 @@ class _BudgetLine extends StatelessWidget {
                         widthFactor: line.isBudgeted
                             ? line.spentFraction.clamp(0.0, 1.0)
                             : (spent > 0 ? 1 : 0),
-                        child: ColoredBox(color: over ? c.amber : c.ink),
+                        child: ColoredBox(color: over ? c.moneyOut : c.ink),
                       ),
               ),
             ),
@@ -554,14 +557,16 @@ class _BudgetLine extends StatelessWidget {
                   child: Text(
                     note,
                     style: over
-                        ? HouseholdText.body(c.amber,
-                            size: 13, weight: FontWeight.w600)
-                        : HouseholdText.body(c.muted, size: 13),
+                        ? LedgerText.body(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: c.moneyOut)
+                        : LedgerText.body(size: 13, color: c.muted),
                   ),
                 ),
                 if (line.isBudgeted)
                   Text('of ${_money(limit, currency, hidden)}',
-                      style: HouseholdText.mono(c.muted, size: 13)),
+                      style: LedgerText.figures(size: 13, color: c.muted)),
               ],
             ),
           ],

@@ -301,13 +301,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: LedgerText.display(
-                            size: 34,
-                            weight: FontWeight.w700,
-                            color: c.ink,
-                            letterSpacing: -1,
-                            height: 1,
-                          ),
+                          style: LedgerText.title(color: c.ink),
                         ),
                       ),
                       MonthSwitcher(

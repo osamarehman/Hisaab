@@ -13,7 +13,8 @@ import '../services/rules_service.dart';
 import '../services/transactions_service.dart';
 import '../theme/sure_tokens.dart';
 import '../utils/amount_parser.dart';
-import '../widgets/household/household_style.dart';
+import '../utils/money_format.dart';
+import '../widgets/ledger/ledger.dart';
 import 'labels_screen.dart';
 
 /// Label imported statement lines one at a time, newest first.
@@ -262,7 +263,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final item = _item;
     return Scaffold(
       backgroundColor: c.paper,
@@ -291,7 +292,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     );
   }
 
-  Widget _header(HouseholdColors c) {
+  Widget _header(LedgerColors c) {
     final total = _total < _handled + _queue.length - _index
         ? _handled + _queue.length - _index
         : _total;
@@ -305,15 +306,15 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               TextButton(
                 onPressed: () => Navigator.of(context).maybePop(),
                 style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
-                child:
-                    Text('Done for now', style: HouseholdText.body(c.cobalt)),
+                child: Text('Done for now',
+                    style: LedgerText.body(color: c.moneyIn)),
               ),
               const Spacer(),
               if (_item != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child:
-                      Text('$pos of $total', style: HouseholdText.mono(c.ink)),
+                  child: Text('$pos of $total',
+                      style: LedgerText.figures(size: 14, color: c.ink)),
                 ),
             ],
           ),
@@ -334,7 +335,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     );
   }
 
-  Widget _message(HouseholdColors c, String text) => Center(
+  Widget _message(LedgerColors c, String text) => Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -342,7 +343,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
             children: [
               Text(text,
                   textAlign: TextAlign.center,
-                  style: HouseholdText.section(c.ink)),
+                  style: LedgerText.display(color: c.ink)),
               const SizedBox(height: 20),
               OutlineInkButton(
                 label: 'Back',
@@ -353,7 +354,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
         ),
       );
 
-  Widget _itemView(HouseholdColors c, Transaction item) {
+  Widget _itemView(LedgerColors c, Transaction item) {
     final date = DateTime.tryParse(item.date);
     final dateText =
         date == null ? item.date : DateFormat('EEE d MMM', 'en').format(date);
@@ -375,18 +376,25 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(account == null ? dateText : '$dateText · $account',
-                  style: HouseholdText.body(c.muted, size: 13)),
+                  style: LedgerText.body(size: 13, color: c.muted)),
               const SizedBox(height: 10),
               Text.rich(
                 TextSpan(children: [
                   TextSpan(
                     text: moneyIn ? '+ Rs ' : 'Rs ',
-                    style: HouseholdText.bigNumber(c.muted, size: 20),
+                    style: LedgerText.display(
+                        size: 20,
+                        letterSpacing: -0.700,
+                        height: 1,
+                        color: c.muted),
                   ),
                   TextSpan(
-                    text: groupDigits(amount),
-                    style: HouseholdText.bigNumber(moneyIn ? c.cobalt : c.ink,
-                        size: 40),
+                    text: MoneyFormat.number(amount),
+                    style: LedgerText.display(
+                        size: 40,
+                        letterSpacing: -1.400,
+                        height: 1,
+                        color: moneyIn ? c.moneyIn : c.ink),
                   ),
                 ]),
               ),
@@ -396,15 +404,16 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 color: c.track,
-                child: Text(item.name, style: HouseholdText.mono(c.ink)),
+                child: Text(item.name,
+                    style: LedgerText.figures(size: 14, color: c.ink)),
               ),
             ],
           ),
         ),
         const SizedBox(height: 22),
         Text(moneyIn ? 'Where did this come from?' : 'What was this?',
-            style:
-                HouseholdText.body(c.ink, size: 15, weight: FontWeight.w500)),
+            style: LedgerText.body(
+                size: 15, weight: FontWeight.w500, color: c.ink)),
         const SizedBox(height: 10),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -428,16 +437,16 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               padding: EdgeInsets.zero,
             ),
             child: Text('+ Make a new label',
-                style: HouseholdText.body(c.cobalt, size: 15)),
+                style: LedgerText.body(size: 15, color: c.moneyIn)),
           ),
         ),
       ],
     );
   }
 
-  Widget _labelButton(HouseholdColors c, Category label) {
+  Widget _labelButton(LedgerColors c, Category label) {
     final on = label.id == _pickedId;
-    final dot = parseHexColor(label.color) ?? c.muted;
+    final dot = parseHexColor(label.color, c.muted);
     return Semantics(
       selected: on,
       button: true,
@@ -453,14 +462,14 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
           ),
           child: Row(
             children: [
-              LabelSquare(color: on ? c.paper : dot),
+              LabelDot(color: on ? c.paper : dot),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   label.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: HouseholdText.body(on ? c.onInk : c.ink, size: 15),
+                  style: LedgerText.body(size: 15, color: on ? c.onInk : c.ink),
                 ),
               ),
             ],
@@ -470,12 +479,12 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     );
   }
 
-  Widget _footer(HouseholdColors c) {
+  Widget _footer(LedgerColors c) {
     final similar = _similarCount;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
       decoration: BoxDecoration(
-        color: c.card,
+        color: c.sheet,
         border: Border(top: BorderSide(color: c.ink)),
       ),
       child: Column(
@@ -507,7 +516,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                             ])
                           : const TextSpan(
                               text: 'Auto-label future lines like this'),
-                      style: HouseholdText.body(c.ink, size: 15),
+                      style: LedgerText.body(size: 15, color: c.ink),
                     ),
                   ),
                 ],
@@ -520,14 +529,14 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               child: Row(
                 children: [
                   Text('Lines containing',
-                      style: HouseholdText.body(c.muted, size: 13)),
+                      style: LedgerText.body(size: 13, color: c.muted)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _keywordController,
                       onChanged: (_) => setState(() {}),
                       textCapitalization: TextCapitalization.characters,
-                      style: HouseholdText.mono(c.ink),
+                      style: LedgerText.figures(size: 14, color: c.ink),
                       decoration: ledgerInputDecoration(context).copyWith(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 10),

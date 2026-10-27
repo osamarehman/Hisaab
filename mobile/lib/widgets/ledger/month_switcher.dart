@@ -3,13 +3,15 @@ import 'package:intl/intl.dart';
 
 import 'ledger_style.dart';
 
-/// Outlined "‹ Oct 2026 ›" control; calls [onChanged] with the first day of the new month and disables future months.
+/// Outlined "‹ Oct 2026 ›" control; calls [onChanged] with the first day of the new month and, unless [canGoNext] says otherwise, disables future months.
 class MonthSwitcher extends StatelessWidget {
   const MonthSwitcher({
     super.key,
     required this.month,
     required this.onChanged,
     this.now,
+    this.label,
+    this.canGoNext,
   });
 
   /// Any day in the shown month.
@@ -19,6 +21,12 @@ class MonthSwitcher extends StatelessWidget {
   /// Test seam for "today".
   final DateTime? now;
 
+  /// Overrides the "Oct 2026" text (e.g. a locale-aware format).
+  final String? label;
+
+  /// Overrides the default "no months after today" limit.
+  final bool? canGoNext;
+
   static DateTime firstOf(DateTime d) => DateTime(d.year, d.month);
 
   @override
@@ -26,8 +34,8 @@ class MonthSwitcher extends StatelessWidget {
     final c = LedgerColors.of(context);
     final current = firstOf(month);
     final today = firstOf(now ?? DateTime.now());
-    final canGoNext = current.isBefore(today);
-    final label = DateFormat('MMM yyyy', 'en_US').format(current);
+    final canGoNext = this.canGoNext ?? current.isBefore(today);
+    final label = this.label ?? DateFormat('MMM yyyy', 'en_US').format(current);
 
     Widget arrow(String glyph, String semantics, VoidCallback? onTap) {
       return Semantics(

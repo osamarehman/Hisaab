@@ -58,10 +58,7 @@ class TransactionsService {
       final response = await _client
           .post(
             url,
-            headers: {
-              ...ApiConfig.getAuthHeaders(accessToken),
-              'Content-Type': 'application/json',
-            },
+            headers: ApiConfig.getJsonAuthHeaders(accessToken),
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 30));
@@ -135,13 +132,9 @@ class TransactionsService {
         : baseUri;
 
     try {
-      final response = await _client.get(
-        url,
-        headers: {
-          ...ApiConfig.getAuthHeaders(accessToken),
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 30));
+      final response = await _client
+          .get(url, headers: ApiConfig.getJsonAuthHeaders(accessToken))
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -230,13 +223,9 @@ class TransactionsService {
         Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions/$transactionId');
 
     try {
-      final response = await _client.get(
-        url,
-        headers: {
-          ...ApiConfig.getAuthHeaders(accessToken),
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 30));
+      final response = await _client
+          .get(url, headers: ApiConfig.getJsonAuthHeaders(accessToken))
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -305,10 +294,7 @@ class TransactionsService {
       final response = await _client
           .patch(
             url,
-            headers: {
-              ...ApiConfig.getAuthHeaders(accessToken),
-              'Content-Type': 'application/json',
-            },
+            headers: ApiConfig.getJsonAuthHeaders(accessToken),
             body: jsonEncode({'transaction': transaction}),
           )
           .timeout(const Duration(seconds: 30));
@@ -356,13 +342,9 @@ class TransactionsService {
         Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions/$transactionId');
 
     try {
-      final response = await _client.delete(
-        url,
-        headers: {
-          ...ApiConfig.getAuthHeaders(accessToken),
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 30));
+      final response = await _client
+          .delete(url, headers: ApiConfig.getJsonAuthHeaders(accessToken))
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         return {
@@ -500,10 +482,12 @@ class TransactionsService {
     );
 
     try {
-      final response = await _client.delete(
-        url,
-        headers: ApiConfig.getAuthHeaders(accessToken),
-      ).timeout(const Duration(seconds: 30));
+      final response = await _client
+          .delete(
+            url,
+            headers: ApiConfig.getAuthHeaders(accessToken),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         return {'success': true};
@@ -553,10 +537,8 @@ class TransactionsService {
   ) {
     final out = BytesBuilder(copy: false);
     void line(String s) => out.add(utf8.encode('$s\r\n'));
-    String quoted(String s) => s
-        .replaceAll('"', '%22')
-        .replaceAll('\r', '')
-        .replaceAll('\n', '');
+    String quoted(String s) =>
+        s.replaceAll('"', '%22').replaceAll('\r', '').replaceAll('\n', '');
 
     for (final file in files) {
       line('--$boundary');

@@ -84,6 +84,12 @@ class ApiConfig {
     };
   }
 
+  /// [getAuthHeaders] plus a JSON `Content-Type`, for requests with a body.
+  static Map<String, String> getJsonAuthHeaders(String token) => {
+        ...getAuthHeaders(token),
+        'Content-Type': 'application/json',
+      };
+
   /// Initialize the API configuration by loading the backend URL from storage
   /// Returns true when a backend URL is configured (stored or default)
   static Future<bool> initialize() async {

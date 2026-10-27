@@ -8,7 +8,7 @@ import '../providers/auth_provider.dart';
 import '../services/categories_service.dart';
 import '../services/rules_service.dart';
 import '../services/transactions_service.dart';
-import '../widgets/household/household_style.dart';
+import '../widgets/ledger/ledger.dart';
 
 /// Labels (Sure categories) with their auto-label keywords (Sure rules).
 class LabelsScreen extends StatefulWidget {
@@ -171,7 +171,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
     final changed = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: HouseholdColors.of(context).paper,
+      backgroundColor: LedgerColors.of(context).paper,
       shape: const RoundedRectangleBorder(),
       builder: (_) => _EditLabelSheet(
         label: label,
@@ -191,7 +191,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     return Scaffold(
       backgroundColor: c.paper,
       body: SafeArea(
@@ -205,7 +205,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                   children: [
-                    Text('Labels', style: HouseholdText.title(c.ink)),
+                    Text('Labels', style: LedgerText.title(color: c.ink)),
                     const SizedBox(height: 24),
                     _newLabelForm(c),
                     const SizedBox(height: 24),
@@ -220,9 +220,9 @@ class _LabelsScreenState extends State<LabelsScreen> {
     );
   }
 
-  Widget _newLabelForm(HouseholdColors c) {
+  Widget _newLabelForm(LedgerColors c) {
     final labelStyle =
-        HouseholdText.body(c.ink, size: 14, weight: FontWeight.w500);
+        LedgerText.body(size: 14, weight: FontWeight.w500, color: c.ink);
     return LedgerPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,7 +232,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
           TextField(
             controller: _nameController,
             textCapitalization: TextCapitalization.sentences,
-            style: HouseholdText.body(c.ink),
+            style: LedgerText.body(color: c.ink),
             decoration: ledgerInputDecoration(context,
                 hint: 'e.g. Committee, Doodh wala'),
           ),
@@ -247,7 +247,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
           TextField(
             controller: _keywordsController,
             textCapitalization: TextCapitalization.characters,
-            style: HouseholdText.mono(c.ink, size: 16),
+            style: LedgerText.figures(size: 16, color: c.ink),
             decoration:
                 ledgerInputDecoration(context, hint: 'e.g. ASLAM, DOODH'),
           ),
@@ -263,7 +263,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
     );
   }
 
-  List<Widget> _labelList(HouseholdColors c) {
+  List<Widget> _labelList(LedgerColors c) {
     if (_loading) {
       return const [
         Padding(
@@ -273,21 +273,21 @@ class _LabelsScreenState extends State<LabelsScreen> {
       ];
     }
     if (_error != null) {
-      return [Text(_error!, style: HouseholdText.body(c.amber))];
+      return [Text(_error!, style: LedgerText.body(color: c.moneyOut))];
     }
     return [
-      const LedgerCapsHead(label: 'Your labels', trailing: 'uses this month'),
+      const LedgerCapsHeader(label: 'Your labels', trailing: 'uses this month'),
       for (final label in _labels) _labelRow(c, label),
       if (_labels.isEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 16),
           child: Text('No labels yet. Add one above.',
-              style: HouseholdText.body(c.muted)),
+              style: LedgerText.body(color: c.muted)),
         ),
     ];
   }
 
-  Widget _labelRow(HouseholdColors c, Category label) {
+  Widget _labelRow(LedgerColors c, Category label) {
     final keywords =
         (_rulesByLabel[label.id] ?? const []).map((r) => r.keyword!).toList();
     final uses = _uses[label.id];
@@ -304,8 +304,8 @@ class _LabelsScreenState extends State<LabelsScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: LabelSquare(
-                color: parseHexColor(label.color) ?? c.muted,
+              child: LabelDot(
+                color: parseHexColor(label.color, c.muted),
                 size: 14,
               ),
             ),
@@ -314,20 +314,20 @@ class _LabelsScreenState extends State<LabelsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label.displayName, style: HouseholdText.body(c.ink)),
+                  Text(label.displayName, style: LedgerText.body(color: c.ink)),
                   const SizedBox(height: 4),
                   Text(
                     keywords.isEmpty
                         ? 'No auto rule'
                         : 'Auto: ${keywords.join(', ')}',
-                    style: HouseholdText.mono(c.muted, size: 12),
+                    style: LedgerText.figures(size: 12, color: c.muted),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
             Text(uses == null ? '' : '$uses',
-                style: HouseholdText.mono(c.muted)),
+                style: LedgerText.figures(size: 14, color: c.muted)),
           ],
         ),
       ),
@@ -434,7 +434,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
   }
 
   Future<void> _delete() async {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -479,9 +479,9 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     final labelStyle =
-        HouseholdText.body(c.ink, size: 14, weight: FontWeight.w500);
+        LedgerText.body(size: 14, weight: FontWeight.w500, color: c.ink);
     return Padding(
       padding: EdgeInsets.fromLTRB(
           20, 20, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
@@ -490,13 +490,13 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LedgerHead(title: 'Edit label'),
+            const LedgerSectionHeader(title: 'Edit label'),
             const SizedBox(height: 16),
             Text('Name', style: labelStyle),
             const SizedBox(height: 6),
             TextField(
               controller: _name,
-              style: HouseholdText.body(c.ink),
+              style: LedgerText.body(color: c.ink),
               decoration: ledgerInputDecoration(context),
             ),
             const SizedBox(height: 12),
@@ -510,13 +510,14 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
             TextField(
               controller: _keywords,
               textCapitalization: TextCapitalization.characters,
-              style: HouseholdText.mono(c.ink, size: 16),
+              style: LedgerText.figures(size: 16, color: c.ink),
               decoration: ledgerInputDecoration(context,
                   hint: 'Comma separated, e.g. K-ELECTRIC, SSGC'),
             ),
             if (_error != null) ...[
               const SizedBox(height: 10),
-              Text(_error!, style: HouseholdText.body(c.amber, size: 14)),
+              Text(_error!,
+                  style: LedgerText.body(size: 14, color: c.moneyOut)),
             ],
             const SizedBox(height: 16),
             InkButton(label: 'Save', busy: _busy, onPressed: _save),
@@ -525,7 +526,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
               onPressed: _busy ? null : _delete,
               style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
               child: Text('Delete label',
-                  style: HouseholdText.body(c.danger, size: 15)),
+                  style: LedgerText.body(size: 15, color: c.danger)),
             ),
           ],
         ),

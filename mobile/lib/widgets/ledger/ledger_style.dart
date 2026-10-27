@@ -87,6 +87,28 @@ class LedgerText {
         fontFeatures: const [FontFeature.tabularFigures()],
       );
 
+  /// Plex Sans body copy.
+  static TextStyle body({
+    double size = 16,
+    Color? color,
+    FontWeight weight = FontWeight.w400,
+  }) =>
+      TextStyle(
+        fontFamily: SureFonts.sans,
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+      );
+
+  /// 34px Bricolage page title ("Statements", "Budget").
+  static TextStyle title({Color? color}) => display(
+        size: 34,
+        weight: FontWeight.w700,
+        color: color,
+        letterSpacing: -1,
+        height: 1,
+      );
+
   /// Bricolage display type for titles and headline numbers.
   static TextStyle display({
     double size = 20,

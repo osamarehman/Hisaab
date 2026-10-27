@@ -92,7 +92,7 @@ void main() {
     expect(find.text(r'Over by $120'), findsOneWidget);
 
     // Planned future months stay reachable from the current month.
-    await tester.tap(find.byTooltip('Next month'));
+    await tester.tap(find.text('›'));
     await tester.pumpAndSettle();
     expect(find.text('Nov 2026'), findsOneWidget);
   });
@@ -130,11 +130,11 @@ void main() {
   testWidgets('previous month loads that month', (tester) async {
     await pumpScreen(tester, buildProvider());
 
-    await tester.tap(find.byTooltip('Previous month'));
+    await tester.tap(find.text('‹'));
     await tester.pumpAndSettle();
 
     expect(find.text('No budget for September 2026'), findsOneWidget);
-    expect(find.byTooltip('Next month'), findsOneWidget);
+    expect(find.text('›'), findsOneWidget);
   });
 
   testWidgets('tapping a parent opens its transactions with subcategories',

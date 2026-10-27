@@ -12,11 +12,6 @@ class RulesService {
 
   final http.Client _client;
 
-  Map<String, String> _headers(String token) => {
-        ...ApiConfig.getAuthHeaders(token),
-        'Content-Type': 'application/json',
-      };
-
   /// All transaction rules, every page.
   Future<Map<String, dynamic>> getRules({required String accessToken}) async {
     final rules = <LabelRule>[];
@@ -30,7 +25,7 @@ class RulesService {
           },
         );
         final response = await _client
-            .get(url, headers: _headers(accessToken))
+            .get(url, headers: ApiConfig.getJsonAuthHeaders(accessToken))
             .timeout(const Duration(seconds: 30));
         if (response.statusCode == 401) {
           return {'success': false, 'error': 'unauthorized'};
@@ -69,7 +64,7 @@ class RulesService {
       final response = await _client
           .post(
             Uri.parse('${ApiConfig.baseUrl}/api/v1/rules'),
-            headers: _headers(accessToken),
+            headers: ApiConfig.getJsonAuthHeaders(accessToken),
             body: jsonEncode({
               'rule': {
                 'keyword': keyword,
@@ -109,7 +104,7 @@ class RulesService {
       final response = await _client
           .delete(
             Uri.parse('${ApiConfig.baseUrl}/api/v1/rules/$ruleId'),
-            headers: _headers(accessToken),
+            headers: ApiConfig.getJsonAuthHeaders(accessToken),
           )
           .timeout(const Duration(seconds: 30));
       if (response.statusCode == 204 || response.statusCode == 200) {

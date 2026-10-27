@@ -13,7 +13,7 @@ import '../services/accounts_service.dart';
 import '../services/imports_service.dart';
 import '../services/transactions_service.dart';
 import '../theme/sure_tokens.dart';
-import '../widgets/household/household_style.dart';
+import '../widgets/ledger/ledger.dart';
 import 'statement_review_screen.dart';
 
 /// Statements tab: pick an account, upload a PDF/CSV statement, watch the
@@ -333,7 +333,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = HouseholdColors.of(context);
+    final c = LedgerColors.of(context);
     return Scaffold(
       backgroundColor: c.paper,
       body: SafeArea(
@@ -352,12 +352,12 @@ class _StatementsScreenState extends State<StatementsScreen> {
                     label: const Text('Back'),
                   ),
                 ),
-              Text('Statements', style: HouseholdText.title(c.ink)),
+              Text('Statements', style: LedgerText.title(color: c.ink)),
               const SizedBox(height: 8),
               Text(
                 'Add a bank statement. Sure reads every line, files each one '
                 'under the right month and suggests a label.',
-                style: HouseholdText.body(c.muted, size: 15)
+                style: LedgerText.body(size: 15, color: c.muted)
                     .copyWith(height: 1.45),
               ),
               const SizedBox(height: 24),
@@ -369,7 +369,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  List<Widget> _buildBody(HouseholdColors c) {
+  List<Widget> _buildBody(LedgerColors c) {
     if (_loading) {
       return const [
         Padding(
@@ -379,14 +379,14 @@ class _StatementsScreenState extends State<StatementsScreen> {
       ];
     }
     if (_error != null) {
-      return [Text(_error!, style: HouseholdText.body(c.amber))];
+      return [Text(_error!, style: LedgerText.body(color: c.moneyOut))];
     }
     if (_accounts.isEmpty) {
       return [
         Text(
           'There is no bank account yet. Add one on the Sure website, then '
           'come back here to add its statements.',
-          style: HouseholdText.body(c.muted),
+          style: LedgerText.body(color: c.muted),
         ),
       ];
     }
@@ -407,19 +407,19 @@ class _StatementsScreenState extends State<StatementsScreen> {
     ];
   }
 
-  Widget _accountPicker(HouseholdColors c) {
+  Widget _accountPicker(LedgerColors c) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Bank account',
-            style:
-                HouseholdText.body(c.ink, size: 14, weight: FontWeight.w500)),
+            style: LedgerText.body(
+                size: 14, weight: FontWeight.w500, color: c.ink)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           initialValue: _accountId,
           isExpanded: true,
-          decoration: ledgerInputDecoration(context, fill: c.card),
-          style: HouseholdText.body(c.ink),
+          decoration: ledgerInputDecoration(context, fill: c.sheet),
+          style: LedgerText.body(color: c.ink),
           items: [
             for (final a in _accounts)
               DropdownMenuItem(
@@ -441,7 +441,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  Widget _fileButton(HouseholdColors c) {
+  Widget _fileButton(LedgerColors c) {
     return Semantics(
       button: true,
       label: 'Choose statement file',
@@ -451,7 +451,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
           painter: _DashedBorder(color: c.ink),
           child: Container(
             constraints: const BoxConstraints(minHeight: 120),
-            color: c.card,
+            color: c.sheet,
             padding: const EdgeInsets.all(16),
             alignment: Alignment.center,
             child: _uploading
@@ -460,7 +460,8 @@ class _StatementsScreenState extends State<StatementsScreen> {
                     children: [
                       const CircularProgressIndicator(strokeWidth: 2),
                       const SizedBox(height: 10),
-                      Text('Uploading…', style: HouseholdText.body(c.muted)),
+                      Text('Uploading…',
+                          style: LedgerText.body(color: c.muted)),
                     ],
                   )
                 : Column(
@@ -469,11 +470,11 @@ class _StatementsScreenState extends State<StatementsScreen> {
                       Icon(Icons.upload_outlined, size: 28, color: c.ink),
                       const SizedBox(height: 8),
                       Text('Choose statement file',
-                          style: HouseholdText.body(c.ink,
-                              size: 17, weight: FontWeight.w600)),
+                          style: LedgerText.body(
+                              size: 17, weight: FontWeight.w600, color: c.ink)),
                       const SizedBox(height: 4),
                       Text('PDF or CSV · up to 6 months in one file',
-                          style: HouseholdText.body(c.muted, size: 13)),
+                          style: LedgerText.body(size: 13, color: c.muted)),
                     ],
                   ),
           ),
@@ -482,19 +483,19 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  Widget _coverageSection(HouseholdColors c) {
+  Widget _coverageSection(LedgerColors c) {
     final name = _account?.name ?? 'Account';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        LedgerHead(title: '$name · last 6 months'),
+        LedgerSectionHeader(title: '$name · last 6 months'),
         const SizedBox(height: 12),
         if (_coverage.isEmpty)
           SizedBox(
             height: 76,
             child: Center(
               child: Text('Checking months…',
-                  style: HouseholdText.body(c.muted, size: 13)),
+                  style: LedgerText.body(size: 13, color: c.muted)),
             ),
           )
         else
@@ -512,7 +513,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
           runSpacing: 6,
           children: [
             _legend(c, c.ink, 'All labelled'),
-            _legend(c, c.amber, 'Needs labels'),
+            _legend(c, c.moneyOut, 'Needs labels'),
             _legend(c, c.hairline, 'No statement'),
           ],
         ),
@@ -520,9 +521,9 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  Widget _coverageCell(HouseholdColors c, _MonthCoverage m) {
+  Widget _coverageCell(LedgerColors c, _MonthCoverage m) {
     final color =
-        m.total == 0 ? c.hairline : (m.unlabelled > 0 ? c.amber : c.ink);
+        m.total == 0 ? c.hairline : (m.unlabelled > 0 ? c.moneyOut : c.ink);
     final note = m.total == 0
         ? '–'
         : (m.unlabelled > 0 ? '${m.unlabelled} left' : '${m.total} ✓');
@@ -534,27 +535,27 @@ class _StatementsScreenState extends State<StatementsScreen> {
         children: [
           Container(height: 40, color: color),
           const SizedBox(height: 6),
-          Text(month, style: HouseholdText.body(c.ink, size: 13)),
+          Text(month, style: LedgerText.body(size: 13, color: c.ink)),
           Text(note,
               maxLines: 1,
               overflow: TextOverflow.fade,
               softWrap: false,
-              style: HouseholdText.mono(c.muted, size: 11)),
+              style: LedgerText.figures(size: 11, color: c.muted)),
         ],
       ),
     );
   }
 
-  Widget _legend(HouseholdColors c, Color color, String label) => Row(
+  Widget _legend(LedgerColors c, Color color, String label) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LabelSquare(color: color),
+          LabelDot(color: color),
           const SizedBox(width: 6),
-          Text(label, style: HouseholdText.body(c.muted, size: 13)),
+          Text(label, style: LedgerText.body(size: 13, color: c.muted)),
         ],
       );
 
-  Widget _importCard(HouseholdColors c, ImportJob job) {
+  Widget _importCard(LedgerColors c, ImportJob job) {
     final (statusText, statusColor) = _statusLabel(c, job);
     final children = <Widget>[
       Row(
@@ -564,11 +565,12 @@ class _StatementsScreenState extends State<StatementsScreen> {
             child: Text(
               job.fileName ?? (job.isPdf ? 'PDF statement' : 'CSV statement'),
               overflow: TextOverflow.ellipsis,
-              style: HouseholdText.mono(c.ink),
+              style: LedgerText.figures(size: 14, color: c.ink),
             ),
           ),
           const SizedBox(width: 12),
-          Text(statusText, style: HouseholdText.body(statusColor, size: 13)),
+          Text(statusText,
+              style: LedgerText.body(size: 13, color: statusColor)),
         ],
       ),
     ];
@@ -579,7 +581,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
       gap();
       children.add(Text(
         job.error ?? 'Sure could not read this statement. Try another file.',
-        style: HouseholdText.body(c.amber, size: 14),
+        style: LedgerText.body(size: 14, color: c.moneyOut),
       ));
     } else if (_shouldPoll(job) || _publishing) {
       gap();
@@ -593,7 +595,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
         _published
             ? 'Adding the lines to your books…'
             : 'Sure is reading every line. This can take a minute.',
-        style: HouseholdText.body(c.muted, size: 14),
+        style: LedgerText.body(size: 14, color: c.muted),
       ));
     } else if (job.status == ImportStatus.pending) {
       gap();
@@ -603,7 +605,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
         children.add(Text(
           'This file needs its columns matched on the Sure website before '
           'the lines can be added.',
-          style: HouseholdText.body(c.amber, size: 14),
+          style: LedgerText.body(size: 14, color: c.moneyOut),
         ));
       } else {
         children.add(InkButton(
@@ -623,7 +625,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
           children: [
             Expanded(child: _stat(c, '${job.rowsCount}', 'lines found', c.ink)),
             Expanded(child: _stat(c, '$auto', 'auto-labelled', c.ink)),
-            Expanded(child: _stat(c, '$need', 'need you', c.amber)),
+            Expanded(child: _stat(c, '$need', 'need you', c.moneyOut)),
           ],
         ));
         if (auto + need > 0) {
@@ -636,7 +638,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
                   Expanded(flex: auto, child: ColoredBox(color: c.ink)),
                 if (auto > 0 && need > 0) const SizedBox(width: 2),
                 if (need > 0)
-                  Expanded(flex: need, child: ColoredBox(color: c.amber)),
+                  Expanded(flex: need, child: ColoredBox(color: c.moneyOut)),
               ],
             ),
           ));
@@ -645,7 +647,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
         children.add(need > 0
             ? InkButton(label: 'Label the $need items', onPressed: _openReview)
             : Text('Everything is labelled.',
-                style: HouseholdText.body(c.cobalt, size: 14)));
+                style: LedgerText.body(size: 14, color: c.moneyIn)));
       }
     }
 
@@ -657,39 +659,39 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  (String, Color) _statusLabel(HouseholdColors c, ImportJob job) {
+  (String, Color) _statusLabel(LedgerColors c, ImportJob job) {
     switch (job.status) {
       case ImportStatus.failed:
       case ImportStatus.revertFailed:
-        return ('Failed', c.amber);
+        return ('Failed', c.moneyOut);
       case ImportStatus.complete:
-        return ('Added', c.cobalt);
+        return ('Added', c.moneyIn);
       case ImportStatus.importing:
       case ImportStatus.reverting:
         return (_published ? 'Adding…' : 'Reading…', c.muted);
       case ImportStatus.pending:
-        return job.rowsCount > 0 ? ('Read', c.cobalt) : ('Waiting…', c.muted);
+        return job.rowsCount > 0 ? ('Read', c.moneyIn) : ('Waiting…', c.muted);
       case ImportStatus.unknown:
         return ('', c.muted);
     }
   }
 
-  Widget _stat(HouseholdColors c, String value, String label, Color color) =>
+  Widget _stat(LedgerColors c, String value, String label, Color color) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value, style: HouseholdText.mono(color, size: 22)),
+          Text(value, style: LedgerText.figures(size: 22, color: color)),
           const SizedBox(height: 2),
-          Text(label, style: HouseholdText.body(c.muted, size: 13)),
+          Text(label, style: LedgerText.body(size: 13, color: c.muted)),
         ],
       );
 
-  Widget _recentSection(HouseholdColors c) {
+  Widget _recentSection(LedgerColors c) {
     final names = {for (final a in _accounts) a.id: a.name};
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const LedgerHead(title: 'Recent statements'),
+        const LedgerSectionHeader(title: 'Recent statements'),
         for (final job in _recent.take(6))
           InkWell(
             onTap: () => _setCurrent(job, resetPublished: true),
@@ -708,13 +710,13 @@ class _StatementsScreenState extends State<StatementsScreen> {
                         Text(
                           '${job.isPdf ? 'PDF' : 'CSV'} · '
                           '${names[job.accountId] ?? 'Statement'}',
-                          style: HouseholdText.body(c.ink, size: 15),
+                          style: LedgerText.body(size: 15, color: c.ink),
                         ),
                         if (job.createdAt != null)
                           Text(
                             'Added ${DateFormat('d MMM yyyy', 'en').format(job.createdAt!.toLocal())}'
                             '${job.rowsCount > 0 ? ' · ${job.rowsCount} lines' : ''}',
-                            style: HouseholdText.body(c.muted, size: 13),
+                            style: LedgerText.body(size: 13, color: c.muted),
                           ),
                       ],
                     ),
@@ -722,7 +724,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
                   Builder(builder: (_) {
                     final (text, color) = _statusLabel(c, job);
                     return Text(text,
-                        style: HouseholdText.body(color, size: 13));
+                        style: LedgerText.body(size: 13, color: color));
                   }),
                 ],
               ),

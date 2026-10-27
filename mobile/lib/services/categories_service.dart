@@ -37,13 +37,9 @@ class CategoriesService {
         : baseUri;
 
     try {
-      final response = await _client.get(
-        url,
-        headers: {
-          ...ApiConfig.getAuthHeaders(accessToken),
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 30));
+      final response = await _client
+          .get(url, headers: ApiConfig.getJsonAuthHeaders(accessToken))
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -156,10 +152,7 @@ class CategoriesService {
     try {
       final request =
           http.Request(method, Uri.parse('${ApiConfig.baseUrl}$path'))
-            ..headers.addAll({
-              ...ApiConfig.getAuthHeaders(accessToken),
-              'Content-Type': 'application/json',
-            })
+            ..headers.addAll(ApiConfig.getJsonAuthHeaders(accessToken))
             ..body = jsonEncode({'category': body});
       final response = await http.Response.fromStream(
         await _client.send(request).timeout(const Duration(seconds: 30)),
