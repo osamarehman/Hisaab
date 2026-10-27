@@ -104,6 +104,11 @@ pages from these primitives:
   card around a list or chart.
 - [`DS::LabelDot`](../../app/components/DS/label_dot.rb) `(color:, label: nil, size: :md)`:
   the category colour square.
+- [`DS::LedgerBar`](../../app/components/DS/ledger_bar.rb)
+  `(percent:, color: nil, tone: :default, size: :md, marker: nil)`: a flat bar
+  on a hairline track, for a label's share of spending or a budget's use.
+  `color:` takes a label's hex colour; `tone: :out` turns an over-limit bar
+  amber; `marker:` ticks a percentage such as today's place in the month.
 - `DS::Button` / `DS::Link` `variant: :cta` is the one cobalt call to action
   per screen ("Add expense"); `:primary` is ink; `:secondary` is an ink outline.
 

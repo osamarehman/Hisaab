@@ -38,4 +38,13 @@ class LedgerComponentsPreview < ViewComponent::Preview
   def label_dot
     render DS::LabelDot.new(color: "#2445C8", label: "Home & bills")
   end
+
+  # @display container_classes max-w-[560px] flex flex-col gap-4
+  def ledger_bar
+    safe_join([
+      render(DS::LedgerBar.new(percent: 64, color: "#2445C8")),
+      render(DS::LedgerBar.new(percent: 91, size: :lg, marker: 87)),
+      render(DS::LedgerBar.new(percent: 100, tone: :out, size: :sm))
+    ])
+  end
 end
