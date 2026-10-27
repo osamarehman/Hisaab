@@ -1,0 +1,6 @@
+<div class="inline-flex items-center rounded-md border border-solid" role="group" aria-label="<%= t("ds.month_switcher.aria_label") %>">
+  <% previous_arrow, next_arrow = arrows %>
+  <%= arrow_tag(previous_arrow) %>
+  <span class="px-2 font-mono text-sm tabular-nums text-primary"><%= label %></span>
+  <%= arrow_tag(next_arrow) %>
+</div>

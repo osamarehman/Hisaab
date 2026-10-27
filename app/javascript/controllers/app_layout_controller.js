@@ -1,8 +1,9 @@
 import { Controller } from "@hotwired/stimulus";
 
-// Connects to data-controller="dialog"
+// The app shell: the phone's menu sheet and the assistant panel on the right.
+// Connects to data-controller="app-layout"
 export default class extends Controller {
-  static targets = ["leftSidebar", "rightSidebar", "mobileSidebar"];
+  static targets = ["rightSidebar", "mobileSidebar"];
   static values = { userId: String };
   static classes = [
     "expandedSidebar",
@@ -19,16 +20,10 @@ export default class extends Controller {
     this.mobileSidebarTarget.classList.add("hidden");
   }
 
-  toggleLeftSidebar() {
-    const isOpen = this.leftSidebarTarget.classList.contains("w-full");
-    this.#updateUserPreference("show_sidebar", !isOpen);
-    this.#toggleSidebarWidth(this.leftSidebarTarget, isOpen, "left");
-  }
-
   toggleRightSidebar() {
     const isOpen = this.rightSidebarTarget.classList.contains("w-full");
     this.#updateUserPreference("show_ai_sidebar", !isOpen);
-    this.#toggleSidebarWidth(this.rightSidebarTarget, isOpen, "right");
+    this.#toggleSidebarWidth(this.rightSidebarTarget, isOpen);
   }
 
   // For actions that send content into the chat sidebar (quick prompts,
@@ -38,12 +33,12 @@ export default class extends Controller {
     if (isOpen) return;
 
     this.#updateUserPreference("show_ai_sidebar", true);
-    this.#toggleSidebarWidth(this.rightSidebarTarget, false, "right");
+    this.#toggleSidebarWidth(this.rightSidebarTarget, false);
   }
 
-  #toggleSidebarWidth(el, isCurrentlyOpen, side) {
-    const expandedClasses = side === "left" ? [...this.expandedSidebarClasses, "border-r"] : [...this.expandedSidebarClasses, "border-l"];
-    const collapsedClasses = side === "left" ? [...this.collapsedSidebarClasses, "border-r-0"] : [...this.collapsedSidebarClasses, "border-l-0"];
+  #toggleSidebarWidth(el, isCurrentlyOpen) {
+    const expandedClasses = [...this.expandedSidebarClasses, "border-l"];
+    const collapsedClasses = [...this.collapsedSidebarClasses, "border-l-0"];
 
     if (isCurrentlyOpen) {
       el.classList.remove(...expandedClasses);

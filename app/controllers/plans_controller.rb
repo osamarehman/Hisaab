@@ -1,10 +1,9 @@
 class PlansController < ApplicationController
   include BudgetOwnership
 
-  # The Plan hub fronts budgets + goals under one nav entry, and only
-  # replaces the Budgets entry for preview users (see
-  # ApplicationHelper#plan_nav_item). Without the flag, fall through to the
-  # budgets flow so a shared /plan link still lands somewhere sensible.
+  # The Plan hub fronts budgets + goals and is a preview feature. Without the
+  # flag, fall through to the budgets flow so a shared /plan link still lands
+  # somewhere sensible.
   before_action :redirect_to_budgets_unless_preview
 
   def show

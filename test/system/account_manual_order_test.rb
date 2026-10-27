@@ -11,7 +11,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
     open_groups_before = open_group_count
 
     within_testid("account-sidebar-tabs") do
@@ -37,7 +38,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     # Groups opened for sort mode close again.
     assert_equal open_groups_before, open_group_count
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
     within_testid("account-sidebar-tabs") do
       assert_equal [ plaid.id, checking.id ], visible_depository_ids.first(2)
     end
@@ -47,7 +49,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
 
     within_testid("account-sidebar-tabs") do
       find("button[aria-label='#{I18n.t("accounts.sidebar.sort_mode.start")}']", visible: true).click
@@ -66,7 +69,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
 
     within_testid("account-sidebar-tabs") do
       find("button[aria-label='#{I18n.t("accounts.sidebar.sort_mode.start")}']", visible: true).click
@@ -80,13 +84,16 @@ class AccountManualOrderTest < ApplicationSystemTestCase
 
     assert_current_path account_path(plaid)
     assert_eventually { @user.reload.manual_account_order["depository"]&.first(2) == [ plaid.id, checking.id ] }
+    visit accounts_path
+    open_depository_group
     within_testid("account-sidebar-tabs") do
       assert_equal [ plaid.id, checking.id ], visible_depository_ids.first(2)
     end
   end
 
-  test "leaving sort mode keeps focus in the sidebar when no sort toggle is visible" do
-    visit account_path(accounts(:depository))
+  test "leaving sort mode keeps focus in the account list when no sort toggle is visible" do
+    visit accounts_path
+    open_depository_group
 
     within_testid("account-sidebar-tabs") do
       find("button[aria-label='#{I18n.t("accounts.sidebar.sort_mode.start")}']", visible: true).click
@@ -112,7 +119,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
 
     # Order saves never answer, like a dropped mobile connection; they only
     # end when the caller aborts them. Page loads still go through.
@@ -140,20 +148,23 @@ class AccountManualOrderTest < ApplicationSystemTestCase
       assert_equal [ plaid.id, checking.id ], visible_depository_ids.first(2)
     end
 
-    # The failed save reloads the page, which shows the order actually saved.
-    # The reload renders the whole page, which can take several seconds on CI.
-    assert_eventually(timeout: 15) do
-      within_testid("account-sidebar-tabs") { visible_depository_ids.first(2) == [ checking.id, plaid.id ] }
+    # The failed save reloads the page, which renders the groups closed and
+    # shows the order actually saved. The reload can take several seconds on CI.
+    assert_no_selector depository_list, visible: true, wait: 15
+    open_depository_group
+    within_testid("account-sidebar-tabs") do
+      assert_equal [ checking.id, plaid.id ], visible_depository_ids.first(2)
     end
 
     assert_nil @user.reload.manual_account_order["depository"]
   end
 
-  test "a move is mirrored in the other sidebar tabs" do
+  test "a move is mirrored in the other account list tabs" do
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
 
     within_testid("account-sidebar-tabs") do
       find("button[aria-label='#{I18n.t("accounts.sidebar.sort_mode.start")}']", visible: true).click
@@ -176,7 +187,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
 
     within_testid("account-sidebar-tabs") do
       find("button[aria-label='#{I18n.t("accounts.sidebar.sort_mode.start")}']", visible: true).click
@@ -209,7 +221,8 @@ class AccountManualOrderTest < ApplicationSystemTestCase
     checking = accounts(:depository)
     plaid = accounts(:connected)
 
-    visit account_path(checking)
+    visit accounts_path
+    open_depository_group
 
     # Like dragging an account logo or selected text: the drag starts inside
     # a row that is not draggable and is dropped at the top of the list.
@@ -229,12 +242,29 @@ class AccountManualOrderTest < ApplicationSystemTestCase
   end
 
   private
+    # The accounts page renders every group closed; the depository rows only
+    # show once its group is open. Retried because a Turbo morph refresh right
+    # after load can re-render the group closed.
+    def open_depository_group
+      within_testid("account-sidebar-tabs") do
+        3.times do
+          return if has_selector?(depository_list, visible: true, wait: 1)
+          find("summary", text: Accountable.from_type("Depository").display_name, match: :first, visible: true).click
+        end
+        assert_selector depository_list, visible: true
+      end
+    end
+
+    def depository_list
+      "[data-sortable-list-url-value='#{reorder_accounts_path(group: "depository")}']"
+    end
+
     def open_group_count
       evaluate_script("document.querySelectorAll(\"[data-testid='account-sidebar-tabs'] details[open]\").length")
     end
 
     def visible_depository_ids
-      list = all("[data-sortable-list-url-value='#{reorder_accounts_path(group: "depository")}']", visible: true).first
+      list = all(depository_list, visible: true).first
       list.all("[data-sortable-list-target='item']").map { |item| item["data-sortable-list-id"] }
     end
 

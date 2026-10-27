@@ -1,0 +1,7 @@
+<%= tag.div class: container_classes, **opts.except(:class) do %>
+  <p class="text-sm text-secondary"><%= label %></p>
+  <p class="<%= value_classes %>"><%= value %></p>
+  <% if sub.present? %>
+    <p class="<%= sub_classes %>"><%= sub %></p>
+  <% end %>
+<% end %>

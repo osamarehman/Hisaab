@@ -90,59 +90,49 @@ module ApplicationHelper
     current_page?(path) || (request.path.start_with?(path) && path != "/")
   end
 
-  # Wraps a nav-item hash so a single call performs both halves of a
-  # preview-gated entry: returns `nil` for users without the flag (so the
-  # entry never reaches the rendered nav), and stamps `preview: true` on
-  # the hash for users with the flag (so the partial paints the violet
-  # dot on the icon). Use inside an `Array#compact` nav-items list.
-  def preview_gated_nav_item(item)
-    return nil unless preview_features_enabled?
-    item.merge(preview: true)
+  # The shell's destinations, in sidebar order. Each item is the locals hash
+  # for layouts/shared/_nav_item. Bills, Reports and Plan are left out of the
+  # household shell; their routes still work and Settings links to them.
+  def primary_nav_items
+    if Current.user&.ui_layout_intro?
+      return [
+        shell_nav_item(:home, chats_path, "home"),
+        shell_nav_item(:intro, intro_path, "sparkles")
+      ]
+    end
+
+    [
+      shell_nav_item(:home, root_path, "house"),
+      shell_nav_item(:activity, transactions_path, "list"),
+      shell_nav_item(:statements, imports_path, "file-text", badge: statements_review_count),
+      shell_nav_item(:budget, budgets_path, "wallet"),
+      shell_nav_item(:accounts, accounts_path, "landmark"),
+      shell_nav_item(:labels, categories_path, "tag"),
+      (shell_nav_item(:assistant, chats_path, "icon-assistant", icon_custom: true) if Current.family&.assistant_enabled?)
+    ].compact
   end
 
-  # Bills is only meaningful while recurring detection is on, since a family that has
-  # turned it off has nothing to list. Returns nil so the entry drops out of the
-  # `Array#compact` nav list entirely rather than leading to an empty page. The
-  # subsystem also ships as a preview feature, so the entry is preview-gated on
-  # top: hidden without the flag, violet-dotted with it.
-  def bills_nav_item
-    return nil if Current.family.nil? || Current.family.recurring_transactions_disabled?
+  # The phone's bottom bar: Home, Activity, (Add), Assistant, Accounts, as in
+  # the mobile app. Statements takes the Assistant slot when chat is off.
+  def mobile_tab_nav_items(items = primary_nav_items)
+    by_key = items.index_by { |item| item[:key] }
+    return items if Current.user&.ui_layout_intro?
 
-    preview_gated_nav_item(
-      {
-        name: t("layouts.application.nav.bills"),
-        path: bills_path,
-        icon: "receipt",
-        icon_custom: false,
-        active: page_active?(bills_path)
-      }
-    )
+    [ by_key[:home], by_key[:activity], by_key[:assistant] || by_key[:statements], by_key[:accounts] ].compact
   end
 
-  # Budgets and Goals share one nav slot. Preview users get the "Plan" hub
-  # entry fronting both (it stays lit while browsing either subpage, since
-  # page_active? is a path-prefix match and /budgets · /goals don't share
-  # the /plan prefix). Everyone else gets exactly the pre-Plan Budgets
-  # entry — Goals was already hidden without the flag, so their nav is
-  # unchanged.
-  def plan_nav_item
-    if preview_features_enabled?
-      {
-        name: t("layouts.application.nav.plan"),
-        path: plan_path,
-        icon: "compass",
-        icon_custom: false,
-        active: page_active?(plan_path) || page_active?(budgets_path) || page_active?(goals_path),
-        preview: true
-      }
-    else
-      {
-        name: t("layouts.application.nav.budgets"),
-        path: budgets_path,
-        icon: "map",
-        icon_custom: false,
-        active: page_active?(budgets_path)
-      }
+  # This month's transactions still waiting for a label, shown as the
+  # Statements badge. Cached on the same versions as the transactions page's
+  # uncategorized count, so it costs one cache read per page.
+  def statements_review_count
+    return 0 unless Current.family && Current.user
+
+    month = Date.current.beginning_of_month
+    Rails.cache.fetch([
+      "nav_statements_review_count/v1", Current.family.id, Current.user.id, month.iso8601,
+      Current.family.entries_version, Current.family.accounts_status_version, Current.account_share_version
+    ]) do
+      Current.annotatable_entries.excluding_split_parents.uncategorized_transactions.where(date: month..).count
     end
   end
 
@@ -287,6 +277,18 @@ module ApplicationHelper
   end
 
   private
+    def shell_nav_item(key, path, icon, icon_custom: false, badge: 0)
+      {
+        key: key,
+        name: t("layouts.application.nav.#{key}"),
+        path: path,
+        icon: icon,
+        icon_custom: icon_custom,
+        active: page_active?(path),
+        badge: badge
+      }
+    end
+
     def safe_lucide_icon(key, **opts)
       lucide_icon(key, **opts)
     rescue StandardError => e

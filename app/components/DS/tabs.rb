@@ -37,13 +37,12 @@ class DS::Tabs < DesignSystemComponent
 
   VARIANTS = {
     default: {
-      # `tab-item-active` is a Sure token utility (white light / gray-700 dark).
-      # Swapping out the raw `bg-white theme-dark:bg-gray-700` removes the
-      # last raw-palette reference in DS::Tabs.
-      active_btn_classes: "tab-item-active text-primary shadow-sm",
-      inactive_btn_classes: "text-secondary hover:bg-surface-inset-hover",
-      base_btn_classes: "w-full inline-flex justify-center items-center text-sm font-medium px-2 py-1 rounded-md motion-safe:transition-colors motion-safe:duration-200",
-      nav_container_classes: "flex bg-surface-inset p-1 rounded-lg mb-4"
+      # Ledger tabs: an ink-framed strip whose active tab is ink-filled.
+      # Every colour is a flipping token, so dark mode needs no override.
+      active_btn_classes: "bg-inverse text-inverse",
+      inactive_btn_classes: "text-primary hover:bg-surface-inset-hover",
+      base_btn_classes: "w-full inline-flex justify-center items-center min-h-10 text-sm font-medium px-3 motion-safe:transition-colors motion-safe:duration-200",
+      nav_container_classes: "flex border border-solid rounded-md overflow-hidden mb-4"
     }
   }
 

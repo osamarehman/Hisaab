@@ -13,8 +13,6 @@ class CategoriesController < ApplicationController
       family: Current.family,
       category_ids: @categories.map(&:id)
     )
-
-    render layout: "settings"
   end
 
   def new

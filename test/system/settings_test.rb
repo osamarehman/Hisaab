@@ -4,10 +4,10 @@ class SettingsTest < ApplicationSystemTestCase
   setup do
     sign_in @user = users(:family_admin)
 
-    # Base settings available to all users
-    @settings_links = [
-      [ "Accounts", accounts_path ]
-    ]
+    # Base settings available to all users. Accounts and Categories are listed
+    # in the settings nav too, but open in the app shell, so they are checked
+    # separately.
+    @settings_links = []
 
     @settings_links << [ "Bank sync", settings_providers_path ] if @user.admin?
 
@@ -15,7 +15,6 @@ class SettingsTest < ApplicationSystemTestCase
       [ "Preferences", settings_preferences_path ],
       [ "Profile Info", settings_profile_path ],
       [ "Security", settings_security_path ],
-      [ "Categories", categories_path ],
       [ "Tags", tags_path ],
       [ "Rules", rules_path ],
       [ "Merchants", family_merchants_path ],
@@ -38,8 +37,10 @@ class SettingsTest < ApplicationSystemTestCase
   test "can access settings from sidebar" do
     VCR.use_cassette("git_repository_provider/fetch_latest_release_notes") do
       open_settings_from_sidebar
-      assert_selector "h1", text: "Accounts"
-      assert_current_path accounts_path, ignore_query: true
+      assert_selector "h1", text: "Preferences"
+      assert_current_path settings_preferences_path, ignore_query: true
+      assert_selector "a[href='#{accounts_path}']", text: "Accounts"
+      assert_selector "a[href='#{categories_path}']", text: "Categories"
 
       @settings_links.each do |name, path|
         click_link name, match: :first

@@ -44,7 +44,7 @@
 
   <% if AuthConfig.password_features_enabled? %>
     <div class="mt-6 text-center">
-      <%= link_to t(".forgot_password"), new_password_reset_path, class: "font-medium text-sm text-primary hover:underline transition" %>
+      <%= link_to t(".forgot_password"), new_password_reset_path, class: "text-sm text-link underline underline-offset-2 hover:no-underline focus-ring" %>
     </div>
   <% end %>
 
@@ -68,7 +68,7 @@
          data-webauthn-authentication-error-fallback-value="<%= t("passkey_sessions.invalid_credential") %>">
       <%= render DS::Button.new(
             text: t(".passkey_button"),
-            variant: :outline,
+            variant: :secondary,
             size: :md,
             full_width: true,
             icon: "fingerprint",

@@ -6,7 +6,7 @@ class AccountsTest < ApplicationSystemTestCase
 
     Family.any_instance.stubs(:get_link_token).returns("test-link-token")
 
-    visit root_url
+    visit accounts_url
     open_new_account_modal
   end
 
@@ -98,7 +98,7 @@ class AccountsTest < ApplicationSystemTestCase
   private
 
     def open_new_account_modal
-      within "[data-controller='DS--tabs']" do
+      within_testid("account-sidebar-tabs") do
         click_button "All"
         click_link "New account"
       end
@@ -139,8 +139,12 @@ class AccountsTest < ApplicationSystemTestCase
     end
 
     def assert_account_created(accountable_type, &block)
-      click_link Accountable.from_type(accountable_type).singular_display_name
-      click_link "Enter account balance" if accountable_type.in?(%w[Depository Investment Crypto Loan CreditCard])
+      # Inside the modal: the accounts page behind it links fixture accounts
+      # with the same names ("Credit Card", "Loan").
+      within "turbo-frame#modal" do
+        click_link Accountable.from_type(accountable_type).singular_display_name
+        click_link "Enter account balance" if accountable_type.in?(%w[Depository Investment Crypto Loan CreditCard])
+      end
 
       account_name = "[system test] #{accountable_type} Account"
       institution_name = "[system test] Institution"
@@ -157,15 +161,14 @@ class AccountsTest < ApplicationSystemTestCase
       yield if block_given?
 
       click_button "Create Account"
+      assert_selector "h2", text: account_name
 
+      visit accounts_url
       within_testid("account-sidebar-tabs") do
         click_on "All"
         find("details", text: Accountable.from_type(accountable_type).display_name).click
         assert_text account_name
       end
-
-      visit accounts_url
-      assert_text account_name
 
       created_account = Account.order(:created_at).last
       assert_equal institution_name, created_account[:institution_name]

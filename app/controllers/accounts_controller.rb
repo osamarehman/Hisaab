@@ -66,7 +66,6 @@ class AccountsController < ApplicationController
 
     # Prevent Turbo Drive from caching this page to ensure fresh account lists
     expires_now
-    render layout: "settings"
   end
 
   def new

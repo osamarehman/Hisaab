@@ -1,6 +1,8 @@
 <%= content_for :page_title, t(".accounts") %>
 <%= content_for :page_actions do %>
-  <%= render "accounts/sync_controls", family: Current.family %>
+  <% unless Provider::Factory.bank_sync_disabled? %>
+    <%= render "accounts/sync_controls", family: Current.family %>
+  <% end %>
   <%= render DS::Link.new(
     text: t(".new_account"),
     href: new_account_path(return_to: accounts_path),
@@ -8,6 +10,14 @@
     icon: "plus",
     frame: :modal
   ) %>
+<% end %>
+
+<%# Balances by group, with sparklines and the manual order: what used to sit
+    in the shell's account sidebar. %>
+<%= render DS::LedgerSection.new(title: t(".balances"), class: "mb-10 max-w-2xl") do %>
+  <div id="account-list" class="pt-4">
+    <%= render "accounts/account_sidebar_tabs", family: Current.family, active_tab: @account_group_tab %>
+  </div>
 <% end %>
 
 <% if @manual_accounts.empty? && @financekit_accounts.empty? && @plaid_items.empty? && @simplefin_items.empty? && @lunchflow_items.empty? && @redbark_items.empty? && @akahu_items.empty? && @up_items.empty? && @monobank_items.empty? && @fio_items.empty? && @enable_banking_items.empty? && @coinstats_items.empty? && @coinbase_items.empty? && @mercury_items.empty? && @brex_items.empty? && @ibkr_items.empty? && @snaptrade_items.empty? && @indexa_capital_items.empty? && @sophtron_items.empty? && @binance_items.empty? && @kraken_items.empty? && @coinspot_items.empty? && @questrade_items.empty? && @wise_items.empty? && @onchain_wallet_items.empty? && @trade_republic_items.empty? && @trading212_items.empty? %>

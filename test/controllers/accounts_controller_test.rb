@@ -1460,12 +1460,12 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_nil @user.reload.manual_account_order["not_a_type"]
   end
 
-  test "sidebar shows drag handles only with the manual account order" do
-    get account_url(@account)
+  test "the accounts page list shows drag handles only with the manual account order" do
+    get accounts_url
     assert_select "[data-controller~='sortable-list']", count: 0
 
     @user.update!(default_account_order: "manual")
-    get account_url(@account)
+    get accounts_url
     assert_select "[data-controller~='sortable-list'][data-sortable-list-url-value=?]", reorder_accounts_path(group: "depository")
     assert_select "[data-sortable-list-target='item'][data-sortable-list-id=?]", @account.id
   end

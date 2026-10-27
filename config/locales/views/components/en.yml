@@ -126,6 +126,10 @@ en:
     icon_picker:
       no_matching_icons: No matching icons
       search_placeholder: Search icons...
+    month_switcher:
+      aria_label: Month
+      previous: Previous month
+      next: Next month
   provider_sync_summary:
     title: Sync summary
     last_sync: "Last sync: %{time_ago} ago"

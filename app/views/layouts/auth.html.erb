@@ -1,40 +1,47 @@
 <%= render "layouts/shared/htmldoc" do %>
-  <div class="flex flex-col h-full overflow-y-auto">
-    <div class="flex flex-col min-h-full px-6 py-12 bg-surface">
-      <div class="grow flex flex-col justify-center">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md">
-          <div class="flex justify-center mt-2 md:mb-6">
-            <%= image_tag "logomark.svg", class: "w-16 mb-6" %>
-          </div>
-          <div class="space-y-2">
-            <% if controller_name.in?(%w[sessions registrations]) && action_name.in?(%w[new create]) %>
-              <%# Determine the active tab from the controller, not current_page?:
-                  a failed POST re-renders :new from #create, where the request
-                  path is the form target (not /sessions/new), so current_page?
-                  would mis-highlight the switch. %>
-              <% on_sign_in = controller_name == "sessions" %>
-              <div class="space-y-3 w-full my-4">
-                <div class="bg-surface-inset rounded-lg p-1 flex">
-                  <%= link_to new_session_path,
-      class: "w-1/2 px-2 py-1 rounded-md text-sm text-center font-medium #{on_sign_in ? 'bg-surface shadow-sm text-primary' : 'text-secondary'}" do %>
-                    <%= t("layouts.auth.sign_in") %>
-                  <% end %>
-                  <%= link_to new_registration_path,
-      class: "w-1/2 px-2 py-1 rounded-md text-sm text-center font-medium #{!on_sign_in ? 'bg-surface shadow-sm text-primary' : 'text-secondary'}" do %>
-                    <%= t("layouts.auth.sign_up") %>
-                  <% end %>
-                </div>
-              </div>
+  <% sign_in_or_up = controller_name.in?(%w[sessions registrations]) && action_name.in?(%w[new create]) %>
+  <% on_sign_in = controller_name == "sessions" %>
+  <% title = content_for(:header_title).presence || (t("layouts.auth.sign_in") if on_sign_in && sign_in_or_up) %>
+
+  <div class="h-full overflow-y-auto">
+    <div class="flex flex-col lg:flex-row min-h-full bg-surface">
+      <%# Brand panel: ink on paper, the wordmark at poster size. Stacks above the form on phones. %>
+      <section class="flex flex-col justify-between gap-8 lg:gap-12 lg:flex-1 bg-inverse text-inverse px-6 pb-8 pt-[calc(env(safe-area-inset-top)+2rem)] md:px-12 md:py-12 lg:p-20">
+        <p class="font-display font-bold tracking-tighter leading-[0.85] text-7xl md:text-8xl lg:text-9xl"><%= product_name %></p>
+        <div class="flex flex-col gap-4 max-w-md">
+          <p class="font-display text-2xl md:text-3xl font-medium leading-tight tracking-tight"><%= t("layouts.auth.tagline") %></p>
+          <p class="hidden md:block text-base leading-relaxed opacity-80"><%= t("layouts.auth.pitch") %></p>
+        </div>
+      </section>
+
+      <section class="flex flex-col lg:flex-1 px-6 py-10 md:px-12 lg:p-20">
+        <div class="grow flex flex-col justify-center w-full max-w-sm mx-auto gap-6">
+          <% if title.present? %>
+            <div class="flex flex-col gap-2">
+              <h1 class="font-display text-4xl font-bold tracking-tight text-primary"><%= title %></h1>
+              <% if content_for?(:header_description) %>
+                <p class="text-sm text-secondary"><%= content_for(:header_description) %></p>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if sign_in_or_up %>
+            <%# The active tab comes from the controller, not current_page?: a
+                failed POST re-renders :new from #create, where the request path
+                is the form target, so current_page? would mis-highlight it. %>
+            <%= render DS::SegmentedControl.new(full_width: true, aria_label: t("layouts.auth.sign_in_or_up")) do |control| %>
+              <% control.with_segment(t("layouts.auth.sign_in"), href: new_session_path, active: on_sign_in) %>
+              <% control.with_segment(t("layouts.auth.sign_up"), href: new_registration_path, active: !on_sign_in) %>
             <% end %>
+          <% end %>
+
+          <div>
+            <%= yield %>
           </div>
         </div>
 
-        <div class="mt-0 md:mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-          <%= yield %>
-        </div>
-      </div>
-
-      <%= render "layouts/shared/footer" %>
+        <%= render "layouts/shared/footer" %>
+      </section>
     </div>
   </div>
 <% end %>

@@ -67,7 +67,7 @@ class ImportsController < ApplicationController
       [ t("breadcrumbs.imports"), imports_path ]
     ]
     respond_to do |format|
-      format.html { render layout: "settings" }
+      format.html
     end
   end
 

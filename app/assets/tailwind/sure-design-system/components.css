@@ -36,13 +36,10 @@
 
   /* Forms */
   .form-field {
-    @apply flex flex-col gap-1 relative px-3 py-2 rounded-md border bg-container border-secondary shadow-xs w-full;
-    @apply focus-within:border-secondary focus-within:shadow-none focus-within:ring-4 focus-within:ring-alpha-black-200;
-    @apply transition-all duration-300;
-
-    @variant theme-dark {
-      @apply focus-within:ring-alpha-white-300;
-    }
+    /* Ledger field: 1px ink frame, 2px radius, cobalt focus outline. */
+    @apply flex flex-col gap-1 relative px-3 py-2 min-h-11 rounded-md border bg-container border-primary w-full;
+    @apply focus-within:border-solid focus-within:outline-2 focus-within:outline-link focus-within:-outline-offset-2;
+    @apply transition-colors duration-200;
 
     /* Add styles for multiple select within form fields */
     select[multiple] {
@@ -200,38 +197,30 @@
   }
 
   /*
-    Segmented control (#2137) — track + equal-footprint segments. The selected
-    state is a single `--active` class so an optional Stimulus controller can
-    toggle it as one unit. Values mirror the DS tab tokens (tab-bg-group /
-    tab-item-active / tab-item-hover) but are inlined with `@variant theme-dark`
-    because `@apply`-ing a custom utility drops its dark override. The near-black
-    dark track (alpha-black-700) is what makes the gray-700 selected pill read —
-    the bespoke controls used a too-light `container-inset` track, hence the
-    audit's "selected pill invisible on dark." Focus comes from the canonical
-    recipe (`focus-ring` on link segments, the base button rule on button
-    segments), not from this block.
+    Segmented control (#2137) — an ink-framed group of equal segments separated
+    by ink hairlines; the selected segment is ink-filled. The selected state is
+    a single `--active` class so an optional Stimulus controller can toggle it
+    as one unit. Colours come from flipping tokens (border-solid, bg-inverse,
+    text-inverse), so dark mode needs no override. Focus comes from the
+    canonical recipe (`focus-ring` on link segments, the base button rule on
+    button segments), not from this block.
   */
   .segmented-control {
-    @apply inline-flex items-center gap-0.5 p-1 rounded-lg bg-gray-50;
-    @variant theme-dark {
-      @apply bg-alpha-black-700;
-    }
+    @apply inline-flex items-stretch rounded-md border border-solid bg-transparent;
   }
 
   .segmented-control__segment {
-    @apply inline-flex items-center justify-center px-2 py-1 rounded-md whitespace-nowrap;
-    @apply text-sm font-medium text-secondary cursor-pointer transition-colors duration-200;
-    @apply hover:bg-gray-200;
-    @variant theme-dark {
-      @apply hover:bg-gray-800;
-    }
+    @apply inline-flex items-center justify-center min-h-10 px-3 whitespace-nowrap;
+    @apply text-sm font-medium text-primary cursor-pointer transition-colors duration-200;
+    @apply hover:bg-surface-inset-hover;
+  }
+
+  .segmented-control__segment + .segmented-control__segment {
+    @apply border-l border-solid;
   }
 
   .segmented-control__segment--active {
-    @apply bg-white text-primary shadow-sm hover:bg-white;
-    @variant theme-dark {
-      @apply bg-gray-700 hover:bg-gray-700;
-    }
+    @apply bg-inverse text-inverse hover:bg-inverse;
   }
 
   /*

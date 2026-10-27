@@ -1,25 +1,28 @@
-<%# locals: (name:, path:, icon:, icon_custom:, active:, mobile_only: false, preview: false) %>
-
-<%= link_to path, class: "space-y-1 group block relative pb-1 focus-ring rounded-lg", aria: { current: ("page" if active) } do %>
-  <div class="grow flex flex-col lg:flex-row gap-1 items-center">
-    <%= tag.div class: class_names("w-4 h-1 lg:w-1 lg:h-4 rounded-bl-sm rounded-br-sm lg:rounded-tr-sm lg:rounded-br-sm lg:rounded-bl-none", "bg-nav-indicator" => active) %>
-
-    <%= tag.div class: class_names(
-      "w-8 h-8 flex items-center justify-center mx-auto rounded-lg relative",
-      active ? "bg-container shadow-xs text-primary" : "group-hover:bg-surface-hover text-secondary"
-    ) do %>
-      <%= icon(icon, color: active ? "current" : "default", custom: icon_custom) %>
-      <% if preview %>
-        <span class="absolute -top-0.5 -right-0.5">
-          <%= render DS::Pill.new(tone: :violet, dot_only: true, title: t("shared.preview")) %>
-        </span>
-      <% end %>
+<%# locals: (name:, path:, icon:, icon_custom:, active:, key: nil, badge: 0, variant: :sidebar) %>
+<%# :sidebar — a full-width text row, ink-filled when current (desktop sidebar
+    and the phone's menu sheet). :tab — an icon over a label for the phone's
+    bottom bar, marked by a cobalt rule along its top edge when current. %>
+<% if variant == :tab %>
+  <%= link_to path,
+      class: class_names(
+        "flex flex-1 flex-col items-center justify-center gap-0.5 min-h-14 border-t-2 text-xs focus-ring",
+        active ? "border-link font-semibold text-primary" : "border-transparent text-secondary"
+      ),
+      aria: { current: ("page" if active) } do %>
+    <%= icon(icon, color: "current", custom: icon_custom) %>
+    <span><%= name %></span>
+  <% end %>
+<% else %>
+  <%= link_to path,
+      class: class_names(
+        "flex items-center justify-between gap-2 min-h-11 px-3 text-base focus-ring",
+        active ? "bg-inverse text-inverse font-semibold" : "text-primary hover:bg-surface-inset-hover"
+      ),
+      aria: { current: ("page" if active) } do %>
+    <span><%= name %></span>
+    <% if badge.to_i.positive? %>
+      <span class="px-1.5 py-0.5 bg-warning text-inverse font-mono text-xs tabular-nums" aria-hidden="true"><%= badge %></span>
+      <span class="sr-only"><%= t("layouts.application.review_count", count: badge) %></span>
     <% end %>
-  </div>
-
-  <div class="grow flex justify-center lg:pl-2">
-    <%= tag.p class: class_names("font-medium text-[11px]", active ? "text-primary" : "text-secondary") do %>
-      <%= name %>
-    <% end %>
-  </div>
+  <% end %>
 <% end %>

@@ -78,3 +78,35 @@ variant carries the hierarchy, not the width.
 - Amount inputs stay left-aligned, as `money_field` renders them. Right
   alignment with tabular digits is for displayed figures (`numeric: true`
   above) and for inputs inside a column of them, such as the budget grid.
+
+## Household ledger look
+
+The household edition uses a "broadsheet ledger" style: paper background,
+ink text, hairline dividers, 2px corners and no shadows. Tokens carry most of
+it (every `rounded-*` up to `rounded-3xl` is 2px, shadows are flat,
+`shadow-border-*` is a hairline), so existing pages inherit the look. Build new
+pages from these primitives:
+
+- [`DS::PageHeader`](../../app/components/DS/page_header.rb) `(title:, eyebrow: nil)`,
+  `with_actions` slot: display-font h1 with controls on the right. A view that
+  sets `content_for :page_title` (and optionally `:page_actions`) in the
+  application layout gets one automatically.
+- [`DS::MonthSwitcher`](../../app/components/DS/month_switcher.rb)
+  `(month:, param: :month, href_for: nil, min: nil, max: nil)`: ‹ Oct 2026 ›
+  links. Without `href_for` it links to the current path with `?month=YYYY-MM`.
+- [`DS::StatGrid`](../../app/components/DS/stat_grid.rb) with
+  `with_tile(label:, value:, sub: nil, tone: :default, sub_tone: :muted)`, or a
+  lone [`DS::StatTile`](../../app/components/DS/stat_tile.rb). Tones:
+  `:default` ink, `:in` cobalt (`text-success`), `:out` amber (`text-warning`).
+- [`DS::LedgerSection`](../../app/components/DS/ledger_section.rb)
+  `(title:, link_text: nil, href: nil, divided: false, heading_level: 2)`,
+  `with_action` slot: a section head over a 1px ink rule. Use it instead of a
+  card around a list or chart.
+- [`DS::LabelDot`](../../app/components/DS/label_dot.rb) `(color:, label: nil, size: :md)`:
+  the category colour square.
+- `DS::Button` / `DS::Link` `variant: :cta` is the one cobalt call to action
+  per screen ("Add expense"); `:primary` is ink; `:secondary` is an ink outline.
+
+Money coming in is `text-success` (cobalt); spending is plain `text-primary`,
+never red. Figures use `font-mono tabular-nums`; headline numbers use
+`font-display`.

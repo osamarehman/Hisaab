@@ -1,0 +1,11 @@
+<%= tag.header class: container_classes, **opts.except(:class) do %>
+  <div class="flex min-w-0 flex-col gap-1">
+    <% if eyebrow.present? %>
+      <p class="text-sm text-secondary"><%= eyebrow %></p>
+    <% end %>
+    <h1 class="font-display text-4xl md:text-5xl font-bold tracking-tight leading-none text-primary break-words"><%= title %></h1>
+  </div>
+  <% if actions? %>
+    <div class="flex flex-wrap items-center gap-2"><%= actions %></div>
+  <% end %>
+<% end %>

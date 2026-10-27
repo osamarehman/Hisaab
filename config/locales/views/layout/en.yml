@@ -10,7 +10,20 @@ en:
       release_highlight:
         title: What's new
         done: Got it
+      add_expense: Add expense
+      close_menu: Close menu
+      open_menu: Open menu
+      primary_nav: Main
+      review_count:
+        one: "%{count} line to label this month"
+        other: "%{count} lines to label this month"
       nav:
+        accounts: Accounts
+        activity: Activity
+        budget: Budget
+        intro: Intro
+        labels: Labels
+        statements: Statements
         assistant: Assistant
         bills: Bills
         budgets: Budgets
@@ -20,9 +33,12 @@ en:
         goals: Goals
         transactions: Transactions
     auth:
+      tagline: Every rupee, month by month.
+      pitch: Add expenses as they happen, drop in bank statements, and see where the household money goes.
       existing_account: Already have an account?
       no_account: New to %{product_name}?
       sign_in: Sign in
+      sign_in_or_up: Sign in or create an account
       sign_up: Create account
     shared:
       footer:

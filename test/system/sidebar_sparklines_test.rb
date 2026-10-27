@@ -1,12 +1,12 @@
 require "application_system_test_case"
 
-# The sidebar sparkline frames are `loading: "lazy"` and most of them sit
+# The account list sparkline frames are `loading: "lazy"` and most of them sit
 # inside a collapsed account group, so Turbo never fetches them. The timeout
 # countdown therefore has to time the request rather than the element
 # connecting — otherwise every unexpanded row claims it timed out, ten seconds
 # into any page load, without a single request having been made.
 class SidebarSparklinesTest < ApplicationSystemTestCase
-  SPARKLINE_FRAME = "#sidebar-scroll turbo-frame[data-controller='turbo-frame-timeout']"
+  SPARKLINE_FRAME = "#account-list turbo-frame[data-controller='turbo-frame-timeout']"
   BADGE_TEXT = "Timeout"
 
   # The group total in the <summary> renders the same chart as the rows inside
@@ -47,11 +47,11 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
 
   test "a frame that is never fetched keeps its placeholder instead of a timeout badge" do
     with_short_sparkline_timeout do
-      visit root_path
+      visit accounts_path
 
-      # Nothing is expanded on the dashboard: no account page is active, so
+      # Nothing is expanded on the accounts page: no account is active, so
       # every group renders closed and the rows inside it stay off screen.
-      assert_no_selector "#sidebar-scroll details[open]"
+      assert_no_selector "#account-list details[open]"
 
       # The group's own sparkline sits in the <summary>, so it is on screen and
       # Turbo does fetch it: the page is working, the collapsed rows below are
@@ -60,7 +60,7 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
 
       wait_out_timeout_window
 
-      # No badge anywhere in the sidebar, group totals included.
+      # No badge anywhere in the account list, group totals included.
       assert_no_selector "#{SPARKLINE_FRAME} p", text: BADGE_TEXT, visible: :all
 
       # The rows nobody asked for still hold their loading placeholder, which
@@ -71,7 +71,7 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
 
   test "expanding a group loads its sparklines" do
     with_short_sparkline_timeout do
-      visit root_path
+      visit accounts_path
 
       expand_first_group
 
@@ -85,18 +85,18 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
 
   # The frames above only prove markup arrived. The regression these two
   # tests pin down is one step later: the chart controller refused to draw
-  # into the sidebar's 32px-wide containers, so a "complete" frame stayed
+  # into the account list's 32px-wide containers, so a "complete" frame stayed
   # blank. The trendline is the only <path> the controller draws at these
   # sizes (the empty state uses a dashed <line> + <circle>), so asserting
   # the path proves a real series got rendered, not just an SVG element.
   test "the group total sparkline draws its chart, not just its frame" do
-    visit root_path
+    visit accounts_path
 
     assert_selector "#{GROUP_SPARKLINE_FRAME}[complete] [data-controller='time-series-chart'] svg path", minimum: 1
   end
 
   test "expanding a group draws the account sparklines, not just their frames" do
-    visit root_path
+    visit accounts_path
 
     expand_first_group
 
@@ -105,7 +105,7 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
 
   test "a request that never comes back still raises the timeout badge" do
     with_short_sparkline_timeout do
-      visit root_path
+      visit accounts_path
 
       with_stalled_sparkline_responses do
         expand_first_group
@@ -131,7 +131,7 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
     end
 
     def expand_first_group
-      find("#sidebar-scroll details", match: :first).find("summary").click
+      find("#account-list details", match: :first).find("summary").click
     end
 
     # Sleeping is the assertion here: the badge is an absence, and an absence

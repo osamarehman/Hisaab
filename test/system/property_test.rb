@@ -6,13 +6,13 @@ class PropertiesEditTest < ApplicationSystemTestCase
 
     Family.any_instance.stubs(:get_link_token).returns("test-link-token")
 
-    visit root_url
+    visit accounts_url
     open_new_account_modal
     create_new_property_account
   end
 
   test "can persist property subtype" do
-    click_link "[system test] Property Account"
+    visit account_url(Account.find_by!(name: "[system test] Property Account"))
     assert_edit_dialog_field "account_accountable_attributes_subtype", with: "single_family_home"
   end
 
@@ -65,14 +65,14 @@ class PropertiesEditTest < ApplicationSystemTestCase
     end
 
     def open_new_account_modal
-      within "[data-controller='DS--tabs']" do
+      within_testid("account-sidebar-tabs") do
         click_button "All"
         click_link "New account"
       end
     end
 
     def create_new_property_account
-      click_link "Property"
+      within("turbo-frame#modal") { click_link "Property" }
 
       account_name = "[system test] Property Account"
       fill_in "Name*", with: account_name

@@ -1,0 +1,13 @@
+<%= tag.section class: container_classes, aria: { labelledby: heading_id }, **opts.except(:class) do %>
+  <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-solid pb-2">
+    <%= content_tag heading_tag, title, id: heading_id, class: "font-display text-xl font-semibold tracking-tight text-primary" %>
+    <% if action? %>
+      <%= action %>
+    <% elsif link? %>
+      <%= link_to link_text, href, class: "text-sm text-link hover:underline underline-offset-2 focus-ring" %>
+    <% end %>
+  </div>
+  <%= tag.div class: body_classes do %>
+    <%= content %>
+  <% end %>
+<% end %>
