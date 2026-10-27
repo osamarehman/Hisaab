@@ -259,7 +259,9 @@ class Family::AutoTransferMatchableTest < ActiveSupport::TestCase
 
   test "derives family currency cross rates through the primary currency when the family currency is blank" do
     @family.update_column(:currency, nil)
-    load_family_currency_rates
+    # A blank family currency falls back to PKR (Family#primary_currency_code).
+    ExchangeRate.create!(from_currency: "GBP", to_currency: "PKR", date: 1.day.ago.to_date, rate: 350)
+    ExchangeRate.create!(from_currency: "CAD", to_currency: "PKR", date: 1.day.ago.to_date, rate: 201.6)
 
     outflow = create_transaction(date: 1.day.ago.to_date, account: @depository, amount: 400, currency: "GBP")
     inflow = create_transaction(date: Date.current, account: @credit_card, amount: -680, currency: "CAD")

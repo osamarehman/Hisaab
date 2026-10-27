@@ -28,6 +28,7 @@ class Api::V1::TransactionsController < Api::V1::BaseController
     transactions_query = transactions_query.includes(
       { entry: :account },
       :category, :merchant, :tags,
+      { attachments_attachments: :blob },
       transfer_as_outflow: { inflow_transaction: { entry: :account } },
       transfer_as_inflow: { outflow_transaction: { entry: :account } }
     ).reverse_chronological
@@ -235,6 +236,11 @@ class Api::V1::TransactionsController < Api::V1::BaseController
         query = query.where(category_id: params[:category_id])
       end
 
+      # Excluded rows (split parents, rows the user excluded) need no category.
+      if ActiveModel::Type::Boolean.new.cast(params[:uncategorized])
+        query = query.uncategorized.where(entries: { excluded: [ false, nil ] })
+      end
+
       if params[:category_ids].present?
         category_ids = Array(params[:category_ids])
         query = query.where(category_id: category_ids)
@@ -305,7 +311,7 @@ class Api::V1::TransactionsController < Api::V1::BaseController
     def transaction_params
       params.require(:transaction).permit(
         :date, :amount, :name, :description, :notes, :currency,
-        :category_id, :merchant_id, :nature, :user_modified, tag_ids: []
+        :category_id, :merchant_id, :nature, :user_modified, :excluded, tag_ids: []
       )
     end
 
@@ -362,6 +368,12 @@ class Api::V1::TransactionsController < Api::V1::BaseController
       # Only update amount if provided
       if transaction_params[:amount].present?
         entry_params[:amount] = calculate_signed_amount
+      end
+
+      # Same flag the web app's "Exclude" toggle sets: the row stays on the
+      # account but leaves budgets, reports and the uncategorized queue.
+      if transaction_params.key?(:excluded)
+        entry_params[:excluded] = ActiveModel::Type::Boolean.new.cast(transaction_params[:excluded]) == true
       end
 
       entry_params.compact

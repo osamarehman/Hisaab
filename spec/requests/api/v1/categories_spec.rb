@@ -217,5 +217,63 @@ RSpec.describe 'API V1 Categories', type: :request do
         run_test!
       end
     end
+
+    patch 'Update a category' do
+      tags 'Categories'
+      security [ { apiKeyAuth: [] } ]
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :body, in: :body, required: true, schema: {
+        '$ref' => '#/components/schemas/CategoryUpdateRequest'
+      }
+
+      let(:id) { income_category.id }
+
+      response '200', 'category updated' do
+        schema '$ref' => '#/components/schemas/CategoryDetail'
+
+        let(:body) { { category: { name: 'Wages', color: '#16a34a', icon: 'wallet' } } }
+
+        run_test!
+      end
+
+      response '422', 'validation error' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:body) { { category: { name: parent_category.name } } }
+
+        run_test!
+      end
+
+      response '404', 'category not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:id) { SecureRandom.uuid }
+        let(:body) { { category: { name: 'Anything' } } }
+
+        run_test!
+      end
+    end
+
+    delete 'Delete a category' do
+      tags 'Categories'
+      description 'Deletes the category. Its transactions become uncategorized and its subcategories become top-level.'
+      security [ { apiKeyAuth: [] } ]
+      produces 'application/json'
+
+      let(:id) { income_category.id }
+
+      response '204', 'category deleted' do
+        run_test!
+      end
+
+      response '404', 'category not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:id) { SecureRandom.uuid }
+
+        run_test!
+      end
+    end
   end
 end

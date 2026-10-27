@@ -122,6 +122,9 @@ RSpec.describe 'API V1 Transactions', type: :request do
       parameter name: :category_ids, in: :query, required: false,
                 description: 'Filter by multiple category IDs',
                 schema: { type: :array, items: { type: :string } }
+      parameter name: :uncategorized, in: :query, required: false,
+                description: 'Only transactions without a category, excluding transfers between own accounts and excluded rows',
+                schema: { type: :boolean }
       parameter name: :merchant_ids, in: :query, required: false,
                 description: 'Filter by multiple merchant IDs',
                 schema: { type: :array, items: { type: :string } }
@@ -322,7 +325,8 @@ RSpec.describe 'API V1 Transactions', type: :request do
                 items: { type: :string, format: :uuid },
                 description: 'Array of tag IDs to assign. Omit to preserve existing tags; use [] to clear all tags.'
               },
-              user_modified: { type: :boolean, description: 'Whether provider syncs should preserve user-supplied transaction changes' }
+              user_modified: { type: :boolean, description: 'Whether provider syncs should preserve user-supplied transaction changes' },
+              excluded: { type: :boolean, description: 'Exclude from budgets, reports and the uncategorized filter ("not an expense"), as the web Exclude toggle does' }
             }
           }
         }

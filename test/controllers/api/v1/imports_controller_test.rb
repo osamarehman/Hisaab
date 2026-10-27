@@ -1380,6 +1380,124 @@ class Api::V1::ImportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
   end
 
+  test "should create a pdf statement import for an account and start extraction" do
+    PdfImport.any_instance.expects(:process_with_ai_later).once.returns(true)
+
+    assert_difference [ "Import.where(type: 'PdfImport').count", "AccountStatement.count" ], 1 do
+      post api_v1_imports_url,
+        params: {
+          type: "PdfImport",
+          account_id: @account.id,
+          file: file_fixture_upload("imports/sample_bank_statement.pdf", "application/pdf")
+        },
+        headers: api_headers(@api_key)
+    end
+
+    assert_response :accepted
+    data = JSON.parse(response.body)["data"]
+    assert_equal "PdfImport", data["type"]
+    assert_equal @account.id, data["account_id"]
+    assert_equal 0, data["rows_count"]
+    assert data.key?("error")
+    assert data.key?("statement")
+
+    import = Import.find(data["id"])
+    assert_equal @account, import.account
+    assert_equal @account, import.account_statement.account
+  end
+
+  test "should detect a pdf upload without an explicit type" do
+    PdfImport.any_instance.stubs(:process_with_ai_later).returns(true)
+
+    post api_v1_imports_url,
+      params: { file: file_fixture_upload("imports/sample_bank_statement.pdf", "application/pdf") },
+      headers: api_headers(@api_key)
+
+    assert_response :accepted
+    assert_equal "PdfImport", JSON.parse(response.body)["data"]["type"]
+  end
+
+  test "should reject a pdf import whose file is not a pdf" do
+    assert_no_difference "Import.count" do
+      post api_v1_imports_url,
+        params: { type: "PdfImport", file: file_fixture_upload("imports/transactions.csv", "application/pdf") },
+        headers: api_headers(@api_key)
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal "invalid_file_type", JSON.parse(response.body)["error"]
+  end
+
+  test "should reject a pdf import for an account outside the family" do
+    other_account = families(:empty).accounts.create!(name: "Other", balance: 0, currency: "USD", accountable: Depository.new)
+
+    assert_no_difference "Import.count" do
+      post api_v1_imports_url,
+        params: {
+          type: "PdfImport",
+          account_id: other_account.id,
+          file: file_fixture_upload("imports/sample_bank_statement.pdf", "application/pdf")
+        },
+        headers: api_headers(@api_key)
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "should reject a pdf import with a read-only key" do
+    assert_no_difference "Import.count" do
+      post api_v1_imports_url,
+        params: { type: "PdfImport", file: file_fixture_upload("imports/sample_bank_statement.pdf", "application/pdf") },
+        headers: api_headers(@read_only_api_key)
+    end
+
+    assert_response :forbidden
+  end
+
+  test "should publish a publishable import" do
+    TransactionImport.any_instance.stubs(publishable?: true)
+    TransactionImport.any_instance.expects(:publish_later).once
+
+    post publish_api_v1_import_url(@diagnostic_import), headers: api_headers(@api_key)
+
+    assert_response :accepted
+    assert_equal @diagnostic_import.id, JSON.parse(response.body)["data"]["id"]
+  end
+
+  test "should not publish an import that is not ready" do
+    TransactionImport.any_instance.stubs(publishable?: false)
+    TransactionImport.any_instance.expects(:publish_later).never
+
+    post publish_api_v1_import_url(@diagnostic_import), headers: api_headers(@api_key)
+
+    assert_response :unprocessable_entity
+    assert_equal "not_publishable", JSON.parse(response.body)["error"]
+  end
+
+  test "should report imports over the row limit on publish" do
+    TransactionImport.any_instance.stubs(publishable?: true)
+    TransactionImport.any_instance.stubs(:publish_later).raises(Import::MaxRowCountExceededError)
+
+    post publish_api_v1_import_url(@diagnostic_import), headers: api_headers(@api_key)
+
+    assert_response :unprocessable_entity
+    assert_equal "max_row_count_exceeded", JSON.parse(response.body)["error"]
+  end
+
+  test "should reject publish with a read-only key" do
+    TransactionImport.any_instance.expects(:publish_later).never
+
+    post publish_api_v1_import_url(@diagnostic_import), headers: api_headers(@read_only_api_key)
+
+    assert_response :forbidden
+  end
+
+  test "should return 404 when publishing an unknown import" do
+    post publish_api_v1_import_url(SecureRandom.uuid), headers: api_headers(@api_key)
+
+    assert_response :not_found
+  end
+
   private
 
     def build_ndjson(records)

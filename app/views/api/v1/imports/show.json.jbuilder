@@ -12,7 +12,16 @@ json.data do
   json.created_at @import.created_at
   json.updated_at @import.updated_at
   json.account_id @import.account_id
-  json.error @import.error if @import.error.present?
+  json.rows_count @import.rows_count
+  json.error @import.error.presence
+
+  if @import.is_a?(PdfImport)
+    statement = @import.account_statement
+    json.statement do
+      json.period_start_on statement&.period_start_on
+      json.period_end_on statement&.period_end_on
+    end
+  end
   json.status_detail do
     json.partial! "status_detail",
                   import: @import,

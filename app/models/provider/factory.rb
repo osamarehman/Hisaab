@@ -74,6 +74,8 @@ class Provider::Factory
     # @param account_type [String] The account type class name (e.g., "Depository", "CreditCard")
     # @return [Array<Class>] List of adapter classes that support this account type
     def adapters_for_account_type(account_type)
+      return [] if bank_sync_disabled?
+
       registered_adapters.select do |adapter_class|
         adapter_class.supported_account_types.include?(account_type)
       end
@@ -94,6 +96,14 @@ class Provider::Factory
       adapters_for_account_type(account_type).flat_map do |adapter_class|
         adapter_class.connection_configs(family: family)
       end
+    end
+
+    # Installations without bank connections (manual entry and statement
+    # imports only) set DISABLE_BANK_SYNC=true to hide every provider connection
+    # option. Adapters stay registered so existing linked accounts keep working.
+    # @return [Boolean]
+    def bank_sync_disabled?
+      ActiveModel::Type::Boolean.new.cast(ENV["DISABLE_BANK_SYNC"]) == true
     end
 
     # Clear all registered adapters (useful for testing)

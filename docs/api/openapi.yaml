@@ -1170,6 +1170,49 @@ components:
               nullable: true
               description: Parent category ID. Must belong to the same family. Categories
                 support up to 2 levels of nesting.
+    CategoryUpdateRequest:
+      type: object
+      required:
+      - category
+      properties:
+        category:
+          type: object
+          properties:
+            name:
+              type: string
+            color:
+              type: string
+              description: 'Hex color code (e.g. #22c55e)'
+            icon:
+              type: string
+              description: Lucide icon name
+            parent_id:
+              type: string
+              format: uuid
+              nullable: true
+              description: Parent category ID in the same family
+    RuleKeywordCreateRequest:
+      type: object
+      required:
+      - rule
+      properties:
+        rule:
+          type: object
+          required:
+          - keyword
+          - category_id
+          properties:
+            keyword:
+              type: string
+              description: Text the transaction name must contain (case-insensitive)
+            category_id:
+              type: string
+              format: uuid
+              description: Category to set on matching transactions
+            apply_to_existing:
+              type: boolean
+              description: Also categorize existing matching transactions (in the
+                background). Hand-set categories are kept.
     Merchant:
       type: object
       required:
@@ -1814,12 +1857,39 @@ components:
         transfer:
           "$ref": "#/components/schemas/Transfer"
           nullable: true
+        attachments:
+          type: array
+          items:
+            "$ref": "#/components/schemas/TransactionAttachment"
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+    TransactionAttachment:
+      type: object
+      required:
+      - id
+      - filename
+      - content_type
+      - byte_size
+      - url
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Attachment ID, used to delete the attachment
+        filename:
+          type: string
+        content_type:
+          type: string
+        byte_size:
+          type: integer
+        url:
+          type: string
+          description: API URL that streams the file. Requires the same API authentication
+            as other endpoints.
     TransactionCollection:
       type: object
       required:
@@ -2454,9 +2524,25 @@ components:
           type: string
           format: uuid
           nullable: true
+        rows_count:
+          type: integer
+          minimum: 0
         error:
           type: string
           nullable: true
+        statement:
+          type: object
+          description: 'PDF statement imports only: the statement period, when extraction
+            found one.'
+          properties:
+            period_start_on:
+              type: string
+              format: date
+              nullable: true
+            period_end_on:
+              type: string
+              format: date
+              nullable: true
         status_detail:
           "$ref": "#/components/schemas/ImportStatusDetail"
         configuration:
@@ -5899,6 +5985,55 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update a category
+      tags:
+      - Categories
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: category updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CategoryDetail"
+        '422':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: category not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CategoryUpdateRequest"
+        required: true
+    delete:
+      summary: Delete a category
+      tags:
+      - Categories
+      description: Deletes the category. Its transactions become uncategorized and
+        its subcategories become top-level.
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: category deleted
+        '404':
+          description: category not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
   "/api/v1/chats":
     get:
       summary: List chats
@@ -7668,7 +7803,10 @@ paths:
     post:
       summary: Create import
       description: Create a new import from raw CSV content, inline Sure NDJSON content,
-        or an uploaded Sure NDJSON file. CSV content is limited to 10MB.
+        an uploaded Sure NDJSON file, or an uploaded PDF statement. CSV content is
+        limited to 10MB. A PDF `file` (type PdfImport, max 25MB) creates a statement
+        import, links it to `account_id` and starts AI extraction in the background;
+        it answers 202.
       tags:
       - Imports
       security:
@@ -7950,6 +8088,35 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ImportResponse"
+        '404':
+          description: import not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/imports/{id}/publish":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: Import ID
+      schema:
+        type: string
+    post:
+      summary: Publish an import
+      description: Queue a pending, publishable import to create its transactions.
+        Active rules then run on the new transactions.
+      tags:
+      - Imports
+      security:
+      - apiKeyAuth: []
+      responses:
+        '422':
+          description: import is not ready to publish
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
         '404':
           description: import not found
           content:
@@ -9080,6 +9247,40 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create an auto-label keyword rule
+      tags:
+      - Rules
+      description: 'Creates an active transaction rule: when the transaction name
+        contains the keyword, set the category.'
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: rule created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RuleResponse"
+        '422':
+          description: blank keyword or unknown category
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RuleKeywordCreateRequest"
+        required: true
   "/api/v1/rules/{id}":
     parameters:
     - name: id
@@ -9113,6 +9314,21 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: rule not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    delete:
+      summary: Delete a rule
+      tags:
+      - Rules
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: rule deleted
         '404':
           description: rule not found
           content:
@@ -10046,6 +10262,97 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/transactions/{transaction_id}/attachments":
+    parameters:
+    - name: transaction_id
+      in: path
+      required: true
+      description: Transaction ID
+      schema:
+        type: string
+    post:
+      summary: Upload transaction attachments
+      description: Attach receipts or other files (JPEG, PNG, WebP, GIF or PDF; 10MB
+        each; at most 10 per transaction). Returns the full transaction, including
+        its attachments.
+      tags:
+      - Transaction Attachments
+      security:
+      - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - attachments[]
+              properties:
+                attachments[]:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: One or more files
+      responses:
+        '422':
+          description: no files, unsupported type, too large, or over the limit
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: transaction not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/transactions/{transaction_id}/attachments/{id}":
+    parameters:
+    - name: transaction_id
+      in: path
+      required: true
+      description: Transaction ID
+      schema:
+        type: string
+    - name: id
+      in: path
+      required: true
+      description: Attachment ID
+      schema:
+        type: string
+    get:
+      summary: Download a transaction attachment
+      description: Streams the file. This is the `url` given for each attachment in
+        transaction JSON.
+      tags:
+      - Transaction Attachments
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: file streamed
+        '404':
+          description: attachment not found
+          content:
+            application/octet-stream:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    delete:
+      summary: Delete a transaction attachment
+      tags:
+      - Transaction Attachments
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: attachment deleted
+        '404':
+          description: attachment not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
   "/api/v1/transactions":
     get:
       summary: List transactions
@@ -10143,6 +10450,13 @@ paths:
           type: array
           items:
             type: string
+      - name: uncategorized
+        in: query
+        required: false
+        description: Only transactions without a category, excluding transfers between
+          own accounts and excluded rows
+        schema:
+          type: boolean
       - name: merchant_ids
         in: query
         required: false
@@ -10362,6 +10676,10 @@ paths:
                       type: boolean
                       description: Whether provider syncs should preserve user-supplied
                         transaction changes
+                    excluded:
+                      type: boolean
+                      description: Exclude from budgets, reports and the uncategorized
+                        filter ("not an expense"), as the web Exclude toggle does
         required: true
     delete:
       summary: Delete a transaction

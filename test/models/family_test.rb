@@ -314,7 +314,16 @@ class FamilyTest < ActiveSupport::TestCase
     assert_equal "CAD", Family.default_currency_for_country("CA")
     assert_equal "EUR", Family.default_currency_for_country("DE")
     assert_equal "BRL", Family.default_currency_for_country("BR")
-    assert_equal "USD", Family.default_currency_for_country("unknown")
+    assert_equal "PKR", Family.default_currency_for_country("PK")
+    assert_equal "PKR", Family.default_currency_for_country("unknown")
+  end
+
+  test "new families default to Pakistan and PKR" do
+    family = Family.create!(name: "Household")
+
+    assert_equal "PKR", family.currency
+    assert_equal "PK", family.country
+    assert_equal "PKR", family.primary_currency_code
   end
 
   test "available_merchants includes family merchants without transactions" do

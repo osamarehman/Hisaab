@@ -83,6 +83,16 @@ json.tags transaction.tags do |tag|
   json.color tag.color
 end
 
+# Receipts and other files. The blob routes need a browser session, so `url`
+# points at the API endpoint that streams the file with the same API auth.
+json.attachments transaction.attachments do |attachment|
+  json.id attachment.id
+  json.filename attachment.filename.to_s
+  json.content_type attachment.content_type
+  json.byte_size attachment.byte_size
+  json.url api_v1_transaction_attachment_url(transaction, attachment)
+end
+
 # Transfer information (if this transaction is part of a transfer)
 transfer = transaction.transfer
 if transfer.present?

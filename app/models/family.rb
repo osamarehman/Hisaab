@@ -263,7 +263,7 @@ class Family < ApplicationRecord
   after_create_commit :add_classifier_rules
 
   def primary_currency_code
-    self.class.normalize_currency_code(currency) || "USD"
+    self.class.normalize_currency_code(currency) || "PKR"
   end
 
   def default_currency_for_country
@@ -272,7 +272,7 @@ class Family < ApplicationRecord
 
   def self.default_currency_for_country(country)
     country_currency = ISO3166::Country.new(country.to_s.upcase)&.currency_code
-    normalize_currency_code(country_currency) || "USD"
+    normalize_currency_code(country_currency) || "PKR"
   end
 
   def self.default_currency_by_country

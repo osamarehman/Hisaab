@@ -156,7 +156,119 @@ class Api::V1::RulesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "record_not_found", json_response["error"]
   end
 
+  test "should create a keyword category rule" do
+    category = categories(:food_and_drink)
+
+    assert_difference "@family.rules.count", 1 do
+      post api_v1_rules_url,
+        params: { rule: { keyword: "K-ELECTRIC", category_id: category.id } },
+        headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :created
+    data = JSON.parse(response.body)["data"]
+    assert_equal "K-ELECTRIC", data["name"]
+    assert data["active"]
+    assert_equal [ [ "transaction_name", "like", "K-ELECTRIC" ] ],
+      data["conditions"].map { |condition| condition.values_at("condition_type", "operator", "value") }
+    assert_equal [ [ "set_transaction_category", category.id ] ],
+      data["actions"].map { |action| action.values_at("action_type", "value") }
+  end
+
+  test "should apply a new keyword rule to existing transactions when asked" do
+    RuleJob.expects(:perform_later).with(instance_of(Rule), ignore_attribute_locks: false).once
+
+    post api_v1_rules_url,
+      params: { rule: { keyword: "K-ELECTRIC", category_id: categories(:food_and_drink).id, apply_to_existing: true } },
+      headers: api_headers(read_write_api_key)
+
+    assert_response :created
+  end
+
+  test "should not apply a new keyword rule to existing transactions by default" do
+    RuleJob.expects(:perform_later).never
+
+    post api_v1_rules_url,
+      params: { rule: { keyword: "K-ELECTRIC", category_id: categories(:food_and_drink).id } },
+      headers: api_headers(read_write_api_key)
+
+    assert_response :created
+  end
+
+  test "should reject keyword rule without keyword" do
+    assert_no_difference "Rule.count" do
+      post api_v1_rules_url,
+        params: { rule: { keyword: " ", category_id: categories(:food_and_drink).id } },
+        headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal "validation_failed", JSON.parse(response.body)["error"]
+  end
+
+  test "should reject keyword rule for another family's category" do
+    other_category = families(:empty).categories.create!(name: "Other", color: "#22c55e", lucide_icon: "shapes")
+
+    assert_no_difference "Rule.count" do
+      post api_v1_rules_url,
+        params: { rule: { keyword: "K-ELECTRIC", category_id: other_category.id } },
+        headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "should reject keyword rule with read-only key" do
+    assert_no_difference "Rule.count" do
+      post api_v1_rules_url,
+        params: { rule: { keyword: "K-ELECTRIC", category_id: categories(:food_and_drink).id } },
+        headers: api_headers(@api_key)
+    end
+
+    assert_response :forbidden
+  end
+
+  test "should destroy a rule" do
+    assert_difference "Rule.count", -1 do
+      delete api_v1_rule_url(@rule), headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :no_content
+  end
+
+  test "should reject destroy with read-only key" do
+    assert_no_difference "Rule.count" do
+      delete api_v1_rule_url(@rule), headers: api_headers(@api_key)
+    end
+
+    assert_response :forbidden
+  end
+
+  test "should return 404 when destroying another family's rule" do
+    other_family = Family.create!(name: "Other Family", currency: "USD", locale: "en")
+    other_rule = other_family.rules.build(name: "Other", resource_type: "transaction", active: true)
+    other_rule.conditions.build(condition_type: "transaction_name", operator: "like", value: "other")
+    other_rule.actions.build(action_type: "set_transaction_name", value: "Other")
+    other_rule.save!
+
+    assert_no_difference "Rule.count" do
+      delete api_v1_rule_url(other_rule), headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :not_found
+  end
+
   private
+
+    def read_write_api_key
+      @read_write_api_key ||= ApiKey.create!(
+        user: @user,
+        name: "Test Write Key",
+        scopes: [ "read_write" ],
+        source: "mobile",
+        display_key: "test_rw_#{SecureRandom.hex(8)}"
+      )
+    end
 
     def api_key_without_read_scope
       # Valid persisted API keys can only be read/read_write; this intentionally

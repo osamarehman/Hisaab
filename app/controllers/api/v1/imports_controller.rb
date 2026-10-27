@@ -5,9 +5,9 @@ class Api::V1::ImportsController < Api::V1::BaseController
 
   # Ensure proper scope authorization
   before_action :ensure_read_scope, only: [ :index, :show, :rows, :preflight ]
-  before_action :ensure_write_scope, only: [ :create ]
+  before_action :ensure_write_scope, only: [ :create, :publish ]
   before_action :reject_guest_family_config_import!, only: [ :create ]
-  before_action :set_import_with_rows, only: [ :show ]
+  before_action :set_import_with_rows, only: [ :show, :publish ]
   before_action :set_import, only: [ :rows ]
 
   def index
@@ -69,6 +69,7 @@ class Api::V1::ImportsController < Api::V1::BaseController
     type = params[:type].to_s
     type = "TransactionImport" unless Import::TYPES.include?(type)
     return create_sure_import(family) if type == "SureImport"
+    return create_pdf_import(family) if type == "PdfImport" || pdf_upload?
 
     # 2. Build the import object with permitted config attributes
     @import = family.imports.build(import_config_params.merge(type: type))
@@ -141,6 +142,34 @@ class Api::V1::ImportsController < Api::V1::BaseController
     render json: { error: "internal_server_error", message: "An unexpected error occurred." }, status: :internal_server_error
   end
 
+  # Mirrors the web ImportsController#publish permission checks.
+  def publish
+    unless @import.account_statement.blank? || @import.account_statement.manageable_by?(current_resource_owner)
+      return render_import_forbidden
+    end
+    return render_import_forbidden unless @import.accounts_writable_by?(current_resource_owner)
+    return if Import::FAMILY_CONFIG_TYPES.include?(@import.type) && !reject_guest_writes!
+
+    if current_resource_owner.guest? && @import.creates_categories_or_tags?
+      return render_json({ error: "forbidden", message: "Guests cannot create categories or tags" }, status: :forbidden)
+    end
+
+    unless @import.publishable?
+      return render json: {
+        error: "not_publishable",
+        message: "Import is not ready to publish. It needs an account and reviewed, valid rows."
+      }, status: :unprocessable_entity
+    end
+
+    @import.publish_later
+    render :show, status: :accepted
+  rescue Import::MaxRowCountExceededError
+    render json: {
+      error: "max_row_count_exceeded",
+      message: "Import has more than #{@import.max_row_count} rows and cannot be published."
+    }, status: :unprocessable_entity
+  end
+
   def preflight
     preflight_result = Import::Preflight.new(family: current_resource_owner.family, params: preflight_params).call
     render json: preflight_result.payload, status: preflight_result.status
@@ -187,6 +216,74 @@ class Api::V1::ImportsController < Api::V1::BaseController
 
     def import_scope
       current_resource_owner.family.imports
+    end
+
+    def render_import_forbidden
+      render json: { error: "forbidden", message: "You do not have permission to publish this import" }, status: :forbidden
+    end
+
+    def pdf_upload?
+      params[:file].respond_to?(:content_type) && Import::ALLOWED_PDF_MIME_TYPES.include?(params[:file].content_type)
+    end
+
+    # Mirrors the web ImportsController#create_pdf_import: the statement is
+    # stored, linked to the account, and AI extraction runs in the background.
+    def create_pdf_import(family)
+      user = current_resource_owner
+      return render_import_forbidden_for_statements unless AccountStatement.statement_manager?(user)
+
+      file = params[:file]
+      return render_validation_error("file is required") unless file.respond_to?(:read)
+
+      if file.size > Import::MAX_PDF_SIZE
+        return render json: {
+          error: "file_too_large",
+          message: "File is too large. Maximum size is #{Import::MAX_PDF_SIZE / 1.megabyte}MB."
+        }, status: :unprocessable_entity
+      end
+
+      return render_invalid_pdf unless valid_pdf_file?(file)
+
+      account = nil
+      if params[:account_id].present?
+        account = family.accounts.writable_by(user).find_by(id: params[:account_id]) if valid_uuid?(params[:account_id].to_s)
+        return render_validation_error("account_id must be an account you can write to") unless account
+      end
+
+      @import = PdfImport.create_from_upload!(family: family, file: file, user: user)
+
+      if account && !@import.assign_account!(account)
+        return render json: {
+          error: "account_locked",
+          message: "This statement was already imported; its account cannot be changed.",
+          import_id: @import.id
+        }, status: :unprocessable_entity
+      end
+
+      @import.process_with_ai_later
+      @import.reload
+      render :show, status: :accepted
+    rescue AccountStatement::DuplicateUploadError
+      render json: {
+        error: "duplicate_upload",
+        message: "This statement was already uploaded by someone else in your family."
+      }, status: :unprocessable_entity
+    rescue AccountStatement::InvalidUploadError
+      render_invalid_pdf
+    end
+
+    def render_import_forbidden_for_statements
+      render json: { error: "forbidden", message: "You do not have permission to import statements" }, status: :forbidden
+    end
+
+    def render_invalid_pdf
+      render json: { error: "invalid_file_type", message: "Invalid file. Please upload a PDF statement." }, status: :unprocessable_entity
+    end
+
+    def valid_pdf_file?(file)
+      header = file.read(5)
+      file.rewind
+      header&.start_with?("%PDF-")
     end
 
     def render_import_not_found

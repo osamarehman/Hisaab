@@ -123,7 +123,7 @@ RSpec.describe 'API V1 Imports', type: :request do
     end
 
     post 'Create import' do
-      description 'Create a new import from raw CSV content, inline Sure NDJSON content, or an uploaded Sure NDJSON file. CSV content is limited to 10MB.'
+      description 'Create a new import from raw CSV content, inline Sure NDJSON content, an uploaded Sure NDJSON file, or an uploaded PDF statement. CSV content is limited to 10MB. '                   'A PDF `file` (type PdfImport, max 25MB) creates a statement import, links it to `account_id` and starts AI extraction in the background; it answers 202.'
       tags 'Imports'
       security [ { apiKeyAuth: [] } ]
       consumes 'application/json', 'multipart/form-data'
@@ -327,6 +327,33 @@ RSpec.describe 'API V1 Imports', type: :request do
 
       response '200', 'import retrieved' do
         schema '$ref' => '#/components/schemas/ImportResponse'
+
+        run_test!
+      end
+
+      response '404', 'import not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:id) { SecureRandom.uuid }
+
+        run_test!
+      end
+    end
+  end
+
+  path '/api/v1/imports/{id}/publish' do
+    parameter name: :id, in: :path, type: :string, required: true, description: 'Import ID'
+
+    post 'Publish an import' do
+      description 'Queue a pending, publishable import to create its transactions. Active rules then run on the new transactions.'
+      tags 'Imports'
+      security [ { apiKeyAuth: [] } ]
+      produces 'application/json'
+
+      let(:id) { pending_import.id }
+
+      response '422', 'import is not ready to publish' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
 
         run_test!
       end

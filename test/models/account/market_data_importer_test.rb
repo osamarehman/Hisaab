@@ -73,7 +73,7 @@ class Account::MarketDataImporterTest < ActiveSupport::TestCase
     )
 
     @provider.expects(:fetch_exchange_rates)
-             .with(from: "CAD", to: "USD", start_date: anything, end_date: anything)
+             .with(from: "CAD", to: "PKR", start_date: anything, end_date: anything)
              .returns(provider_success_response([]))
 
     Account::MarketDataImporter.new(account).import_all

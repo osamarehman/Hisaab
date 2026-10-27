@@ -26,7 +26,7 @@ RSpec.describe 'API V1 Rules', type: :request do
       user: user,
       name: 'API Docs Key',
       key: key,
-      scopes: %w[read],
+      scopes: %w[read_write],
       source: 'web'
     )
   end
@@ -114,6 +114,44 @@ RSpec.describe 'API V1 Rules', type: :request do
         run_test!
       end
     end
+
+    post 'Create an auto-label keyword rule' do
+      tags 'Rules'
+      description 'Creates an active transaction rule: when the transaction name contains the keyword, set the category.'
+      security [ { apiKeyAuth: [] } ]
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :body, in: :body, required: true, schema: {
+        '$ref' => '#/components/schemas/RuleKeywordCreateRequest'
+      }
+
+      let(:category) { family.categories.create!(name: 'Utilities', color: '#22c55e', lucide_icon: 'zap') }
+
+      response '201', 'rule created' do
+        schema '$ref' => '#/components/schemas/RuleResponse'
+
+        let(:body) { { rule: { keyword: 'K-ELECTRIC', category_id: category.id, apply_to_existing: true } } }
+
+        run_test!
+      end
+
+      response '422', 'blank keyword or unknown category' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:body) { { rule: { keyword: 'K-ELECTRIC', category_id: SecureRandom.uuid } } }
+
+        run_test!
+      end
+
+      response '401', 'unauthorized' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:'X-Api-Key') { nil }
+        let(:body) { { rule: { keyword: 'K-ELECTRIC', category_id: category.id } } }
+
+        run_test!
+      end
+    end
   end
 
   path '/api/v1/rules/{id}' do
@@ -145,6 +183,26 @@ RSpec.describe 'API V1 Rules', type: :request do
 
         let(:'X-Api-Key') { api_key_without_read_scope.plain_key }
 
+        run_test!
+      end
+
+      response '404', 'rule not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+
+        let(:id) { SecureRandom.uuid }
+
+        run_test!
+      end
+    end
+
+    delete 'Delete a rule' do
+      tags 'Rules'
+      security [ { apiKeyAuth: [] } ]
+      produces 'application/json'
+
+      let(:id) { rule.id }
+
+      response '204', 'rule deleted' do
         run_test!
       end
 

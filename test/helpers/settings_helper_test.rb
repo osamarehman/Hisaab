@@ -6,6 +6,13 @@ class SettingsHelperTest < ActionView::TestCase
   # Views get every helper; the Trade Republic summary uses its expiry helper.
   include TradeRepublicHelper
 
+  test "bank sync settings are hidden when DISABLE_BANK_SYNC is set" do
+    Current.stubs(:user).returns(users(:family_admin))
+
+    with_env_overrides("DISABLE_BANK_SYNC" => nil) { assert bank_sync_settings_visible? }
+    with_env_overrides("DISABLE_BANK_SYNC" => "true") { assert_not bank_sync_settings_visible? }
+  end
+
   test "provider_summary for snaptrade is off when family has no snaptrade items" do
     @snaptrade_items = []
 

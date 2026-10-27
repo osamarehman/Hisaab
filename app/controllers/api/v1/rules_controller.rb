@@ -11,8 +11,10 @@ class Api::V1::RulesController < Api::V1::BaseController
   }.freeze
   RESOURCE_TYPES = %w[transaction].freeze
 
-  before_action :ensure_read_scope
-  before_action :set_rule, only: :show
+  before_action :ensure_read_scope, only: %i[index show]
+  before_action :ensure_write_scope, only: %i[create destroy]
+  before_action :reject_guest_writes!, only: %i[create destroy]
+  before_action :set_rule, only: %i[show destroy]
 
   def index
     return render_invalid_resource_type_filter if invalid_resource_type_filter?
@@ -43,7 +45,42 @@ class Api::V1::RulesController < Api::V1::BaseController
     render :show
   end
 
+  # Creates an auto-label keyword rule: transaction name contains `keyword`
+  # -> set category `category_id`.
+  def create
+    attrs = keyword_rule_params
+    keyword = attrs[:keyword].to_s.strip
+    return render_validation_error("keyword is required") if keyword.blank?
+
+    category = current_resource_owner.family.categories.find_by(id: attrs[:category_id]) if valid_uuid?(attrs[:category_id].to_s)
+    return render_validation_error("category_id must be a category in your family") unless category
+
+    @rule = Rule.create_keyword_category_rule!(
+      current_resource_owner.family,
+      keyword: keyword,
+      category: category,
+      apply_to_existing: ActiveModel::Type::Boolean.new.cast(attrs[:apply_to_existing]) == true
+    )
+
+    render :show, status: :created
+  rescue ActiveRecord::RecordInvalid => e
+    render_validation_error(e.record.errors.full_messages.to_sentence)
+  end
+
+  def destroy
+    @rule.destroy!
+    head :no_content
+  end
+
   private
+
+    def keyword_rule_params
+      params.require(:rule).permit(:keyword, :category_id, :apply_to_existing)
+    end
+
+    def ensure_write_scope
+      authorize_scope!(:write)
+    end
 
     def set_rule
       @rule = current_resource_owner.family.rules

@@ -10,6 +10,18 @@ class RuleTest < ActiveSupport::TestCase
     @groceries_category = @family.categories.create!(name: "Groceries")
   end
 
+  test "keyword category rule categorizes transactions whose name contains the keyword" do
+    matching = create_transaction(date: Date.current, account: @account, name: "K-ELECTRIC BILL OCT")
+    other = create_transaction(date: Date.current, account: @account, name: "SUI GAS")
+
+    rule = Rule.create_keyword_category_rule!(@family, keyword: "k-electric", category: @groceries_category)
+    rule.apply
+
+    assert rule.active?
+    assert_equal @groceries_category, matching.transaction.reload.category
+    assert_nil other.transaction.reload.category
+  end
+
   test "rejects a null byte in the rule name" do
     rule = @family.rules.build(name: "bad\0name", resource_type: "transaction")
     rule.actions.build(action_type: "exclude_transaction")

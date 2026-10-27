@@ -301,6 +301,94 @@ class Api::V1::CategoriesControllerTest < ActionDispatch::IntegrationTest
     assert body["message"].present?
   end
 
+  # Update action tests
+
+  test "should update category" do
+    patch "/api/v1/categories/#{@category.id}",
+      params: { category: { name: "Groceries & Eating Out", color: "#22c55e", icon: "utensils" } },
+      headers: api_headers(read_write_api_key)
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal "Groceries & Eating Out", body["name"]
+    assert_equal "#22c55e", body["color"]
+    assert_equal "utensils", body["icon"]
+    assert_equal "Groceries & Eating Out", @category.reload.name
+  end
+
+  test "should reject update with invalid params" do
+    patch "/api/v1/categories/#{@category.id}",
+      params: { category: { color: "not-a-color" } },
+      headers: api_headers(read_write_api_key)
+
+    assert_response :unprocessable_entity
+    assert_equal "unprocessable_entity", JSON.parse(response.body)["error"]
+  end
+
+  test "should reject update setting the category as its own parent" do
+    patch "/api/v1/categories/#{@category.id}",
+      params: { category: { parent_id: @category.id } },
+      headers: api_headers(read_write_api_key)
+
+    assert_response :unprocessable_entity
+    assert_nil @category.reload.parent_id
+  end
+
+  test "should reject update with read-only key" do
+    patch "/api/v1/categories/#{@category.id}",
+      params: { category: { name: "Nope" } },
+      headers: api_headers(read_only_api_key)
+
+    assert_response :forbidden
+    assert_equal "Food & Drink", @category.reload.name
+  end
+
+  test "should return 404 when updating another family's category" do
+    other_category = families(:empty).categories.create!(name: "Other", color: "#22c55e", lucide_icon: "shapes")
+
+    patch "/api/v1/categories/#{other_category.id}",
+      params: { category: { name: "Mine now" } },
+      headers: api_headers(read_write_api_key)
+
+    assert_response :not_found
+    assert_equal "Other", other_category.reload.name
+  end
+
+  # Destroy action tests
+
+  test "should destroy category and leave its transactions uncategorized" do
+    category = @user.family.categories.create!(name: "Utilities", color: "#22c55e", lucide_icon: "zap")
+    transaction = transactions(:one)
+    transaction.update!(category: category)
+
+    assert_difference "Category.count", -1 do
+      delete "/api/v1/categories/#{category.id}", headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :no_content
+    assert_nil transaction.reload.category_id
+  end
+
+  test "should reject destroy with read-only key" do
+    assert_no_difference "Category.count" do
+      delete "/api/v1/categories/#{@category.id}", headers: api_headers(read_only_api_key)
+    end
+
+    assert_response :forbidden
+  end
+
+  test "should require authentication to destroy" do
+    delete "/api/v1/categories/#{@category.id}"
+
+    assert_response :unauthorized
+  end
+
+  test "should return 404 when destroying unknown category" do
+    delete "/api/v1/categories/#{SecureRandom.uuid}", headers: api_headers(read_write_api_key)
+
+    assert_response :not_found
+  end
+
   private
 
     def read_write_api_key

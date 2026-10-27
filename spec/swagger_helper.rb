@@ -668,6 +668,36 @@ RSpec.configure do |config|
               }
             }
           },
+          CategoryUpdateRequest: {
+            type: :object,
+            required: %w[category],
+            properties: {
+              category: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  color: { type: :string, description: 'Hex color code (e.g. #22c55e)' },
+                  icon: { type: :string, description: 'Lucide icon name' },
+                  parent_id: { type: :string, format: :uuid, nullable: true, description: 'Parent category ID in the same family' }
+                }
+              }
+            }
+          },
+          RuleKeywordCreateRequest: {
+            type: :object,
+            required: %w[rule],
+            properties: {
+              rule: {
+                type: :object,
+                required: %w[keyword category_id],
+                properties: {
+                  keyword: { type: :string, description: 'Text the transaction name must contain (case-insensitive)' },
+                  category_id: { type: :string, format: :uuid, description: 'Category to set on matching transactions' },
+                  apply_to_existing: { type: :boolean, description: 'Also categorize existing matching transactions (in the background). Hand-set categories are kept.' }
+                }
+              }
+            }
+          },
           Merchant: {
             type: :object,
             required: %w[id name],
@@ -970,8 +1000,26 @@ RSpec.configure do |config|
                 items: { '$ref' => '#/components/schemas/Tag' }
               },
               transfer: { '$ref' => '#/components/schemas/Transfer', nullable: true },
+              attachments: {
+                type: :array,
+                items: { '$ref' => '#/components/schemas/TransactionAttachment' }
+              },
               created_at: { type: :string, format: :'date-time' },
               updated_at: { type: :string, format: :'date-time' }
+            }
+          },
+          TransactionAttachment: {
+            type: :object,
+            required: %w[id filename content_type byte_size url],
+            properties: {
+              id: { type: :string, format: :uuid, description: 'Attachment ID, used to delete the attachment' },
+              filename: { type: :string },
+              content_type: { type: :string },
+              byte_size: { type: :integer },
+              url: {
+                type: :string,
+                description: 'API URL that streams the file. Requires the same API authentication as other endpoints.'
+              }
             }
           },
           TransactionCollection: {
@@ -1331,7 +1379,16 @@ RSpec.configure do |config|
               created_at: { type: :string, format: :'date-time' },
               updated_at: { type: :string, format: :'date-time' },
               account_id: { type: :string, format: :uuid, nullable: true },
+              rows_count: { type: :integer, minimum: 0 },
               error: { type: :string, nullable: true },
+              statement: {
+                type: :object,
+                description: 'PDF statement imports only: the statement period, when extraction found one.',
+                properties: {
+                  period_start_on: { type: :string, format: :date, nullable: true },
+                  period_end_on: { type: :string, format: :date, nullable: true }
+                }
+              },
               status_detail: { '$ref' => '#/components/schemas/ImportStatusDetail' },
               configuration: { '$ref' => '#/components/schemas/ImportConfiguration' },
               stats: { '$ref' => '#/components/schemas/ImportStats' },

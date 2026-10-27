@@ -1,9 +1,17 @@
+# Pinned to USD / US: the column defaults are PKR / PK, and most tests are
+# written in dollars.
 empty:
   name: Family
+  currency: USD
+  country: US
 
 dylan_family:
   name: The Dylan Family
+  currency: USD
+  country: US
 
 inactive_trial:
   name: Inactive Trial Family
+  currency: USD
+  country: US
   created_at: <%= 90.days.ago %>

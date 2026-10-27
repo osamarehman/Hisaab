@@ -776,9 +776,9 @@ Rails.application.routes.draw do
       resources :balances, only: [ :index, :show ]
       resources :budgets, only: [ :index, :show ]
       resources :budget_categories, only: [ :index, :show ]
-      resources :categories, only: [ :index, :show, :create ]
+      resources :categories, only: [ :index, :show, :create, :update, :destroy ]
       resources :merchants, only: [ :index, :show, :create ]
-      resources :rules, only: [ :index, :show ]
+      resources :rules, only: [ :index, :show, :create, :destroy ]
       resources :rule_runs, only: [ :index, :show ]
       resources :securities, only: [ :index, :show ]
       resources :security_prices, only: [ :index, :show ]
@@ -786,6 +786,7 @@ Rails.application.routes.draw do
 
       resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
         resource :split, only: [ :show, :create, :update, :destroy ]
+        resources :attachments, only: [ :show, :create, :destroy ], controller: :transaction_attachments
       end
       resources :trades, only: [ :index, :show, :create, :update, :destroy ]
       resources :holdings, only: [ :index, :show ]
@@ -799,6 +800,7 @@ Rails.application.routes.draw do
       resources :imports, only: [ :index, :show, :create ] do
         post :preflight, on: :collection
         get :rows, on: :member
+        post :publish, on: :member
       end
       resources :import_sessions, only: [ :show, :create ] do
         post :chunks, on: :member, action: :create_chunk

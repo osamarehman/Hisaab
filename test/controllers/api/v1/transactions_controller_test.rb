@@ -249,6 +249,87 @@ class Api::V1::TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  test "should filter to uncategorized transactions excluding transfers" do
+    uncategorized = create_transaction(account: @account, name: "Unlabelled bazaar run", category: nil)
+    categorized = create_transaction(account: @account, name: "Labelled", category: categories(:food_and_drink))
+    transfer = create_transfer_between_accounts
+
+    get api_v1_transactions_url, params: { uncategorized: true, per_page: 100 }, headers: api_headers(@api_key)
+    assert_response :success
+
+    transactions = JSON.parse(response.body)["transactions"]
+    ids = transactions.map { |transaction| transaction["id"] }
+    assert_includes ids, uncategorized.transaction.id
+    assert_not_includes ids, categorized.transaction.id
+    assert_not_includes ids, transfer.inflow_transaction_id
+    assert_not_includes ids, transfer.outflow_transaction_id
+    assert transactions.all? { |transaction| transaction["category"].nil? }
+  end
+
+  test "should mark a transaction as not an expense and drop it from the uncategorized queue" do
+    entry = create_transaction(account: @account, name: "ATM CASH WITHDRAWAL", category: nil)
+
+    patch api_v1_transaction_url(entry.transaction),
+      params: { transaction: { excluded: true } },
+      headers: api_headers(@api_key)
+
+    assert_response :success
+    assert JSON.parse(response.body)["excluded"]
+    assert entry.reload.excluded?
+
+    get api_v1_transactions_url, params: { uncategorized: true, per_page: 100 }, headers: api_headers(@api_key)
+    ids = JSON.parse(response.body)["transactions"].map { |transaction| transaction["id"] }
+    assert_not_includes ids, entry.transaction.id
+
+    patch api_v1_transaction_url(entry.transaction),
+      params: { transaction: { excluded: false } },
+      headers: api_headers(@api_key)
+
+    assert_response :success
+    assert_not entry.reload.excluded?
+  end
+
+  test "should leave excluded unchanged when not provided" do
+    entry = create_transaction(account: @account, name: "Already excluded", category: nil)
+    entry.update!(excluded: true)
+
+    patch api_v1_transaction_url(entry.transaction),
+      params: { transaction: { notes: "still excluded" } },
+      headers: api_headers(@api_key)
+
+    assert_response :success
+    assert entry.reload.excluded?
+  end
+
+  test "should reject excluding a transaction with a read-only key" do
+    entry = create_transaction(account: @account, name: "ATM", category: nil)
+
+    patch api_v1_transaction_url(entry.transaction),
+      params: { transaction: { excluded: true } },
+      headers: api_headers(@read_only_api_key)
+
+    assert_response :forbidden
+    assert_not entry.reload.excluded?
+  end
+
+  test "should include attachments in transaction JSON" do
+    @transaction.attachments.attach(
+      io: StringIO.new("receipt"), filename: "bill.jpg", content_type: "image/jpeg"
+    )
+
+    get api_v1_transaction_url(@transaction), headers: api_headers(@api_key)
+    assert_response :success
+
+    attachments = JSON.parse(response.body)["attachments"]
+    assert_equal 1, attachments.size
+    attachment = @transaction.attachments.first
+    assert_equal attachment.id, attachments.first["id"]
+    assert_equal "bill.jpg", attachments.first["filename"]
+    assert_equal "image/jpeg", attachments.first["content_type"]
+    assert_equal 7, attachments.first["byte_size"]
+    assert_equal api_v1_transaction_attachment_url(@transaction, attachment), attachments.first["url"]
+  end
+
   # SHOW action tests
   test "should show transaction with valid API key" do
     get api_v1_transaction_url(@transaction), headers: api_headers(@api_key)

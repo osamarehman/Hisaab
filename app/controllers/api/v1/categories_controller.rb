@@ -4,9 +4,9 @@ class Api::V1::CategoriesController < Api::V1::BaseController
   include Pagy::Backend
 
   before_action :ensure_read_scope, only: %i[index show]
-  before_action :ensure_write_scope, only: :create
-  before_action :reject_guest_writes!, only: :create
-  before_action :set_category, only: :show
+  before_action :ensure_write_scope, only: %i[create update destroy]
+  before_action :reject_guest_writes!, only: %i[create update destroy]
+  before_action :set_category, only: %i[show update destroy]
 
   def index
     family = current_resource_owner.family
@@ -77,6 +77,38 @@ class Api::V1::CategoriesController < Api::V1::BaseController
         message: @category.errors.full_messages.join(", ")
       }, status: :unprocessable_entity
     end
+  end
+
+  def update
+    attrs = category_params
+
+    if attrs[:parent_id].present? && !current_resource_owner.family.categories.where.not(id: @category.id).exists?(id: attrs[:parent_id])
+      return render json: {
+        error: "unprocessable_entity",
+        message: "Parent must be another category in your family"
+      }, status: :unprocessable_entity
+    end
+
+    if @category.update(attrs)
+      render :show
+    else
+      render json: {
+        error: "unprocessable_entity",
+        message: @category.errors.full_messages.join(", ")
+      }, status: :unprocessable_entity
+    end
+  end
+
+  # Transactions in the category become uncategorized (Category's
+  # before_destroy hook); subcategories become top-level categories.
+  def destroy
+    @category.destroy!
+    head :no_content
+  rescue ActiveRecord::RecordNotDestroyed => e
+    render json: {
+      error: "unprocessable_entity",
+      message: e.record.errors.full_messages.to_sentence.presence || "Category could not be deleted"
+    }, status: :unprocessable_entity
   end
 
   private

@@ -230,6 +230,19 @@ class Rule < ApplicationRecord
     nil
   end
 
+  # An auto-label keyword: an active rule that sets `category` on transactions
+  # whose name contains `keyword`. With apply_to_existing it also runs against
+  # the transactions already recorded, leaving user-locked categories alone.
+  # Raises ActiveRecord::RecordInvalid when the rule is invalid.
+  def self.create_keyword_category_rule!(family, keyword:, category:, apply_to_existing: false)
+    rule = family.rules.build(name: keyword, resource_type: "transaction", active: true)
+    rule.conditions.build(condition_type: "transaction_name", operator: "like", value: keyword)
+    rule.actions.build(action_type: "set_transaction_category", value: category.id.to_s)
+    rule.save!
+    rule.apply_later if apply_to_existing
+    rule
+  end
+
   # Calculates total unique resources affected across multiple rules
   # This handles overlapping rules by deduplicating transaction IDs
   def self.total_affected_resource_count(rules)

@@ -29,6 +29,26 @@ class Transaction < ApplicationRecord
 
   after_save :clear_merchant_unlinked_association, if: :merchant_id_previously_changed?
 
+  # Attaches uploaded files, holding the row lock so concurrent uploads cannot
+  # pass the per-transaction limit together. Returns false with errors on
+  # :attachments when the limit or a file check fails; files rejected by the
+  # validation are purged again.
+  def add_attachments(files)
+    with_lock do
+      if attachments.count + files.size > MAX_ATTACHMENTS_PER_TRANSACTION
+        errors.add(:attachments, :too_many, max: MAX_ATTACHMENTS_PER_TRANSACTION)
+        next false
+      end
+
+      existing_ids = attachments.pluck(:id)
+      attachments.attach(files)
+      next true if valid?
+
+      attachments.reject { |attachment| existing_ids.include?(attachment.id) }.each(&:purge)
+      false
+    end
+  end
+
   # Accessors for exchange_rate stored in extra jsonb field
   def exchange_rate
     extra&.dig("exchange_rate")
@@ -203,6 +223,10 @@ class Transaction < ApplicationRecord
   scope :pending, -> { where(Transaction.pending_sql) }
 
   scope :excluding_pending, -> { where(Transaction.not_pending_sql) }
+
+  # Rows the user still has to categorize: no category, and not a transfer leg
+  # (see UNCATEGORIZED_EXCLUDED_KINDS).
+  scope :uncategorized, -> { where(category_id: nil).where.not(kind: UNCATEGORIZED_EXCLUDED_KINDS) }
 
   # SQL snippet for raw queries that must exclude pending transactions.
   # Use in income statements, balance sheets, and raw analytics.

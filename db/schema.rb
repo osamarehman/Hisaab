@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_090001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -855,9 +855,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_090001) do
     t.decimal "categorization_confidence_threshold", precision: 3, scale: 2, default: "0.7", null: false
     t.string "categorization_provider", default: "llm", null: false
     t.decimal "categorization_shadow_rate", precision: 3, scale: 2, default: "0.0", null: false
-    t.string "country", default: "US"
+    t.string "country", default: "PK"
     t.datetime "created_at", null: false
-    t.string "currency", default: "USD"
+    t.string "currency", default: "PKR"
     t.boolean "data_enrichment_enabled", default: false
     t.string "date_format", default: "%m-%d-%Y"
     t.string "default_account_sharing", default: "shared", null: false

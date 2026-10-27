@@ -2,7 +2,7 @@ module SettingsHelper
   SETTINGS_ORDER = [
     # General section
     { name: -> { t("settings.settings_nav.accounts_label") }, path: :accounts_path },
-    { name: -> { t("settings.settings_nav.bank_sync_label") }, path: :settings_providers_path, condition: :admin_user? },
+    { name: -> { t("settings.settings_nav.bank_sync_label") }, path: :settings_providers_path, condition: :bank_sync_settings_visible? },
     { name: -> { t("settings.settings_nav.preferences_label") }, path: :settings_preferences_path },
     { name: -> { t("settings.settings_nav.appearance_label") }, path: :settings_appearance_path },
     { name: -> { t("settings.settings_nav.profile_label") }, path: :settings_profile_path },
@@ -312,6 +312,10 @@ module SettingsHelper
     # Helper used by SETTINGS_ORDER conditions
     def admin_user?
       Current.user&.admin?
+    end
+
+    def bank_sync_settings_visible?
+      admin_user? && !Provider::Factory.bank_sync_disabled?
     end
 
     def self_hosted_and_admin?
