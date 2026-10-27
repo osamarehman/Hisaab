@@ -267,6 +267,7 @@ class TransactionsService {
     String? categoryId,
     String? merchantId,
     List<String>? tagIds,
+    bool? excluded,
   }) async {
     final url =
         Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions/$transactionId');
@@ -281,6 +282,7 @@ class TransactionsService {
       if (categoryId != null) 'category_id': categoryId,
       if (merchantId != null) 'merchant_id': merchantId,
       if (tagIds != null) 'tag_ids': tagIds,
+      if (excluded != null) 'excluded': excluded,
     };
 
     if (transaction.isEmpty) {

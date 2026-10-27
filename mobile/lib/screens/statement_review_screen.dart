@@ -59,6 +59,10 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
   String? _error;
 
   String? _pickedId;
+
+  // Pseudo-label: marks the line excluded (e.g. ATM cash, own-account moves)
+  // instead of giving it a category.
+  static const _notExpenseId = '__not_an_expense__';
   bool _labelAll = true;
 
   @override
@@ -206,10 +210,12 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     if (token == null || !mounted) return;
     setState(() => _saving = true);
 
+    final notExpense = labelId == _notExpenseId;
     final result = await _transactions.updateTransaction(
       accessToken: token,
       transactionId: item.id!,
-      categoryId: labelId,
+      categoryId: notExpense ? null : labelId,
+      excluded: notExpense ? true : null,
     );
     if (!mounted) return;
     if (result['success'] != true) {
@@ -219,7 +225,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     }
 
     final keyword = _keywordController.text.trim();
-    if (_labelAll && keyword.isNotEmpty) {
+    if (_labelAll && keyword.isNotEmpty && !notExpense) {
       final rule = await _rules.createRule(
         accessToken: token,
         keyword: keyword,
@@ -424,6 +430,13 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               children: [
                 for (final label in _labels)
                   SizedBox(width: width, child: _labelButton(c, label)),
+                SizedBox(
+                  width: width,
+                  child: _labelButton(
+                    c,
+                    Category(id: _notExpenseId, name: 'Not an expense'),
+                  ),
+                ),
               ],
             );
           },
