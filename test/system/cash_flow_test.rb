@@ -167,7 +167,7 @@ class CashFlowTest < ApplicationSystemTestCase
     sign_in @user
     assert_selector "#cashflow-preview svg .sankey-link"
     install_posthog_fake
-    find("#cashflow-preview").scroll_to(:center)
+    scroll_preview_into_view
     assert_selector "#cashflow-preview [data-preview-sankey-chart-target='chart'] svg"
     assert_event_count "sankey_preview_displayed", 1
     page.execute_script("document.dispatchEvent(new Event('posthog:ready'))")
@@ -237,7 +237,7 @@ class CashFlowTest < ApplicationSystemTestCase
     install_posthog_fake
     assert_event_count "sankey_preview_displayed", 0
     section.find("[data-dashboard-section-target='button']").click
-    find("#cashflow-preview").scroll_to(:center)
+    scroll_preview_into_view
     assert_event_count "sankey_preview_displayed", 1
     within "#cashflow-preview" do
       find_button("Expand", enable_aria_label: true).send_keys(:enter)
@@ -293,7 +293,7 @@ class CashFlowTest < ApplicationSystemTestCase
         };
         document.dispatchEvent(new Event('posthog:ready'));
       JS
-      find("#cashflow-preview").scroll_to(:center)
+      scroll_preview_into_view
       assert_event_count "sankey_preview_displayed", 1
       within "#cashflow-preview" do
         click_button "Expand", enable_aria_label: true
@@ -427,6 +427,12 @@ class CashFlowTest < ApplicationSystemTestCase
         document.querySelector('#cashflow-preview').setAttribute('data-sankey-preview-feedback-key-value', 'test-public-token');
         document.dispatchEvent(new Event('posthog:ready'));
       JS
+    end
+
+    # The page scrolls inside <main>, which Capybara's scroll_to leaves
+    # alone, and the preview sits below the month header's first screen.
+    def scroll_preview_into_view
+      find("#cashflow-preview").execute_script("this.scrollIntoView({ block: 'center' })")
     end
 
     def assert_event_count(event, count)

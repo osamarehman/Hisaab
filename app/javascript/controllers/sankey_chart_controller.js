@@ -28,15 +28,10 @@ export default class extends Controller {
   static EXTENT_MARGIN = 16;
   static MIN_NODE_PADDING = 4;
   static MAX_PADDING_RATIO = 0.4;
-  static CORNER_RADIUS = 8;
+  static CORNER_RADIUS = 2;
   static ZOOM_TRANSITION_MS = 220;
   static DEFAULT_COLOR = "var(--color-gray-400)";
-  static CSS_VAR_MAP = {
-    "var(--color-success)": "#10A861",
-    "var(--color-destructive)": "#EC2222",
-    "var(--color-gray-400)": "#9E9E9E",
-    "var(--color-gray-500)": "#737373",
-  };
+  static LINK_OPACITY = 0.22;
   static MIN_LABEL_SPACING = 28; // Minimum vertical space needed for labels (2 lines)
 
   connect() {
@@ -134,8 +129,6 @@ export default class extends Controller {
       effectivePadding,
     );
 
-    this.#createGradients(svg, sankeyData.links);
-
     const linkPaths = this.#drawLinks(svg, sankeyData.links);
     const { nodeGroups, hiddenLabels } = this.#drawNodes(
       svg,
@@ -224,46 +217,24 @@ export default class extends Controller {
     });
   }
 
-  #createGradients(svg, links) {
-    const defs = svg.append("defs");
+  // Links are flat bands in the category's colour, tinted rather than
+  // graded, to match the ledger's no-gradient look. CSS variables are
+  // resolved through the page's computed style so d3 can tint them.
+  #linkColor(link) {
+    const fallback = this.constructor.DEFAULT_COLOR;
+    let colorStr = link.color || fallback;
 
-    links.forEach((link, i) => {
-      const gradientId = this.#gradientId(link, i);
-      const gradient = defs
-        .append("linearGradient")
-        .attr("id", gradientId)
-        .attr("gradientUnits", "userSpaceOnUse")
-        .attr("x1", link.source.x1)
-        .attr("x2", link.target.x0);
+    const cssVar = colorStr.match(/^var\((--[\w-]+)\)$/);
+    if (cssVar) {
+      colorStr = getComputedStyle(this.element)
+        .getPropertyValue(cssVar[1])
+        .trim();
+    }
 
-      gradient
-        .append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", this.#colorWithOpacity(link.source.color));
-
-      gradient
-        .append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", this.#colorWithOpacity(link.target.color));
-    });
-  }
-
-  #gradientId(link, index) {
-    return `link-gradient-${link.source.index}-${link.target.index}-${index}`;
-  }
-
-  #colorWithOpacity(nodeColor, opacity = 0.1) {
-    const defaultColor = this.constructor.DEFAULT_COLOR;
-    let colorStr = nodeColor || defaultColor;
-
-    // Map CSS variables to hex values for d3 color manipulation
-    colorStr = this.constructor.CSS_VAR_MAP[colorStr] || colorStr;
-
-    // Unmapped CSS vars cannot be manipulated, return as-is
-    if (colorStr.startsWith("var(--")) return colorStr;
-
-    const d3Color = d3.color(colorStr);
-    return d3Color ? d3Color.copy({ opacity }) : defaultColor;
+    const d3Color = colorStr ? d3.color(colorStr) : null;
+    return d3Color
+      ? d3Color.copy({ opacity: this.constructor.LINK_OPACITY })
+      : fallback;
   }
 
   #drawLinks(svg, links) {
@@ -280,7 +251,7 @@ export default class extends Controller {
           target: [d.target.x0, d.y1],
         }),
       )
-      .attr("stroke", (d, i) => `url(#${this.#gradientId(d, i)})`)
+      .attr("stroke", (d) => this.#linkColor(d))
       .attr("stroke-width", (d) => Math.max(1, d.width))
       .style("transition", "opacity 0.3s ease");
   }

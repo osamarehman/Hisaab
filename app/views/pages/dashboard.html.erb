@@ -1,26 +1,26 @@
 <% content_for :page_header do %>
-  <div class="space-y-1 mb-6 flex gap-4 justify-between items-center lg:items-start">
-    <div class="space-y-1">
-      <h1 class="text-xl lg:text-3xl font-medium text-primary">
-        <%= t("pages.dashboard.welcome", name: Current.user.first_name) %>
-      </h1>
-      <p class="text-sm lg:text-base text-secondary">
-        <%= t("pages.dashboard.subtitle") %>
-      </p>
-    </div>
+  <% month = @month_overview&.month || Date.current.beginning_of_month %>
+  <%= render DS::PageHeader.new(
+    title: l(month, format: "%B %Y"),
+    eyebrow: [ Current.family.name.presence, Current.family.currency ].compact.join(" · "),
+    class: "mb-8"
+  ) do |header| %>
+    <% header.with_actions do %>
+      <% if @month_overview %>
+        <%= render DS::MonthSwitcher.new(month: month, max: Date.current) %>
+      <% end %>
 
-    <div class="flex items-center gap-2">
       <% if accessible_accounts.any? %>
         <% if @customizing_dashboard %>
           <%= render DS::Link.new(
-            variant: "outline",
+            variant: "secondary",
             icon: "check",
             text: t("pages.dashboard.customize.done"),
             href: root_path(@dashboard_view_params)
           ) %>
         <% else %>
           <%= render DS::Link.new(
-            variant: "outline",
+            variant: "secondary",
             icon: "layout-grid",
             href: root_path(@dashboard_view_params.merge(customize: true)),
             aria: { label: t("pages.dashboard.customize.start") },
@@ -33,12 +33,13 @@
             icon: "layout-grid",
             href: root_path(@dashboard_view_params.merge(customize: true)),
             aria: { label: t("pages.dashboard.customize.start") },
-            class: "rounded-full lg:hidden"
+            class: "lg:hidden"
           ) %>
         <% end %>
       <% end %>
 
       <%= render DS::Link.new(
+        variant: "secondary",
         icon: "plus",
         text: t("pages.dashboard.new"),
         href: new_account_path,
@@ -47,19 +48,25 @@
       ) %>
 
       <%= render DS::Link.new(
-          variant: "icon-inverse",
-          icon: "plus",
-          href: new_account_path,
-          frame: :modal,
-          class: "rounded-full lg:hidden"
-        ) %>
-    </div>
-  </div>
+        variant: "icon-inverse",
+        icon: "plus",
+        href: new_account_path,
+        frame: :modal,
+        aria: { label: t("pages.dashboard.new_account") },
+        class: "lg:hidden"
+      ) %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @month_overview %>
+  <%= render "pages/dashboard/month_overview", overview: @month_overview, uncategorized_count: @uncategorized_count %>
 <% end %>
 
 <%= turbo_frame_tag "dashboard_sections", target: "_top" do %>
   <% if accessible_accounts.any? %>
-    <div class="flex items-center justify-end mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mb-3">
+      <h2 class="font-display text-2xl font-semibold tracking-tight text-primary"><%= t("pages.dashboard.charts_title") %></h2>
       <%# Keeps the widgets' own months and filters; a preset replaces any custom range. %>
       <%= render UI::PeriodPicker.new(selected: @period, url: root_path, frame: "dashboard_sections", extra_params: @dashboard_view_params.except(:start_date, :end_date)) %>
     </div>
@@ -68,7 +75,7 @@
   <% if @customizing_dashboard && accessible_accounts.any? %>
     <%= render DS::Card.new(class: "mb-6 gap-3") do %>
       <div class="space-y-1">
-        <h2 class="text-base font-medium text-primary"><%= t("pages.dashboard.customize.hidden_title") %></h2>
+        <h3 class="text-base font-medium text-primary"><%= t("pages.dashboard.customize.hidden_title") %></h3>
         <p class="text-sm text-secondary">
           <%= @hidden_dashboard_sections.any? ? t("pages.dashboard.customize.hidden_description") : t("pages.dashboard.customize.none_hidden") %>
         </p>
@@ -116,7 +123,7 @@
   <% if accessible_accounts.any? %>
     <% @dashboard_sections.each do |section| %>
       <section
-        class="bg-container rounded-xl shadow-border-xs transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 [-webkit-touch-callout:none]<%= " 2xl:col-span-2" if two_column && section[:layout][:col_span] == "full" %>"
+        class="border-t border-solid transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 [-webkit-touch-callout:none]<%= " 2xl:col-span-2" if two_column && section[:layout][:col_span] == "full" %>"
         style="<%= "--dash-widget-h: #{section[:layout][:height_px]}px;" if section[:layout][:grow] %>"
         data-sortable-list-target="item"
         data-sortable-list-id="<%= section[:key] %>"
@@ -139,7 +146,7 @@
           touchcancel->sortable-list#touchCancel
           contextmenu->sortable-list#suppressContextMenu
           keydown->sortable-list#handleKeyDown">
-        <div class="px-4 py-2 flex items-center justify-between">
+        <div class="px-4 pt-3 pb-1 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <button
               type="button"
@@ -150,9 +157,9 @@
               aria-expanded="<%= !Current.user.dashboard_section_collapsed?(section[:key]) %>">
               <%= icon("chevron-down", size: "sm", class: "transition-transform", data: { dashboard_section_target: "chevron" }) %>
             </button>
-            <h2 class="text-base font-medium">
+            <h3 class="font-display text-lg font-semibold tracking-tight text-primary">
               <%= t(section[:title]) %>
-            </h2>
+            </h3>
           </div>
           <div class="flex items-center gap-1">
             <%# Expand/Collapse-all for the balance sheet, as the leftmost

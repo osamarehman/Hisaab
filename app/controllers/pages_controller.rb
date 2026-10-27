@@ -48,6 +48,9 @@ class PagesController < ApplicationController
     @investment_statement = Current.family.investment_statement
     @accounts = Current.user.accessible_accounts.visible.with_attached_logo
 
+    @month_overview = month_overview if @accounts.any?
+    @uncategorized_count = Current.annotatable_entries.uncategorized_transactions.count if @month_overview
+
     @dashboard_view_params = dashboard_view_params
     @dashboard_sections, @hidden_dashboard_sections = build_dashboard_sections
     @customizing_dashboard = params[:customize].present?
@@ -345,6 +348,12 @@ class PagesController < ApplicationController
       end
 
       base.merge(col_span: col_span, height_preset: preset, height_px: DASHBOARD_HEIGHT_PRESETS.fetch(preset))
+    end
+
+    # The month header above the widgets: totals, spending by label and the
+    # latest activity for ?month=YYYY-MM (this month by default).
+    def month_overview
+      MonthOverview.new(Current.family, user: Current.user, month: MonthOverview.month_from_param(params[:month]))
     end
 
     def github_provider

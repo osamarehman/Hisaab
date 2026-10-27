@@ -94,9 +94,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
         find("[type='submit']").click
       end
 
-      # Trigger Capybara's wait mechanism to avoid timing issues with logins.
-      # The greeting around it is translated; the user's own name is not.
-      find("h1", text: user.first_name)
+      # Trigger Capybara's wait mechanism to avoid timing issues with logins:
+      # the sign-in page has no app shell, every signed-in page does.
+      find("main#main")
     end
 
     # Drags horizontally across the full width of `element`. Driven off the

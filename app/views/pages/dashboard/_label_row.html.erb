@@ -1,0 +1,8 @@
+<%# locals: (row:, href: nil) %>
+<% category = row.category %>
+<% color = category.color.presence || Category::UNCATEGORIZED_COLOR %>
+<%= content_tag (href ? :a : :div), href: href, class: class_names("grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-4 min-h-12 text-primary", "hover:bg-surface-inset-hover focus-ring": href) do %>
+  <%= render DS::LabelDot.new(color: color, label: category.name, class: "text-sm") %>
+  <%= render DS::LedgerBar.new(percent: row.share, color: color) %>
+  <span class="font-mono text-sm tabular-nums text-right privacy-sensitive"><%= format_money(row.amount) %></span>
+<% end %>

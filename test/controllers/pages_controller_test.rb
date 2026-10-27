@@ -253,6 +253,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     IncomeStatement.any_instance.expects(:daily_expense_category_ids).never
     PagesController.any_instance.expects(:build_money_flow_data).never
     PagesController.any_instance.expects(:build_spending_trend_data).never
+    # The month header above the widgets always runs its own totals.
+    PagesController.any_instance.stubs(:month_overview).returns(nil)
 
     get root_path, params: { spending_category_ids: [ categories(:food_and_drink).id ] }
 
@@ -305,10 +307,41 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       .with(classification: "income", period: kind_of(Period))
       .once
       .returns(fake_income_period_total)
+    # The month header asks for its own months' totals; this is about the widgets.
+    PagesController.any_instance.stubs(:month_overview).returns(nil)
 
     get root_path
 
     assert_response :ok
+  end
+
+  test "dashboard opens on the month's totals, labels and activity" do
+    get root_path
+
+    assert_response :ok
+    assert_select "h1", text: I18n.l(Date.current, format: "%B %Y")
+    assert_select "[role=group][aria-label=?] a[rel=prev][href=?]", I18n.t("ds.month_switcher.aria_label"), "/?month=#{Date.current.prev_month.strftime("%Y-%m")}"
+    assert_select "#where-it-went"
+    assert_select "#recent-activity"
+  end
+
+  test "dashboard steps back to an earlier month" do
+    month = Date.current.prev_month(2).beginning_of_month
+
+    get root_path(month: month.strftime("%Y-%m"))
+
+    assert_select "h1", text: I18n.l(month, format: "%B %Y")
+    assert_select "#recent-activity a[href=?]", transactions_path(q: { start_date: month.iso8601, end_date: month.end_of_month.iso8601 })
+  end
+
+  test "dashboard points at transactions still waiting for a label" do
+    Entry.create!(account: accounts(:depository), entryable: Transaction.new, date: Date.current, name: "POS 0921", amount: 1350, currency: "USD")
+    count = @family.entries.joins(:account).merge(Account.annotatable_by(@user)).uncategorized_transactions.count
+
+    get root_path
+
+    assert_select "#needs-label-heading", text: I18n.t("pages.dashboard.month_overview.needs_label.title", count: count)
+    assert_select "a[href=?]", transactions_path(q: { categories: [ Category::UNCATEGORIZED_FILTER_VALUE ] })
   end
 
   test "intro page requires guest role" do
