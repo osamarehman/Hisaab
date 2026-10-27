@@ -2,8 +2,7 @@
 
 @import "./sure-design-system.css";
 
-@import "./geist-font.css";
-@import "./geist-mono-font.css";
+@import "./household-fonts.css";
 
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
