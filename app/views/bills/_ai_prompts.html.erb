@@ -11,7 +11,6 @@
             text: t(".#{prompt}"),
             icon: "sparkles",
             href: chats_path,
-            class: "rounded-full",
             params: { chat: { content: t(".#{prompt}"), ai_model: default_ai_model } },
             form: { data: { turbo_frame: chat_frame } },
             data: { action: "app-layout#openRightSidebar" }

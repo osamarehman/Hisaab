@@ -120,7 +120,7 @@ class BillsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Laid out like Transactions: the overflow menu, then the primary action,
-  # which a phone shows as a round + that keeps the action's name.
+  # which a phone shows as a square + that keeps the action's name.
   test "the bills header lays out its actions like Transactions" do
     { bills_url => [ I18n.t("bills.index.add_bill"), new_recurring_transaction_path ],
       bills_url(view: "paycheck") => [ I18n.t("bills.index.add_income"), new_recurring_transaction_path(income: true) ] }.each do |url, (name, href)|
@@ -129,7 +129,7 @@ class BillsControllerTest < ActionDispatch::IntegrationTest
 
       assert_select "main header [data-controller~='DS--menu'] ~ a[href='#{href}']", count: 2
       assert_select "main header a[class~='hidden'][class~='md:inline-flex'][href='#{href}']", text: name
-      assert_select "main header a[class~='md:hidden'][class~='rounded-full'][aria-label='#{name}'][href='#{href}']"
+      assert_select "main header a[class~='md:hidden'][aria-label='#{name}'][href='#{href}']"
     end
 
     # The switcher's track is drawn on the page, not in the page's own colour.
