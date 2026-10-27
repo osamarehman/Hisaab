@@ -11,6 +11,21 @@ en:
       unused: "Unused"
     budget_header:
       today: "Today"
+      title: "Budget · %{name}"
+      pick_month: "Pick a month"
+    spending_summary:
+      heading: "Spending against the budget"
+      of: "of %{amount}"
+      left: "%{amount} left"
+      over_by: "%{amount} over"
+      days_left:
+        one: "1 day to go"
+        other: "%{count} days to go"
+      edit: "Edit"
+      marker_hint: "The blue tick shows how far through the month today is."
+      not_set_title: "No budget yet"
+      not_set_body: "Set a monthly limit to see how spending tracks against it."
+      set_budget: "Set budget"
     budget_nav:
       categories: Categories
       setup: Setup
@@ -47,6 +62,7 @@ en:
       goals_link: View goals
       currency_warning: "%{currencies} balances aren't included because no exchange rate to %{currency} is available yet."
     show:
+      breakdown: "Income and allocation detail"
       categories:
         amount: Amount
         edit: Edit

@@ -1,56 +1,41 @@
 <%# locals: (budget:, previous_budget:, next_budget:, latest_budget:) %>
 
-<div class="flex items-center gap-1 mb-4">
-  <div class="flex items-center gap-2">
-    <% if budget.previous_budget_param %>
-      <%= render DS::Link.new(
-        variant: "icon",
-        icon: "chevron-left",
-        href: budget_path(budget.previous_budget_param, **budget_owner_query),
+<% period_month = budget.start_date.beginning_of_month %>
+<% content_for :page_header do %>
+  <%= render DS::PageHeader.new(title: t(".title", name: budget.name), class: "mb-8") do |header| %>
+    <% header.with_actions do %>
+      <%= render DS::MonthSwitcher.new(
+        month: period_month,
+        min: (period_month if budget.previous_budget_param.nil?),
+        max: (period_month if budget.next_budget_param.nil?),
+        href_for: ->(target) {
+          budget_path(target < period_month ? budget.previous_budget_param : budget.next_budget_param, **budget_owner_query)
+        }
       ) %>
-    <% else %>
-      <span class="text-subdued">
-        <%= icon "chevron-left", color: "current" %>
-      </span>
-    <% end %>
 
-    <% if budget.next_budget_param %>
-      <%= render DS::Link.new(
-        variant: "icon",
-        icon: "chevron-right",
-        href: budget_path(budget.next_budget_param, **budget_owner_query),
-      ) %>
-    <% else %>
-      <span class="text-subdued">
-        <%= icon "chevron-right", color: "current" %>
-      </span>
-    <% end %>
-  </div>
+      <%= render DS::Popover.new(variant: "button") do |popover| %>
+        <% popover.with_button class: "inline-flex items-center justify-center w-11 h-10 rounded-sm border border-solid text-primary hover:bg-surface-inset-hover cursor-pointer", aria: { label: t(".pick_month") }, title: t(".pick_month") do %>
+          <%= icon("calendar", color: "current") %>
+        <% end %>
 
-  <%= render DS::Popover.new(variant: "button") do |popover| %>
-    <% popover.with_button class: "flex items-center gap-1 hover:bg-surface-hover cursor-pointer rounded-md p-2"  do %>
-      <span class="text-primary font-medium text-lg lg:text-base">
-        <%= @budget.name %>
-      </span>
-      <%= icon("chevron-down") %>
-    <% end %>
+        <% popover.with_custom_content do %>
+          <%= render "budgets/picker", family: Current.family, year: budget.start_date.year %>
+        <% end %>
+      <% end %>
 
-    <% popover.with_custom_content do %>
-      <%= render "budgets/picker", family: Current.family, year: budget.start_date.year %>
+      <% unless budget.current? %>
+        <%= render DS::Link.new(
+          text: t(".today"),
+          variant: "secondary",
+          href: budget_path(Budget.date_to_param(Date.current), **budget_owner_query),
+        ) %>
+      <% end %>
     <% end %>
   <% end %>
-
-  <div class="ml-auto">
-    <%= render DS::Link.new(
-        text: t(".today"),
-        variant: "outline",
-        href: budget_path(Budget.date_to_param(Date.current), **budget_owner_query),
-    ) %>
-  </div>
-</div>
+<% end %>
 
 <% if @switch_options.present? && @switch_options.size > 1 %>
-  <div class="mb-4">
+  <div class="mb-6">
     <%= render "budgets/owner_switcher", switch_options: @switch_options, switch_path: ->(owner_param) { budget_path(budget.to_param, owner: owner_param) } %>
   </div>
 <% end %>

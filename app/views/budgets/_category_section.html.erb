@@ -11,10 +11,10 @@
   end
 %>
 
-<div class="bg-container-inset rounded-xl p-1" data-budget-filter-target="<%= target %>">
+<div data-budget-filter-target="<%= target %>">
 
   <!-- Section Header -->
-  <div class="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-secondary uppercase">
+  <div class="flex items-center gap-1.5 py-2 text-xs font-semibold tracking-wide text-secondary uppercase border-b-2 border-solid">
     <p><%= title %></p>
     <span class="text-subdued">&middot;</span>
     <p><%= count %></p>
@@ -22,7 +22,7 @@
   </div>
 
   <!-- Section Body -->
-  <div class="bg-container py-1 shadow-border-xs rounded-md">
+  <div class="[&>*]:border-b [&>*]:border-divider">
 
     <% groups.each_with_index do |group, index| %>
 
@@ -35,7 +35,6 @@
             budget.initialized? ? group.budget_category.visible_on_track? : true
           end
       %>
-    <%= render "shared/ruler" unless index == 0 %>
       <%= render "budgets/category_group",
         group: group,
         parent_visible: parent_visible,
@@ -44,8 +43,7 @@
     <% end %>
 
     <% if show_uncategorized %>
-      <%= render "shared/ruler" unless groups.size == 0 %>
-      <div class="py-2">
+      <div>
         <%= render "budget_categories/budget_category",
           budget_category: uncategorized,
           show_budget_meta: (over_budget_mode ? uncategorized.over_budget_with_budget? : true) %>

@@ -1,0 +1,52 @@
+<%# locals: (budget:, editable:) %>
+
+<section class="flex flex-col gap-3 border-t-2 border-solid pt-4" aria-labelledby="budget-summary-heading">
+  <h2 id="budget-summary-heading" class="sr-only"><%= t(".heading") %></h2>
+
+  <% if budget.initialized? %>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <p class="font-display text-3xl md:text-4xl font-semibold tracking-tight tabular-nums text-primary">
+        <span class="privacy-sensitive"><%= format_money(budget.actual_spending_money, precision: 0) %></span>
+        <span class="text-xl font-medium text-secondary"><%= t(".of", amount: format_money(budget.budgeted_spending_money, precision: 0)) %></span>
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        <% if budget.available_to_spend.negative? %>
+          <span class="font-semibold text-warning privacy-sensitive"><%= t(".over_by", amount: format_money(budget.available_to_spend_money.abs, precision: 0)) %></span>
+        <% else %>
+          <span class="text-secondary privacy-sensitive"><%= t(".left", amount: format_money(budget.available_to_spend_money, precision: 0)) %></span>
+        <% end %>
+        <% if budget.current? %>
+          <span class="text-secondary"><%= t(".days_left", count: budget.days_remaining) %></span>
+        <% end %>
+        <% if editable %>
+          <%= render DS::Link.new(text: t(".edit"), variant: "ghost", size: :sm, icon: "pencil", href: edit_budget_path(budget, **budget_owner_query)) %>
+        <% end %>
+      </div>
+    </div>
+
+    <%= render DS::LedgerBar.new(
+      percent: budget.percent_of_budget_spent,
+      tone: budget.available_to_spend.negative? ? :out : :default,
+      size: :lg,
+      marker: budget.elapsed_percent
+    ) %>
+    <% if budget.elapsed_percent %>
+      <p class="text-xs text-secondary"><%= t(".marker_hint") %></p>
+    <% end %>
+
+    <% if budget.available_to_allocate.negative? %>
+      <%= render "budgets/over_allocation_warning", budget: budget, editable: editable %>
+    <% end %>
+  <% else %>
+    <div class="flex flex-wrap items-center justify-between gap-4 py-2">
+      <div class="flex flex-col gap-1">
+        <p class="font-display text-2xl font-semibold tracking-tight text-primary"><%= t(".not_set_title") %></p>
+        <p class="text-sm text-secondary"><%= t(".not_set_body") %></p>
+      </div>
+      <% if editable %>
+        <%= render DS::Link.new(text: t(".set_budget"), variant: "primary", href: edit_budget_path(budget, **budget_owner_query)) %>
+      <% end %>
+    </div>
+  <% end %>
+</section>

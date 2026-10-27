@@ -1,7 +1,7 @@
 <%# locals: (group:, parent_visible:, over_budget_mode: false) %>
 
 <% if parent_visible %>
-  <div class="py-2">
+  <div>
     <%= render "budget_categories/budget_category",
       budget_category: group.budget_category,
       show_budget_meta: (over_budget_mode ? group.budget_category.over_budget_with_budget? : true) %>
@@ -10,16 +10,16 @@
 
 <% group.budget_subcategories.each do |budget_subcategory| %>
   <% if parent_visible %>
-    <div class="py-2 w-full flex items-start">
-      <div class="ml-8 pt-4 flex items-center justify-center text-subdued">
-        <%= icon "corner-down-right" %>
+    <div class="w-full flex items-start gap-2 pl-4">
+      <div class="pt-3.5 flex items-center justify-center text-subdued">
+        <%= icon "corner-down-right", size: "sm" %>
       </div>
       <%= render "budget_categories/budget_category",
         budget_category: budget_subcategory,
         show_budget_meta: (over_budget_mode ? budget_subcategory.over_budget_with_budget? : true) %>
     </div>
   <% else %>
-    <div class="py-2">
+    <div>
       <%= render "budget_categories/budget_category",
         budget_category: budget_subcategory,
         show_budget_meta: (over_budget_mode ? budget_subcategory.over_budget_with_budget? : true) %>

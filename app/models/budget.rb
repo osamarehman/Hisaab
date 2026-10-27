@@ -350,6 +350,13 @@ class Budget < ApplicationRecord
     [ (end_date - Date.current).to_i + 1, 0 ].max
   end
 
+  # How far through the period today is, as a percentage; nil outside it.
+  def elapsed_percent
+    return nil unless period.date_range.cover?(Date.current)
+
+    ((Date.current - start_date).to_i + 1) * 100.0 / ((end_date - start_date).to_i + 1)
+  end
+
   # Biggest parent categories by what's actually been spent this period,
   # falling back to allocation size early in the month before spending
   # lands. Categories with neither spend nor an allocation are noise in a
