@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../providers/auth_provider.dart';
-import '../providers/privacy_provider.dart';
-import '../widgets/sure_logo.dart';
-import 'chat_list_screen.dart';
-import 'dashboard_screen.dart';
-import 'intro_screen.dart';
-import 'more_screen.dart';
-import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ledger/ledger.dart';
+import 'accounts_screen.dart';
+import 'dashboard_screen.dart';
+import 'statements_screen.dart';
+import 'transaction_form_screen.dart';
+import 'transactions_list_screen.dart';
 
+/// Household shell: Home, Activity, Add (centre), Statements, Accounts.
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -19,255 +17,175 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
+  // Index into the IndexedStack; the Add button is not a page.
+  int _page = 0;
   final _dashboardKey = GlobalKey<DashboardScreenState>();
+  final _activityKey = GlobalKey<TransactionsListScreenState>();
 
-  List<Widget> _buildScreens(bool introLayout, VoidCallback? onStartChat) {
-    final screens = <Widget>[];
+  late final List<Widget> _pages = [
+    DashboardScreen(
+      key: _dashboardKey,
+      onOpenActivity: _openActivity,
+      onOpenAccounts: () => _select(3),
+    ),
+    TransactionsListScreen(key: _activityKey),
+    const StatementsScreen(),
+    const AccountsScreen(),
+  ];
 
-    if (!introLayout) {
-      screens.add(DashboardScreen(key: _dashboardKey));
-    }
-
-    if (introLayout) {
-      screens.add(IntroScreen(onStartChat: onStartChat));
-    }
-
-    screens.add(const ChatListScreen());
-
-    if (!introLayout) {
-      screens.add(const MoreScreen());
-    }
-
-    screens.add(const SettingsScreen());
-
-    return screens;
+  void _select(int page) {
+    if (page == _page) return;
+    setState(() => _page = page);
+    if (page == 0) _dashboardKey.currentState?.reload();
+    if (page == 1) _activityKey.currentState?.reload();
   }
 
-  Future<void> _handleDestinationSelected(
-    int index,
-    AuthProvider authProvider,
-    bool introLayout,
-  ) async {
-    const chatIndex = 1;
-
-    if (index == chatIndex && !authProvider.aiEnabled) {
-      final enabled = await _showEnableAiPrompt();
-      if (!enabled) {
-        return;
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        _currentIndex = index;
-      });
-
-      if (!introLayout && index == 0) {
-        _dashboardKey.currentState?.reloadPreferences();
-      }
-    }
+  void _openActivity(DateTime month, String? categoryId) {
+    _activityKey.currentState?.showMonth(month, categoryId: categoryId);
+    setState(() => _page = 1);
   }
 
-  Future<void> _handleSelectSettings(AuthProvider authProvider, bool introLayout) async {
-    final settingsIndex = introLayout ? 2 : 3;
-    await _handleDestinationSelected(settingsIndex, authProvider, introLayout);
-  }
-
-  List<NavigationDestination> _buildDestinations(bool introLayout, AppLocalizations l) {
-    final destinations = <NavigationDestination>[];
-
-    if (!introLayout) {
-      destinations.add(
-        NavigationDestination(
-          icon: const Icon(Icons.home_outlined),
-          selectedIcon: const Icon(Icons.home),
-          label: l.navHome,
-        ),
-      );
-    }
-
-    if (introLayout) {
-      destinations.add(
-        NavigationDestination(
-          icon: const Icon(Icons.auto_awesome_outlined),
-          selectedIcon: const Icon(Icons.auto_awesome),
-          label: l.navIntro,
-        ),
-      );
-    }
-
-    destinations.add(
-      NavigationDestination(
-        icon: const Icon(Icons.chat_bubble_outline),
-        selectedIcon: const Icon(Icons.chat_bubble),
-        label: l.navAssistant,
+  Future<void> _addExpense() async {
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const TransactionFormScreen(),
       ),
     );
-
-    if (!introLayout) {
-      destinations.add(
-        NavigationDestination(
-          icon: const Icon(Icons.more_horiz),
-          selectedIcon: const Icon(Icons.more_horiz),
-          label: l.navMore,
-        ),
-      );
+    if (saved == true && mounted) {
+      _dashboardKey.currentState?.reload();
+      _activityKey.currentState?.reload();
     }
-
-    return destinations;
-  }
-
-  PreferredSizeWidget _buildTopBar(AuthProvider authProvider, bool introLayout) {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      toolbarHeight: 60,
-      elevation: 0,
-      titleSpacing: 0,
-      centerTitle: false,
-      actionsPadding: EdgeInsets.zero,
-      title: Container(
-        width: 60,
-        height: 60,
-        alignment: Alignment.topLeft,
-        child: const Padding(
-          padding: EdgeInsets.only(top: 12, left: 12),
-          child: SureLogo(),
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Center(
-            child: Tooltip(
-              message: 'Toggle privacy',
-              child: InkWell(
-                onTap: () => context.read<PrivacyProvider>().toggle(),
-                child: SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: Icon(
-                    context.watch<PrivacyProvider>().hidden
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    semanticLabel: 'Toggle privacy',
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Center(
-            child: InkWell(
-              onTap: () {
-                _handleSelectSettings(authProvider, introLayout);
-              },
-              child: const SizedBox(
-                width: 36,
-                height: 36,
-                child: Icon(Icons.settings_outlined),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<bool> _showEnableAiPrompt() async {
-    final l = AppLocalizations.of(context);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    final shouldEnable = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        final dl = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(dl.navEnableAiChatTitle),
-          content: Text(dl.navEnableAiChatContent),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(dl.navEnableAiChatNotNow),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(dl.navEnableAiChatConfirm),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldEnable != true) {
-      return false;
-    }
-
-    final enabled = await authProvider.enableAi();
-
-    if (!enabled && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? l.navEnableAiChatFailed),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-
-    return enabled;
-  }
-
-  int _resolveBottomSelectedIndex(List<NavigationDestination> destinations) {
-    if (destinations.isEmpty) {
-      return 0;
-    }
-
-    if (_currentIndex < 0) {
-      return 0;
-    }
-
-    if (_currentIndex >= destinations.length) {
-      return destinations.length - 1;
-    }
-
-    return _currentIndex;
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
-        final introLayout = authProvider.isIntroLayout;
-        const chatIndex = 1;
-        final screens = _buildScreens(
-          introLayout,
-          () => _handleDestinationSelected(chatIndex, authProvider, introLayout),
-        );
-        final destinations = _buildDestinations(introLayout, l);
-        final bottomNavIndex = _resolveBottomSelectedIndex(destinations);
+    return Scaffold(
+      body: IndexedStack(index: _page, children: _pages),
+      bottomNavigationBar: _LedgerNavBar(
+        selected: _page,
+        onSelect: _select,
+        onAdd: _addExpense,
+        items: [
+          _NavItem(Icons.home_outlined, l.navHome),
+          _NavItem(Icons.notes, l.navActivity),
+          _NavItem(Icons.description_outlined, l.navStatements),
+          _NavItem(Icons.credit_card_outlined, l.navAccounts),
+        ],
+        addLabel: l.navAddExpense,
+      ),
+    );
+  }
+}
 
-        if (_currentIndex >= screens.length) {
-          _currentIndex = 0;
-        }
+class _NavItem {
+  const _NavItem(this.icon, this.label);
+  final IconData icon;
+  final String label;
+}
 
-        return Scaffold(
-          appBar: _buildTopBar(authProvider, introLayout),
-          body: IndexedStack(
-            index: _currentIndex,
-            children: screens,
+class _LedgerNavBar extends StatelessWidget {
+  const _LedgerNavBar({
+    required this.selected,
+    required this.onSelect,
+    required this.onAdd,
+    required this.items,
+    required this.addLabel,
+  });
+
+  final int selected;
+  final ValueChanged<int> onSelect;
+  final VoidCallback onAdd;
+  final List<_NavItem> items;
+  final String addLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = LedgerColors.of(context);
+
+    Widget tab(int page) {
+      final item = items[page];
+      final active = page == selected;
+      return Expanded(
+        child: Semantics(
+          selected: active,
+          button: true,
+          child: InkWell(
+            onTap: () => onSelect(page),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: active ? c.moneyIn : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(item.icon, size: 22, color: active ? c.ink : c.muted),
+                  const SizedBox(height: 3),
+                  Text(
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                      color: active ? c.ink : c.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: bottomNavIndex,
-            onDestinationSelected: (index) {
-              _handleDestinationSelected(index, authProvider, introLayout);
-            },
-            destinations: destinations,
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: c.sheet,
+        border: Border(top: BorderSide(color: c.ink)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            children: [
+              tab(0),
+              tab(1),
+              Expanded(
+                child: Center(
+                  child: Semantics(
+                    button: true,
+                    label: addLabel,
+                    excludeSemantics: true,
+                    child: Material(
+                      color: c.moneyIn,
+                      borderRadius: BorderRadius.circular(2),
+                      child: InkWell(
+                        key: const ValueKey('nav-add'),
+                        onTap: onAdd,
+                        child: const SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Icon(Icons.add, color: Colors.white, size: 26),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              tab(2),
+              tab(3),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

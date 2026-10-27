@@ -17,8 +17,12 @@ class CategoriesProvider with ChangeNotifier {
   String? get error => _error;
   bool get hasFetched => _hasFetched;
 
-  Future<void> fetchCategories({required String accessToken}) async {
-    if (_isLoading || _hasFetched) return;
+  /// Loads categories once; [force] refetches (e.g. after labels change).
+  Future<void> fetchCategories({
+    required String accessToken,
+    bool force = false,
+  }) async {
+    if (_isLoading || (_hasFetched && !force)) return;
 
     _isLoading = true;
     _error = null;

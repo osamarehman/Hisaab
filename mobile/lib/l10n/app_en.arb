@@ -1103,5 +1103,227 @@
   "@budgetCategoryTransactionsLoadMore": { "description": "Button that loads the next page of a budget category's transactions." },
 
   "budgetCategoryTransactionsLoadFailed": "Couldn't load transactions",
-  "@budgetCategoryTransactionsLoadFailed": { "description": "Shown when a budget category's transactions fail to load." }
+  "@budgetCategoryTransactionsLoadFailed": { "description": "Shown when a budget category's transactions fail to load." },
+
+  "navActivity": "Activity",
+  "@navActivity": {"description": "Bottom navigation label for the Activity (transactions) tab."},
+
+  "navStatements": "Statements",
+  "@navStatements": {"description": "Bottom navigation label for the Statements tab."},
+
+  "navAccounts": "Accounts",
+  "@navAccounts": {"description": "Bottom navigation label for the Accounts tab."},
+
+  "navAddExpense": "Add expense",
+  "@navAddExpense": {"description": "Accessibility label for the centre Add button."},
+
+  "homeNoLabel": "No label",
+  "@homeNoLabel": {"description": "Spending group for transactions without a label (category)."},
+
+  "homeSettings": "Settings",
+  "@homeSettings": {"description": "Settings button tooltip and settings page title."},
+
+  "homeLoadFailed": "Could not load this month.",
+  "@homeLoadFailed": {"description": "Home error when the month's data fails to load."},
+
+  "homeSpentIn": "Spent in {month}",
+  "@homeSpentIn": {"description": "Heading over the month's spending total.", "placeholders": {"month": {"type": "String"}}},
+
+  "homeMoreThan": "{amount} more than {month}",
+  "@homeMoreThan": {"description": "Spending compared with the previous month (higher).", "placeholders": {"amount": {"type": "String"}, "month": {"type": "String"}}},
+
+  "homeLessThan": "{amount} less than {month}",
+  "@homeLessThan": {"description": "Spending compared with the previous month (lower).", "placeholders": {"amount": {"type": "String"}, "month": {"type": "String"}}},
+
+  "homeSameAs": "Same as {month}",
+  "@homeSameAs": {"description": "Spending equal to the previous month.", "placeholders": {"month": {"type": "String"}}},
+
+  "homeCameIn": "Came in",
+  "@homeCameIn": {"description": "Label for money in this month."},
+
+  "homeWentOut": "Went out",
+  "@homeWentOut": {"description": "Label for money out this month."},
+
+  "homeLeftOver": "Left over",
+  "@homeLeftOver": {"description": "Label for money in minus money out."},
+
+  "homeWhereItWent": "Where it went",
+  "@homeWhereItWent": {"description": "Section title for spending by label."},
+
+  "homeBudget": "Budget",
+  "@homeBudget": {"description": "Link to the budget screen."},
+
+  "homeNothingSpent": "Nothing spent this month yet.",
+  "@homeNothingSpent": {"description": "Empty state for spending by label."},
+
+  "homeNetWorth": "Net worth",
+  "@homeNetWorth": {"description": "Section title for net worth."},
+
+  "homeBalanceSheet": "Balance sheet",
+  "@homeBalanceSheet": {"description": "Link to the accounts screen."},
+
+  "homeAssetsOwed": "Assets {assets} · Owed {owed}",
+  "@homeAssetsOwed": {"description": "Net worth breakdown.", "placeholders": {"assets": {"type": "String"}, "owed": {"type": "String"}}},
+
+  "homeNeedLabel": "{count, plural, =1{1 statement item needs a label} other{{count} statement items need a label}}",
+  "@homeNeedLabel": {"description": "Banner linking to statement review.", "placeholders": {"count": {"type": "int"}}},
+
+  "homeNeedLabelDetail": "{month} · {sorted} sorted already",
+  "@homeNeedLabelDetail": {"description": "Banner detail line.", "placeholders": {"month": {"type": "String"}, "sorted": {"type": "int"}}},
+
+  "activityNoLabel": "No label",
+  "@activityNoLabel": {"description": "Filter chip and row label for transactions without a label."},
+
+  "activitySearchHint": "Search this month",
+  "@activitySearchHint": {"description": "Activity search field hint."},
+
+  "activityClearSearch": "Clear search",
+  "@activityClearSearch": {"description": "Tooltip for clearing the search field."},
+
+  "activityOfflineNote": "Offline. Showing what is saved on this phone.",
+  "@activityOfflineNote": {"description": "Activity note when offline."},
+
+  "activityLoadFailedNote": "Could not reach the server. Showing what is saved on this phone.",
+  "@activityLoadFailedNote": {"description": "Activity note when the server fetch fails."},
+
+  "activityEmpty": "Nothing here for this month.",
+  "@activityEmpty": {"description": "Activity empty state."},
+
+  "activityIn": "In",
+  "@activityIn": {"description": "Activity strip: money in."},
+
+  "activityOut": "Out",
+  "@activityOut": {"description": "Activity strip: money out."},
+
+  "activityEntries": "Entries",
+  "@activityEntries": {"description": "Activity strip: number of transactions."},
+
+  "activityWaitingToSync": "Waiting to sync",
+  "@activityWaitingToSync": {"description": "Row status for a transaction saved offline."},
+
+  "activityWaitingToDelete": "Will be deleted",
+  "@activityWaitingToDelete": {"description": "Row status for a transaction deleted offline."},
+
+  "activityTransfer": "Transfer",
+  "@activityTransfer": {"description": "Row label for a transfer between accounts."},
+
+  "activityHasReceipt": "Has receipt",
+  "@activityHasReceipt": {"description": "Accessibility label for the paperclip icon."},
+
+  "detailDelete": "Delete transaction",
+  "@detailDelete": {"description": "Tooltip for the delete button on the transaction detail screen."},
+
+  "detailMoneyIn": "Money in",
+  "@detailMoneyIn": {"description": "Shown under an income amount."},
+
+  "detailMoneyOut": "Money out",
+  "@detailMoneyOut": {"description": "Shown under an expense amount."},
+
+  "detailNote": "Note",
+  "@detailNote": {"description": "Label for the note field."},
+
+  "detailNoteHint": "Add a note",
+  "@detailNoteHint": {"description": "Hint for the note field."},
+
+  "detailReceipt": "Receipt",
+  "@detailReceipt": {"description": "Receipt section title."},
+
+  "detailAttachReceipt": "Attach",
+  "@detailAttachReceipt": {"description": "Action to attach a receipt."},
+
+  "detailReplaceReceipt": "Replace",
+  "@detailReplaceReceipt": {"description": "Action to replace the receipt."},
+
+  "detailNoReceipt": "No receipt attached.",
+  "@detailNoReceipt": {"description": "Shown when a transaction has no receipt."},
+
+  "detailMoreReceipts": "+{count} more",
+  "@detailMoreReceipts": {"description": "More attachments beyond the one shown.", "placeholders": {"count": {"type": "int"}}},
+
+  "receiptRemove": "Remove receipt",
+  "@receiptRemove": {"description": "Tooltip for removing a receipt."},
+
+  "receiptNeedsInternet": "Connect to the internet to attach a receipt.",
+  "@receiptNeedsInternet": {"description": "Shown when attaching while offline."},
+
+  "receiptUploadFailed": "Could not attach the receipt.",
+  "@receiptUploadFailed": {"description": "Receipt upload error."},
+
+  "receiptRemoveFailed": "Could not remove the receipt.",
+  "@receiptRemoveFailed": {"description": "Receipt delete error."},
+
+  "receiptTakePhoto": "Take photo",
+  "@receiptTakePhoto": {"description": "Open the camera for a receipt."},
+
+  "receiptFromGallery": "From gallery",
+  "@receiptFromGallery": {"description": "Pick a receipt from the gallery."},
+
+  "formTypeExpense": "Expense",
+  "@formTypeExpense": {"description": "Add screen toggle: expense."},
+
+  "formTypeIncome": "Income",
+  "@formTypeIncome": {"description": "Add screen toggle: income."},
+
+  "formLabel": "Label",
+  "@formLabel": {"description": "Label (category) picker title."},
+
+  "formManage": "Manage",
+  "@formManage": {"description": "Link to the labels screen."},
+
+  "formNewLabel": "+ New label",
+  "@formNewLabel": {"description": "Chip that opens the labels screen to add one."},
+
+  "formWhatFor": "What for",
+  "@formWhatFor": {"description": "Label for the transaction name field."},
+
+  "formWhatForHint": "e.g. Imtiaz Supermarket",
+  "@formWhatForHint": {"description": "Hint for the transaction name field."},
+
+  "formPaidFrom": "Paid from",
+  "@formPaidFrom": {"description": "Account picker label for an expense."},
+
+  "formPaidInto": "Paid into",
+  "@formPaidInto": {"description": "Account picker label for income."},
+
+  "formNoAccounts": "No accounts yet",
+  "@formNoAccounts": {"description": "Shown when there are no accounts to pick."},
+
+  "formOptional": "Optional",
+  "@formOptional": {"description": "Hint for optional fields."},
+
+  "formReceipt": "Receipt or screenshot",
+  "@formReceipt": {"description": "Receipt section title on the add screen."},
+
+  "formSaveExpense": "Save expense",
+  "@formSaveExpense": {"description": "Save button for an expense."},
+
+  "formSaveIncome": "Save income",
+  "@formSaveIncome": {"description": "Save button for income."},
+
+  "formPickAccount": "Choose an account first.",
+  "@formPickAccount": {"description": "Shown when saving without an account."},
+
+  "formSaved": "Saved",
+  "@formSaved": {"description": "Confirmation after saving."},
+
+  "formSavedReceiptOffline": "Saved. The receipt was not attached because you are offline.",
+  "@formSavedReceiptOffline": {"description": "Saved offline with a receipt."},
+
+  "loginTagline": "Every rupee, month by month.",
+  "@loginTagline": {"description": "Tagline under the wordmark on sign in."},
+
+  "loginServer": "Server",
+  "@loginServer": {"description": "Label for the server row on sign in."},
+
+  "loginServerChange": "Change",
+  "@loginServerChange": {"description": "Action to change the server."},
+
+  "loginShowPassword": "Show password",
+  "@loginShowPassword": {"description": "Tooltip for the password visibility toggle."},
+
+  "loginNewHere": "New here? ",
+  "@loginNewHere": {"description": "Prefix before the create-account link."},
+
+  "loginCreateAccount": "Create an account",
+  "@loginCreateAccount": {"description": "Link to sign up."}
 }

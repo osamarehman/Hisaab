@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import '../models/transaction.dart';
 import 'api_config.dart';
 
@@ -98,6 +102,7 @@ class TransactionsService {
     String? startDate,
     String? endDate,
     List<String>? categoryIds,
+    bool? uncategorized,
   }) async {
     // Values are a String or, for repeated Rails array params, a List<String>.
     final Map<String, dynamic> queryParams = {};
@@ -119,6 +124,9 @@ class TransactionsService {
     }
     if (categoryIds != null && categoryIds.isNotEmpty) {
       queryParams['category_ids[]'] = categoryIds;
+    }
+    if (uncategorized == true) {
+      queryParams['uncategorized'] = 'true';
     }
 
     final baseUri = Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions');
@@ -180,6 +188,38 @@ class TransactionsService {
         'error': 'Network error: ${e.toString()}',
       };
     }
+  }
+
+  /// Every transaction in a date range (all pages, newest first), or the
+  /// first page's error map.
+  Future<Map<String, dynamic>> getAllTransactions({
+    required String accessToken,
+    required String startDate,
+    required String endDate,
+    String? accountId,
+    int maxPages = 20,
+  }) async {
+    final all = <Transaction>[];
+    var page = 1;
+    var totalPages = 1;
+    while (page <= totalPages && page <= maxPages) {
+      final result = await getTransactions(
+        accessToken: accessToken,
+        accountId: accountId,
+        startDate: startDate,
+        endDate: endDate,
+        page: page,
+        perPage: 100,
+      );
+      if (result['success'] != true) return result;
+      all.addAll(result['transactions'] as List<Transaction>);
+      final pagination = result['pagination'];
+      totalPages = pagination is Map
+          ? int.tryParse(pagination['total_pages']?.toString() ?? '') ?? 1
+          : 1;
+      page++;
+    }
+    return {'success': true, 'transactions': all};
   }
 
   Future<Map<String, dynamic>> getTransaction({
@@ -387,6 +427,148 @@ class TransactionsService {
         'error': 'Network error: ${e.toString()}',
       };
     }
+  }
+
+  /// Uploads receipt files to a transaction (multipart `attachments[]`).
+  /// On success returns the updated transaction.
+  Future<Map<String, dynamic>> uploadAttachments({
+    required String accessToken,
+    required String transactionId,
+    required List<File> files,
+  }) async {
+    final url = Uri.parse(
+      '${ApiConfig.baseUrl}/api/v1/transactions/$transactionId/attachments',
+    );
+
+    try {
+      final boundary = 'sure-${DateTime.now().microsecondsSinceEpoch}';
+      final parts = <({String name, String type, List<int> bytes})>[];
+      for (final file in files) {
+        parts.add((
+          name: p.basename(file.path),
+          type: contentTypeFor(file.path),
+          bytes: await file.readAsBytes(),
+        ));
+      }
+
+      final response = await _client
+          .post(
+            url,
+            headers: {
+              ...ApiConfig.getAuthHeaders(accessToken),
+              'Content-Type': 'multipart/form-data; boundary=$boundary',
+            },
+            body: _multipartBody(boundary, parts),
+          )
+          .timeout(const Duration(seconds: 90));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'transaction': Transaction.fromJson(jsonDecode(response.body)),
+        };
+      } else if (response.statusCode == 401) {
+        return {
+          'success': false,
+          'error': 'unauthorized',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': errorMessageFromResponseBody(
+            response.body,
+            fallback: 'Failed to attach receipt',
+          ),
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteAttachment({
+    required String accessToken,
+    required String transactionId,
+    required String attachmentId,
+  }) async {
+    final url = Uri.parse(
+      '${ApiConfig.baseUrl}/api/v1/transactions/$transactionId/attachments/'
+      '${Uri.encodeComponent(attachmentId)}',
+    );
+
+    try {
+      final response = await _client.delete(
+        url,
+        headers: ApiConfig.getAuthHeaders(accessToken),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return {'success': true};
+      } else if (response.statusCode == 401) {
+        return {
+          'success': false,
+          'error': 'unauthorized',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': errorMessageFromResponseBody(
+            response.body,
+            fallback: 'Failed to remove receipt',
+          ),
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Content type from the file extension. Built by hand because http's
+  /// MultipartFile needs http_parser (not a direct dependency) to set it, and
+  /// the server rejects application/octet-stream.
+  static String contentTypeFor(String path) {
+    switch (p.extension(path).toLowerCase()) {
+      case '.png':
+        return 'image/png';
+      case '.webp':
+        return 'image/webp';
+      case '.gif':
+        return 'image/gif';
+      case '.pdf':
+        return 'application/pdf';
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  static Uint8List _multipartBody(
+    String boundary,
+    List<({String name, String type, List<int> bytes})> files,
+  ) {
+    final out = BytesBuilder(copy: false);
+    void line(String s) => out.add(utf8.encode('$s\r\n'));
+    String quoted(String s) => s
+        .replaceAll('"', '%22')
+        .replaceAll('\r', '')
+        .replaceAll('\n', '');
+
+    for (final file in files) {
+      line('--$boundary');
+      line('Content-Disposition: form-data; name="attachments[]"; '
+          'filename="${quoted(file.name)}"');
+      line('Content-Type: ${file.type}');
+      line('');
+      out.add(file.bytes);
+      line('');
+    }
+    line('--$boundary--');
+    return out.takeBytes();
   }
 
   static String errorMessageFromResponseBody(

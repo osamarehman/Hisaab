@@ -1,757 +1,591 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
-import '../models/transaction.dart';
 import '../models/offline_transaction.dart';
+import '../models/transaction.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
-import '../screens/transaction_edit_screen.dart';
-import '../screens/transaction_form_screen.dart';
-import '../widgets/account_detail_header.dart';
-import '../widgets/category_filter.dart';
-import '../widgets/sync_status_badge.dart';
+import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
-import '../theme/sure_tokens.dart';
-import '../providers/privacy_provider.dart';
-import '../utils/amount_parser.dart';
-import '../utils/money_masker.dart';
-import '../widgets/money_text.dart';
-import '../l10n/app_localizations.dart';
+import '../services/transactions_service.dart';
+import '../widgets/ledger/ledger.dart';
+import 'transaction_edit_screen.dart';
 
-class TransactionsListScreen extends StatefulWidget {
-  final Account account;
+/// Sentinel filter values shared by Home and Activity.
+class TransactionsFilter {
+  const TransactionsFilter._();
 
-  const TransactionsListScreen({
-    super.key,
-    required this.account,
-  });
-
-  @override
-  State<TransactionsListScreen> createState() => _TransactionsListScreenState();
+  /// Show only transactions without a label.
+  static const String noLabel = '__no_label__';
 }
 
-class _TransactionsListScreenState extends State<TransactionsListScreen> {
-  bool _isSelectionMode = false;
-  final Set<String> _selectedTransactions = {};
-  Set<String> _selectedCategoryIds = {};
+/// A row in Activity: a server transaction or a local one waiting to sync.
+class _Row {
+  _Row(this.tx, {this.local});
+  final Transaction tx;
+  final OfflineTransaction? local;
+
+  bool get pendingCreate =>
+      local != null &&
+      (local!.syncStatus == SyncStatus.pending ||
+          local!.syncStatus == SyncStatus.failed);
+  bool get pendingDelete => local?.syncStatus == SyncStatus.pendingDelete;
+}
+
+/// Activity: one month of transactions, searchable and filterable by label.
+/// With [account], shows only that account's transactions.
+class TransactionsListScreen extends StatefulWidget {
+  const TransactionsListScreen({super.key, this.account});
+
+  final Account? account;
+
+  @override
+  State<TransactionsListScreen> createState() => TransactionsListScreenState();
+}
+
+class TransactionsListScreenState extends State<TransactionsListScreen> {
+  final _service = TransactionsService();
+  final _searchController = TextEditingController();
+  final _log = LogService.instance;
+
+  DateTime _month = MonthSwitcher.firstOf(DateTime.now());
+  String? _filter; // null = All, a category id, or TransactionsFilter.noLabel
+  bool _loading = true;
+  bool _offline = false;
+  String? _error;
+  int _loadToken = 0;
+  List<Transaction> _server = const [];
 
   @override
   void initState() {
     super.initState();
-    _loadTransactions();
-    _loadCategories();
+    _searchController.addListener(() => setState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
   }
 
-  // Parse and display amount information
-  // Amount is a currency-formatted string returned by the API (e.g. may include
-  // currency symbol, grouping separators, locale-dependent decimal separator,
-  // and a sign either before or after the symbol)
-  Map<String, dynamic> _getAmountDisplayInfo(
-    String amount,
-    bool isAsset,
-    bool isLiability,
-  ) {
-    try {
-      final parsed = AmountParser.parse(amount);
-      var numericValue = parsed.value;
-
-      // For asset and liability accounts, flip the sign to match accounting conventions
-      if (isAsset || isLiability) {
-        numericValue = -numericValue;
-      }
-
-      // Determine if the final value is positive
-      bool isPositive = numericValue >= 0;
-      final trend = isPositive ? MoneyTrend.inflow : MoneyTrend.outflow;
-
-      return {
-        'isPositive': isPositive,
-        'displayAmount': parsed.displayText,
-        'trend': trend,
-        'color': SureMoney.color(context, trend),
-        'icon': isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-        'prefix': isPositive ? '' : '-',
-      };
-    } on FormatException {
-      LogService.instance.error('TransactionsListScreen', 'Failed to parse transaction amount');
-      return {
-        'isPositive': true,
-        'displayAmount': amount,
-        'trend': MoneyTrend.neutral,
-        'color': SureMoney.color(context, MoneyTrend.neutral),
-        'icon': Icons.help_outline,
-        'prefix': '',
-      };
-    }
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadCategories() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final categoriesProvider = Provider.of<CategoriesProvider>(context, listen: false);
-    final accessToken = await authProvider.getValidAccessToken();
-    if (accessToken != null) {
-      await categoriesProvider.fetchCategories(accessToken: accessToken);
-    }
+  /// Switch to [month] (and optionally a label filter), then load.
+  void showMonth(DateTime month, {String? categoryId}) {
+    setState(() {
+      _month = MonthSwitcher.firstOf(month);
+      _filter = categoryId;
+      _searchController.clear();
+    });
+    reload();
   }
 
-  String? _getCategoryDisplayName(String? categoryId, String? fallbackName) {
-    if (categoryId == null) return fallbackName;
-    final categoriesProvider = Provider.of<CategoriesProvider>(context);
-    for (final cat in categoriesProvider.categories) {
-      if (cat.id == categoryId) return cat.displayName;
-    }
-    return fallbackName;
-  }
+  Future<void> reload() async {
+    final token = ++_loadToken;
+    final auth = context.read<AuthProvider>();
+    final provider = context.read<TransactionsProvider>();
+    final categories = context.read<CategoriesProvider>();
+    final connectivity = context.read<ConnectivityService?>();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
-  List<OfflineTransaction> _getFilteredTransactions(List<OfflineTransaction> transactions) {
-    if (_selectedCategoryIds.isEmpty) return transactions;
-    return transactions.where((t) =>
-      t.categoryId != null && _selectedCategoryIds.contains(t.categoryId)
-    ).toList();
-  }
-
-  Future<void> _loadTransactions() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-
-    final accessToken = await authProvider.getValidAccessToken();
+    final accessToken = await auth.getValidAccessToken();
     if (accessToken == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).transactionsListAuthFailed),
-            backgroundColor: Colors.red,
-          ),
-        );
+      await auth.logout();
+      return;
+    }
+    categories.fetchCategories(accessToken: accessToken);
+    // Local cache: pending rows and the offline fallback.
+    await provider.fetchTransactions(
+      accessToken: accessToken,
+      accountId: widget.account?.id,
+    );
+
+    final month = _month;
+    final online = connectivity?.isOnline ?? true;
+    if (!online) {
+      if (mounted && token == _loadToken) {
+        setState(() {
+          _offline = true;
+          _loading = false;
+        });
       }
       return;
     }
 
-    await transactionsProvider.fetchTransactions(
+    final result = await _service.getAllTransactions(
       accessToken: accessToken,
-      accountId: widget.account.id,
+      accountId: widget.account?.id,
+      startDate: DateFormat('yyyy-MM-dd').format(month),
+      endDate: DateFormat('yyyy-MM-dd')
+          .format(DateTime(month.year, month.month + 1, 0)),
     );
-  }
-
-  void _toggleSelectionMode() {
+    if (!mounted || token != _loadToken) return;
+    if (result['error'] == 'unauthorized') {
+      await auth.logout();
+      return;
+    }
     setState(() {
-      _isSelectionMode = !_isSelectionMode;
-      if (!_isSelectionMode) {
-        _selectedTransactions.clear();
-      }
-    });
-  }
-
-  void _toggleTransactionSelection(String transactionId) {
-    setState(() {
-      if (_selectedTransactions.contains(transactionId)) {
-        _selectedTransactions.remove(transactionId);
+      _loading = false;
+      if (result['success'] == true) {
+        _server = result['transactions'] as List<Transaction>;
+        _offline = false;
       } else {
-        _selectedTransactions.add(transactionId);
+        _log.warning('Activity', 'Month fetch failed; showing cached rows');
+        _offline = true;
+        _error = result['error']?.toString();
       }
     });
   }
 
-  Future<void> _deleteSelectedTransactions() async {
-    if (_selectedTransactions.isEmpty) return;
-    final l = AppLocalizations.of(context);
+  bool _inMonth(String date) {
+    final d = DateTime.tryParse(date);
+    return d != null && d.year == _month.year && d.month == _month.month;
+  }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        final dl = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(dl.transactionsListDeleteMultiTitle),
-          content: Text(dl.transactionsListDeleteMultiContent),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(dl.commonCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: Text(dl.commonDelete),
-            ),
-          ],
-        );
-      },
-    );
+  List<_Row> _rows(TransactionsProvider provider) {
+    final local = provider.offlineTransactions.where((t) =>
+        _inMonth(t.date) &&
+        (widget.account == null || t.accountId == widget.account!.id));
+    final byServerId = {
+      for (final t in local)
+        if (t.id != null) t.id!: t,
+    };
 
-    if (confirmed != true || !mounted) return;
+    final rows = <_Row>[];
+    if (_offline) {
+      rows.addAll(local.map((t) => _Row(t, local: t)));
+    } else {
+      rows.addAll(_server.map((t) => _Row(t, local: byServerId[t.id])));
+      rows.addAll(local
+          .where((t) =>
+              t.syncStatus == SyncStatus.pending ||
+              t.syncStatus == SyncStatus.failed)
+          .map((t) => _Row(t, local: t)));
+    }
+    rows.sort((a, b) => b.tx.date.compareTo(a.tx.date));
+    return rows;
+  }
 
-    final count = _selectedTransactions.length;
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-
-    final accessToken = await authProvider.getValidAccessToken();
-    if (accessToken != null) {
-      final success = await transactionsProvider.deleteMultipleTransactions(
-        accessToken: accessToken,
-        transactionIds: _selectedTransactions.toList(),
-      );
-
-      if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l.transactionsListDeletedMulti(count)),
-              backgroundColor: Colors.green,
-            ),
-          );
-          setState(() {
-            _selectedTransactions.clear();
-            _isSelectionMode = false;
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l.transactionsListDeleteFailed),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+  List<_Row> _applyFilters(List<_Row> rows) {
+    final q = _searchController.text.trim().toLowerCase();
+    return rows.where((r) {
+      final t = r.tx;
+      if (_filter == TransactionsFilter.noLabel) {
+        if (t.categoryId != null || t.isTransfer) return false;
+      } else if (_filter != null && t.categoryId != _filter) {
+        return false;
       }
-    }
+      if (q.isEmpty) return true;
+      return t.name.toLowerCase().contains(q) ||
+          (t.categoryName?.toLowerCase().contains(q) ?? false) ||
+          (t.notes?.toLowerCase().contains(q) ?? false);
+    }).toList();
   }
 
-  Future<void> _undoTransaction(OfflineTransaction transaction) async {
-    final l = AppLocalizations.of(context);
-    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final isPending = transaction.syncStatus == SyncStatus.pending;
+  double _signed(Transaction t) => t.isIncome ? t.absAmount : -t.absAmount;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        final dl = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(dl.transactionsListUndoTitle),
-          content: Text(
-            isPending
-                ? dl.transactionsListUndoRemovePending
-                : dl.transactionsListUndoRestoreConfirm,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(dl.commonCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(dl.commonUndo),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) return;
-
-    final success = await transactionsProvider.undoPendingTransaction(
-      localId: transaction.localId,
-      syncStatus: transaction.syncStatus,
-    );
-
-    if (mounted) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? (isPending
-                    ? l.transactionsListUndoPendingRemoved
-                    : l.transactionsListUndoRestored)
-                : l.transactionsListUndoFailed,
-          ),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
+  Future<void> _open(_Row row) async {
+    if (row.pendingCreate || row.pendingDelete) {
+      await _undo(row.local!);
+      return;
     }
-  }
-
-  Future<void> _editTransaction(OfflineTransaction transaction) async {
-    final updated = await Navigator.push<bool>(
-      context,
+    if (row.tx.id == null) return;
+    final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (context) => TransactionEditScreen(transaction: transaction),
+        builder: (_) => TransactionEditScreen(transaction: row.tx),
       ),
     );
-
-    if (updated == true && mounted) {
-      await _loadTransactions();
-    }
+    if (changed == true && mounted) reload();
   }
 
-  Future<bool> _confirmAndDeleteTransaction(Transaction transaction) async {
-    if (transaction.id == null) return false;
-
-    // Show confirmation dialog
-    // Capture providers and localizations before async gap
+  Future<void> _undo(OfflineTransaction t) async {
     final l = AppLocalizations.of(context);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-
+    final provider = context.read<TransactionsProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final isPending = t.syncStatus != SyncStatus.pendingDelete;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) {
-        final dl = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(dl.transactionsListDeleteTitle),
-          content: Text(dl.transactionsListDeleteSingleContent(transaction.name)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(dl.commonCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: Text(dl.commonDelete),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) return false;
-
-    // Perform the deletion
-    final accessToken = await authProvider.getValidAccessToken();
-
-    if (accessToken == null) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(l.transactionsListDeleteNoToken),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
-
-    final success = await transactionsProvider.deleteTransaction(
-      accessToken: accessToken,
-      transactionId: transaction.id!,
-    );
-
-    if (mounted) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? l.transactionsListDeletedSuccess
-                : l.transactionsListSingleDeleteFailed,
+      builder: (context) => AlertDialog(
+        title: Text(l.transactionsListUndoTitle),
+        content: Text(isPending
+            ? l.transactionsListUndoRemovePending
+            : l.transactionsListUndoRestoreConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l.commonCancel),
           ),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-    }
-
-    return success;
-  }
-
-  void _showAddTransactionForm() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TransactionFormScreen(account: widget.account),
-    ).then((_) {
-      if (mounted) {
-        _loadTransactions();
-      }
-    });
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l.commonUndo),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final ok = await provider.undoPendingTransaction(
+      localId: t.localId,
+      syncStatus: t.syncStatus,
+    );
+    messenger.showSnackBar(SnackBar(
+      content: Text(ok
+          ? (isPending
+              ? l.transactionsListUndoPendingRemoved
+              : l.transactionsListUndoRestored)
+          : l.transactionsListUndoFailed),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final hideAmounts = context.watch<PrivacyProvider>().hidden;
+    final c = LedgerColors.of(context);
+    final provider = context.watch<TransactionsProvider>();
+    final categories = context.watch<CategoriesProvider>().categories;
+    final accountNames = {
+      for (final a in context.watch<AccountsProvider>().accounts) a.id: a.name,
+    };
+    final currency = context.watch<AccountsProvider>().familyCurrency;
+    final labelColors = {for (final cat in categories) cat.id: cat.color};
+
+    final monthRows = _rows(provider);
+    final rows = _applyFilters(monthRows);
+    var moneyIn = 0.0, moneyOut = 0.0;
+    for (final r in monthRows) {
+      if (r.tx.isTransfer || r.pendingDelete) continue;
+      if (r.tx.isIncome) {
+        moneyIn += r.tx.absAmount;
+      } else {
+        moneyOut += r.tx.absAmount;
+      }
+    }
+
+    // Group by day, newest first.
+    final days = <String, List<_Row>>{};
+    for (final r in rows) {
+      days.putIfAbsent(r.tx.date, () => []).add(r);
+    }
+
+    final filters = <(String?, String, Color?)>[
+      (null, l.commonAll, null),
+      (TransactionsFilter.noLabel, l.activityNoLabel, null),
+      for (final cat in categories)
+        (cat.id, cat.name, parseHexColor(cat.color, c.ink)),
+    ];
+
+    final title = widget.account?.name ?? l.navActivity;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.account.name),
-        actions: [
-          if (_isSelectionMode)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: _selectedTransactions.isEmpty ? null : _deleteSelectedTransactions,
-            ),
-          IconButton(
-            icon: Icon(_isSelectionMode ? Icons.close : Icons.checklist),
-            onPressed: _toggleSelectionMode,
+      appBar: widget.account == null ? null : AppBar(),
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: reload,
+          child: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                    20, widget.account == null ? 16 : 0, 20, 0),
+                sliver: SliverList.list(children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: LedgerText.display(
+                            size: 34,
+                            weight: FontWeight.w700,
+                            color: c.ink,
+                            letterSpacing: -1,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                      MonthSwitcher(
+                        month: _month,
+                        onChanged: (m) => showMonth(m, categoryId: _filter),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _searchController,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      hintText: l.activitySearchHint,
+                      prefixIcon: Icon(Icons.search, color: c.muted),
+                      suffixIcon: _searchController.text.isEmpty
+                          ? null
+                          : IconButton(
+                              tooltip: l.activityClearSearch,
+                              icon: const Icon(Icons.close),
+                              onPressed: _searchController.clear,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ]),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 44,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: filters.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, i) {
+                      final (id, name, color) = filters[i];
+                      return LabelChip(
+                        name: name,
+                        color: color,
+                        showDot: color != null,
+                        selected: _filter == id,
+                        onTap: () => setState(() => _filter = id),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                sliver: SliverList.list(children: [
+                  _strip(l, c, moneyIn, moneyOut, monthRows.length, currency),
+                  if (_offline)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        _error == null
+                            ? l.activityOfflineNote
+                            : l.activityLoadFailedNote,
+                        style: TextStyle(fontSize: 13, color: c.muted),
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  if (_loading && rows.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (rows.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: Text(
+                        l.activityEmpty,
+                        style: TextStyle(fontSize: 15, color: c.muted),
+                      ),
+                    )
+                  else
+                    for (final entry in days.entries) ...[
+                      _dayHeader(entry.key, entry.value, c, currency),
+                      for (final r in entry.value)
+                        _row(r, l, c, accountNames, labelColors, currency),
+                      const SizedBox(height: 20),
+                    ],
+                ]),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      body: Column(
+    );
+  }
+
+  Widget _strip(
+    AppLocalizations l,
+    LedgerColors c,
+    double moneyIn,
+    double moneyOut,
+    int entries,
+    String? currency,
+  ) {
+    Widget cell(String label, Widget value) => Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 13, color: c.muted)),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: value,
+              ),
+            ],
+          ),
+        );
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: c.ink),
+          bottom: BorderSide(color: c.hairline),
+        ),
+      ),
+      child: Row(
         children: [
-          AccountDetailHeader(account: widget.account),
-          Expanded(
-            child: Consumer<TransactionsProvider>(
-              builder: (context, transactionsProvider, child) {
-          if (transactionsProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (transactionsProvider.error != null) {
-            return RefreshIndicator(
-              onRefresh: _loadTransactions,
-              child: CustomScrollView(
-                slivers: [
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                          const SizedBox(height: 16),
-                          Text(
-                            transactionsProvider.error!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _loadTransactions,
-                            child: Text(l.transactionsListRetry),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final allTransactions = transactionsProvider.offlineTransactions;
-
-          if (allTransactions.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: _loadTransactions,
-              child: CustomScrollView(
-                slivers: [
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.receipt_long_outlined,
-                            size: 64,
-                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            l.transactionsListNoTransactionsYet,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l.transactionsListEmptyAddFirst,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final transactions = _getFilteredTransactions(allTransactions);
-
-          return RefreshIndicator(
-            onRefresh: _loadTransactions,
-            child: Column(
-              children: [
-                Consumer<CategoriesProvider>(
-                  builder: (context, categoriesProvider, _) {
-                    if (categoriesProvider.isLoading || categoriesProvider.categories.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: CategoryFilter(
-                        availableCategories: categoriesProvider.categories,
-                        selectedCategoryIds: _selectedCategoryIds,
-                        onSelectionChanged: (categoryIds) {
-                          setState(() {
-                            _selectedCategoryIds = categoryIds;
-                          });
-                        },
-                      ),
-                    );
-                  },
-                ),
-                Expanded(
-                  child: transactions.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.4,
-                            child: Center(
-                              child: Text(
-                                l.transactionsListNoCategoryMatch,
-                                style: TextStyle(color: colorScheme.onSurfaceVariant),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: transactions.length,
-              itemBuilder: (context, index) {
-                final transaction = transactions[index];
-                final isSelected = transaction.id != null &&
-                    _selectedTransactions.contains(transaction.id);
-                final isPending = transaction.syncStatus == SyncStatus.pending;
-                final isPendingDelete = transaction.syncStatus == SyncStatus.pendingDelete;
-                final isFailed = transaction.syncStatus == SyncStatus.failed;
-                final hasPendingStatus = isPending || isPendingDelete;
-
-                // Compute display info once to avoid duplicate parsing
-                final displayInfo = _getAmountDisplayInfo(
-                  transaction.amount,
-                  widget.account.isAsset,
-                  widget.account.isLiability,
-                );
-
-                return Dismissible(
-                  key: Key(transaction.id ?? 'transaction_$index'),
-                  direction: _isSelectionMode
-                      ? DismissDirection.none
-                      : DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  confirmDismiss: (direction) => _confirmAndDeleteTransaction(transaction),
-                  child: Opacity(
-                    opacity: hasPendingStatus ? 0.5 : 1.0,
-                    child: Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: InkWell(
-                        onTap: _isSelectionMode && transaction.id != null
-                            ? () => _toggleTransactionSelection(transaction.id!)
-                            : null,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                            if (_isSelectionMode)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 12),
-                                child: Checkbox(
-                                  value: isSelected,
-                                  onChanged: transaction.id != null
-                                      ? (value) => _toggleTransactionSelection(transaction.id!)
-                                      : null,
-                                ),
-                              ),
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: (displayInfo['color'] as Color).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                displayInfo['icon'] as IconData,
-                                color: displayInfo['color'] as Color,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          transaction.name,
-                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                fontWeight: SureTokens.weightMedium,
-                                              ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      if (transaction.categoryName != null) ...[
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          flex: 0,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: colorScheme.primary.withValues(alpha: 0.3),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              _getCategoryDisplayName(transaction.categoryId, transaction.categoryName) ?? '',
-                                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                                    color: colorScheme.onPrimaryContainer,
-                                                    fontWeight: SureTokens.weightMedium,
-                                                  ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    transaction.date,
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                  ),
-                                  if (transaction.merchantName != null ||
-                                      transaction.tagNames.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
-                                    Wrap(
-                                      spacing: 6,
-                                      runSpacing: 4,
-                                      children: [
-                                        if (transaction.merchantName != null)
-                                          Chip(
-                                            label: Text(transaction.merchantName!),
-                                            visualDensity: VisualDensity.compact,
-                                          ),
-                                        ...transaction.tagNames
-                                            .where((name) => name.isNotEmpty)
-                                            .map(
-                                              (name) => Chip(
-                                                label: Text(name),
-                                                visualDensity:
-                                                    VisualDensity.compact,
-                                              ),
-                                            ),
-                                      ],
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (hasPendingStatus || isFailed)
-                                      Padding(
-                                        padding: const EdgeInsets.only(right: 8),
-                                        child: SyncStatusBadge(
-                                          syncStatus: transaction.syncStatus,
-                                          compact: true,
-                                        ),
-                                      ),
-                                    if (!_isSelectionMode &&
-                                        transaction.syncStatus ==
-                                            SyncStatus.synced)
-                                      SizedBox(
-                                        width: 36,
-                                        height: 36,
-                                        child: IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          tooltip: l.transactionsListEditTooltip,
-                                          visualDensity: VisualDensity.compact,
-                                          padding: EdgeInsets.zero,
-                                          onPressed: () =>
-                                              _editTransaction(transaction),
-                                        ),
-                                      ),
-                                    Flexible(
-                                      child: MoneyText(
-                                        MoneyMasker.mask(
-                                          '${displayInfo['prefix']}${displayInfo['displayAmount']}',
-                                          hidden: hideAmounts,
-                                        ),
-                                        trend: displayInfo['trend'] as MoneyTrend,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                              fontWeight: SureTokens.weightMedium,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (hasPendingStatus) ...[
-                                  const SizedBox(height: 4),
-                                  InkWell(
-                                    onTap: () => _undoTransaction(transaction),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.blue.withValues(alpha: 0.3),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'Undo',
-                                        style: TextStyle(
-                                          color: Colors.blue,
-                                          fontSize: 11,
-                                          fontWeight: SureTokens.weightSemibold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 4),
-                                Text(
-                                  transaction.currency,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-                ),
-              ],
-            ),
-          );
-              },
-            ),
+          cell(
+              l.activityIn,
+              RupeeAmount(moneyIn,
+                  currency: currency, size: 15, color: c.moneyIn)),
+          const SizedBox(width: 12),
+          cell(
+              l.activityOut,
+              RupeeAmount(moneyOut,
+                  currency: currency, size: 15, color: c.moneyOut)),
+          const SizedBox(width: 12),
+          cell(
+            l.activityEntries,
+            Text('$entries', style: LedgerText.figures(size: 15, color: c.ink)),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTransactionForm,
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _dayHeader(
+    String date,
+    List<_Row> rows,
+    LedgerColors c,
+    String? currency,
+  ) {
+    final d = DateTime.tryParse(date);
+    final label = d == null
+        ? date
+        : DateFormat('EEE d MMM', 'en_US').format(d).toUpperCase();
+    final net = rows
+        .where((r) => !r.tx.isTransfer && !r.pendingDelete)
+        .fold<double>(0, (sum, r) => sum + _signed(r.tx));
+    return Container(
+      padding: const EdgeInsets.only(bottom: 6),
+      decoration:
+          BoxDecoration(border: Border(bottom: BorderSide(color: c.ink))),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+                color: c.muted,
+              ),
+            ),
+          ),
+          RupeeAmount(net,
+              currency: currency, signed: true, size: 12, color: c.muted),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(
+    _Row row,
+    AppLocalizations l,
+    LedgerColors c,
+    Map<String, String> accountNames,
+    Map<String, String?> labelColors,
+    String? currency,
+  ) {
+    final t = row.tx;
+    final hasLabel = t.categoryId != null;
+    final source = row.pendingCreate
+        ? l.activityWaitingToSync
+        : row.pendingDelete
+            ? l.activityWaitingToDelete
+            : (t.accountName ?? accountNames[t.accountId] ?? '');
+    final label = t.isTransfer
+        ? l.activityTransfer
+        : (t.categoryName ?? l.activityNoLabel);
+    final amountColor =
+        t.isTransfer ? c.muted : (t.isIncome ? c.moneyIn : c.ink);
+
+    return Opacity(
+      opacity: row.pendingDelete ? 0.5 : 1,
+      child: InkWell(
+        onTap: () => _open(row),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.hairline)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      t.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 16, color: c.ink),
+                    ),
+                  ),
+                  if (t.hasAttachments) ...[
+                    const SizedBox(width: 6),
+                    Icon(Icons.attach_file,
+                        size: 14,
+                        color: c.muted,
+                        semanticLabel: l.activityHasReceipt),
+                  ],
+                  const Spacer(),
+                  const SizedBox(width: 12),
+                  RupeeAmount(
+                    _signed(t),
+                    currency: t.currency.isEmpty ? currency : t.currency,
+                    signed: true,
+                    color: amountColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  LabelDot(
+                    size: 9,
+                    color: hasLabel
+                        ? parseHexColor(
+                            t.categoryColor ?? labelColors[t.categoryId],
+                            c.ink,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, color: c.muted)),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      source,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: row.pendingCreate ? c.moneyOut : c.muted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

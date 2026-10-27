@@ -1158,4 +1158,252 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get budgetCategoryTransactionsLoadFailed =>
       'Couldn\'t load transactions';
+
+  @override
+  String get navActivity => 'Activity';
+
+  @override
+  String get navStatements => 'Statements';
+
+  @override
+  String get navAccounts => 'Accounts';
+
+  @override
+  String get navAddExpense => 'Add expense';
+
+  @override
+  String get homeNoLabel => 'No label';
+
+  @override
+  String get homeSettings => 'Settings';
+
+  @override
+  String get homeLoadFailed => 'Could not load this month.';
+
+  @override
+  String homeSpentIn(String month) {
+    return 'Spent in $month';
+  }
+
+  @override
+  String homeMoreThan(String amount, String month) {
+    return '$amount more than $month';
+  }
+
+  @override
+  String homeLessThan(String amount, String month) {
+    return '$amount less than $month';
+  }
+
+  @override
+  String homeSameAs(String month) {
+    return 'Same as $month';
+  }
+
+  @override
+  String get homeCameIn => 'Came in';
+
+  @override
+  String get homeWentOut => 'Went out';
+
+  @override
+  String get homeLeftOver => 'Left over';
+
+  @override
+  String get homeWhereItWent => 'Where it went';
+
+  @override
+  String get homeBudget => 'Budget';
+
+  @override
+  String get homeNothingSpent => 'Nothing spent this month yet.';
+
+  @override
+  String get homeNetWorth => 'Net worth';
+
+  @override
+  String get homeBalanceSheet => 'Balance sheet';
+
+  @override
+  String homeAssetsOwed(String assets, String owed) {
+    return 'Assets $assets · Owed $owed';
+  }
+
+  @override
+  String homeNeedLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count statement items need a label',
+      one: '1 statement item needs a label',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeNeedLabelDetail(String month, int sorted) {
+    return '$month · $sorted sorted already';
+  }
+
+  @override
+  String get activityNoLabel => 'No label';
+
+  @override
+  String get activitySearchHint => 'Search this month';
+
+  @override
+  String get activityClearSearch => 'Clear search';
+
+  @override
+  String get activityOfflineNote =>
+      'Offline. Showing what is saved on this phone.';
+
+  @override
+  String get activityLoadFailedNote =>
+      'Could not reach the server. Showing what is saved on this phone.';
+
+  @override
+  String get activityEmpty => 'Nothing here for this month.';
+
+  @override
+  String get activityIn => 'In';
+
+  @override
+  String get activityOut => 'Out';
+
+  @override
+  String get activityEntries => 'Entries';
+
+  @override
+  String get activityWaitingToSync => 'Waiting to sync';
+
+  @override
+  String get activityWaitingToDelete => 'Will be deleted';
+
+  @override
+  String get activityTransfer => 'Transfer';
+
+  @override
+  String get activityHasReceipt => 'Has receipt';
+
+  @override
+  String get detailDelete => 'Delete transaction';
+
+  @override
+  String get detailMoneyIn => 'Money in';
+
+  @override
+  String get detailMoneyOut => 'Money out';
+
+  @override
+  String get detailNote => 'Note';
+
+  @override
+  String get detailNoteHint => 'Add a note';
+
+  @override
+  String get detailReceipt => 'Receipt';
+
+  @override
+  String get detailAttachReceipt => 'Attach';
+
+  @override
+  String get detailReplaceReceipt => 'Replace';
+
+  @override
+  String get detailNoReceipt => 'No receipt attached.';
+
+  @override
+  String detailMoreReceipts(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String get receiptRemove => 'Remove receipt';
+
+  @override
+  String get receiptNeedsInternet =>
+      'Connect to the internet to attach a receipt.';
+
+  @override
+  String get receiptUploadFailed => 'Could not attach the receipt.';
+
+  @override
+  String get receiptRemoveFailed => 'Could not remove the receipt.';
+
+  @override
+  String get receiptTakePhoto => 'Take photo';
+
+  @override
+  String get receiptFromGallery => 'From gallery';
+
+  @override
+  String get formTypeExpense => 'Expense';
+
+  @override
+  String get formTypeIncome => 'Income';
+
+  @override
+  String get formLabel => 'Label';
+
+  @override
+  String get formManage => 'Manage';
+
+  @override
+  String get formNewLabel => '+ New label';
+
+  @override
+  String get formWhatFor => 'What for';
+
+  @override
+  String get formWhatForHint => 'e.g. Imtiaz Supermarket';
+
+  @override
+  String get formPaidFrom => 'Paid from';
+
+  @override
+  String get formPaidInto => 'Paid into';
+
+  @override
+  String get formNoAccounts => 'No accounts yet';
+
+  @override
+  String get formOptional => 'Optional';
+
+  @override
+  String get formReceipt => 'Receipt or screenshot';
+
+  @override
+  String get formSaveExpense => 'Save expense';
+
+  @override
+  String get formSaveIncome => 'Save income';
+
+  @override
+  String get formPickAccount => 'Choose an account first.';
+
+  @override
+  String get formSaved => 'Saved';
+
+  @override
+  String get formSavedReceiptOffline =>
+      'Saved. The receipt was not attached because you are offline.';
+
+  @override
+  String get loginTagline => 'Every rupee, month by month.';
+
+  @override
+  String get loginServer => 'Server';
+
+  @override
+  String get loginServerChange => 'Change';
+
+  @override
+  String get loginShowPassword => 'Show password';
+
+  @override
+  String get loginNewHere => 'New here? ';
+
+  @override
+  String get loginCreateAccount => 'Create an account';
 }

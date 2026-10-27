@@ -29,3 +29,17 @@ class SureTypography {
   /// 24 / 32 — Tailwind `text-2xl`.
   static const double xxl = 24;
 }
+
+/// Font families for the household "ledger" language.
+class SureFonts {
+  const SureFonts._();
+
+  /// Headline numerals and screen titles.
+  static const String display = 'Bricolage Grotesque';
+
+  /// Body text.
+  static const String sans = 'IBM Plex Sans';
+
+  /// Tabular amounts.
+  static const String mono = 'IBM Plex Mono';
+}

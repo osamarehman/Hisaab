@@ -8,20 +8,13 @@ import '../providers/auth_provider.dart';
 import '../providers/budgets_provider.dart';
 import '../providers/privacy_provider.dart';
 import '../services/connectivity_service.dart';
-import '../theme/sure_colors.dart';
-import '../theme/sure_spacing.dart';
-import '../widgets/budget_category_row.dart';
-import '../widgets/budget_summary_card.dart';
-import '../widgets/sure_button.dart';
-import '../widgets/sure_card.dart';
-import '../widgets/sure_chip.dart';
-import '../widgets/sure_segmented_control.dart';
+import '../utils/money_masker.dart';
+import '../widgets/household/household_style.dart';
 import 'budget_category_transactions_screen.dart';
 
-/// Monthly budget overview, matching the web Budgets page: month navigation,
-/// budgeted / actual / remaining totals and a progress bar per category, with
-/// subcategories nested under their parent. Tapping a category opens its
-/// transactions for that budget period. Read-only: budgets are edited on web.
+/// Monthly budget in the ledger style: month switcher, spent of planned with
+/// a today marker, then one row per label with its progress; over-budget in
+/// amber. Tapping a row opens its transactions. Limits are edited on web.
 class BudgetsScreen extends StatefulWidget {
   const BudgetsScreen({super.key, this.provider, this.accessTokenLoader});
 
@@ -35,12 +28,9 @@ class BudgetsScreen extends StatefulWidget {
   State<BudgetsScreen> createState() => _BudgetsScreenState();
 }
 
-enum _CategoryFilter { all, overBudget }
-
 class _BudgetsScreenState extends State<BudgetsScreen> {
   late final BudgetsProvider _provider;
   late final bool _ownsProvider;
-  _CategoryFilter _filter = _CategoryFilter.all;
 
   @override
   void initState() {
@@ -84,7 +74,6 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
 
   void _changeMonth(VoidCallback change) {
     change();
-    setState(() => _filter = _CategoryFilter.all);
     _load();
   }
 
@@ -95,7 +84,6 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
       _provider.markUnauthorized();
       return;
     }
-    setState(() => _filter = _CategoryFilter.all);
     await _provider.selectBudget(accessToken: token, budgetId: budgetId);
   }
 
@@ -134,51 +122,48 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   }
 
   Widget _buildScaffold(BuildContext context, BudgetsProvider provider) {
-    final l = AppLocalizations.of(context);
+    final c = HouseholdColors.of(context);
     final hideAmounts = context.watch<PrivacyProvider>().hidden;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.budgetsTitle)),
-      body: RefreshIndicator(
-        onRefresh: () => _load(forceRefresh: true),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(
-            SureSpacing.xl,
-            SureSpacing.md,
-            SureSpacing.xl,
-            SureSpacing.huge,
-          ),
+      backgroundColor: c.paper,
+      body: SafeArea(
+        child: Column(
           children: [
-            _buildMonthHeader(context, provider),
-            ..._buildBody(context, provider, hideAmounts),
+            if (Navigator.of(context).canPop()) const LedgerBackHeader(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => _load(forceRefresh: true),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                  children: [
+                    _buildTitleRow(context, provider),
+                    const SizedBox(height: 24),
+                    ..._buildBody(context, provider, hideAmounts),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMonthHeader(BuildContext context, BudgetsProvider provider) {
+  Widget _buildTitleRow(BuildContext context, BudgetsProvider provider) {
     final l = AppLocalizations.of(context);
-    final textTheme = Theme.of(context).textTheme;
+    final c = HouseholdColors.of(context);
+    final locale = Localizations.localeOf(context).toString();
     return Row(
       children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
-          tooltip: l.budgetsPreviousMonth,
-          onPressed: () => _changeMonth(provider.previousMonth),
-        ),
-        Expanded(
-          child: Text(
-            _periodLabel(context, provider.month, provider.budget),
-            textAlign: TextAlign.center,
-            style: textTheme.titleMedium,
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          tooltip: l.budgetsNextMonth,
-          onPressed: provider.canGoNext
+        Expanded(child: Text('Budget', style: HouseholdText.title(c.ink))),
+        LedgerMonthSwitcher(
+          label: DateFormat.yMMM(locale).format(provider.month),
+          previousTooltip: l.budgetsPreviousMonth,
+          nextTooltip: l.budgetsNextMonth,
+          onPrevious: () => _changeMonth(provider.previousMonth),
+          onNext: provider.canGoNext
               ? () => _changeMonth(provider.nextMonth)
               : null,
         ),
@@ -192,49 +177,36 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
     bool hideAmounts,
   ) {
     final l = AppLocalizations.of(context);
-    final palette = SureColors.of(context).palette;
 
     if (provider.isLoading && !provider.hasLoadedMonth) {
       return const [
         Padding(
-          padding: EdgeInsets.only(top: SureSpacing.huge * 3),
+          padding: EdgeInsets.only(top: 64),
           child: Center(child: CircularProgressIndicator()),
         ),
       ];
     }
 
     // A failed refresh keeps the month already loaded on screen (with a
-    // banner), like the offline path; only a month never loaded gets the
-    // full-screen error.
+    // banner); only a month never loaded gets the full-screen error.
     switch (provider.refreshFailed ? null : provider.error) {
       case BudgetsLoadError.offline:
         return [
-          _message(
-            context,
-            icon: Icons.cloud_off_outlined,
-            title: l.budgetsOfflineTitle,
-            body: l.budgetsOfflineMessage,
-            onRetry: () => _load(forceRefresh: true),
-          ),
+          _message(context,
+              title: l.budgetsOfflineTitle,
+              body: l.budgetsOfflineMessage,
+              onRetry: () => _load(forceRefresh: true)),
         ];
       case BudgetsLoadError.unauthorized:
         return [
-          _message(
-            context,
-            icon: Icons.lock_outline,
-            title: l.budgetsLoadFailed,
-            body: l.budgetsSessionExpired,
-          ),
+          _message(context,
+              title: l.budgetsLoadFailed, body: l.budgetsSessionExpired),
         ];
       case BudgetsLoadError.failed:
         return [
-          _message(
-            context,
-            icon: Icons.error_outline,
-            title: l.budgetsLoadFailed,
-            body: null,
-            onRetry: () => _load(forceRefresh: true),
-          ),
+          _message(context,
+              title: l.budgetsLoadFailed,
+              onRetry: () => _load(forceRefresh: true)),
         ];
       case null:
         break;
@@ -248,7 +220,6 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
       return [
         _message(
           context,
-          icon: Icons.pie_chart_outline,
           title: l.budgetsNoBudgetTitle(
             DateFormat.yMMMM(locale).format(provider.month),
           ),
@@ -257,236 +228,344 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
       ];
     }
 
+    final c = HouseholdColors.of(context);
     final widgets = <Widget>[];
 
-    if (provider.showingCachedWhileOffline) {
-      widgets.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: SureSpacing.lg),
-          child: Row(
-            children: [
-              Icon(Icons.cloud_off_outlined,
-                  size: 16, color: palette.textSecondary),
-              const SizedBox(width: SureSpacing.sm),
-              Expanded(
-                child: Text(
-                  l.budgetsOfflineCached,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: palette.textSecondary),
-                ),
-              ),
-            ],
-          ),
+    void notice(String text, {VoidCallback? onRetry}) {
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(text, style: HouseholdText.body(c.muted, size: 13)),
+            ),
+            if (onRetry != null)
+              TextButton(onPressed: onRetry, child: Text(l.commonTryAgain)),
+          ],
         ),
-      );
+      ));
     }
 
+    if (provider.showingCachedWhileOffline) notice(l.budgetsOfflineCached);
     if (provider.refreshFailed) {
-      widgets.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: SureSpacing.lg),
-          child: Row(
-            children: [
-              Icon(Icons.error_outline, size: 16, color: palette.textSecondary),
-              const SizedBox(width: SureSpacing.sm),
-              Expanded(
-                child: Text(
-                  l.budgetsRefreshFailed,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: palette.textSecondary),
-                ),
-              ),
-              TextButton(
-                onPressed: () => _load(forceRefresh: true),
-                child: Text(l.commonTryAgain),
-              ),
-            ],
-          ),
-        ),
-      );
+      notice(l.budgetsRefreshFailed, onRetry: () => _load(forceRefresh: true));
     }
 
     if (provider.monthBudgets.length > 1) {
-      widgets.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: SureSpacing.lg),
-          child: Wrap(
-            spacing: SureSpacing.md,
-            runSpacing: SureSpacing.md,
-            children: [
-              for (var i = 0; i < provider.monthBudgets.length; i++)
-                SureChip(
-                  label: l.budgetsBudgetNumber(i + 1),
-                  selected: provider.monthBudgets[i].id == budget.id,
-                  onSelected: (_) => _selectBudget(provider.monthBudgets[i].id),
-                ),
-            ],
-          ),
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (var i = 0; i < provider.monthBudgets.length; i++)
+              ChoiceChip(
+                label: Text(l.budgetsBudgetNumber(i + 1)),
+                selected: provider.monthBudgets[i].id == budget.id,
+                shape: const RoundedRectangleBorder(),
+                onSelected: (_) => _selectBudget(provider.monthBudgets[i].id),
+              ),
+          ],
         ),
-      );
+      ));
     }
 
     if (provider.isLoading) {
-      widgets.add(const LinearProgressIndicator(minHeight: 2));
-      widgets.add(const SizedBox(height: SureSpacing.md));
+      widgets.add(LinearProgressIndicator(
+          minHeight: 2, color: c.ink, backgroundColor: c.hairline));
+      widgets.add(const SizedBox(height: 8));
     }
 
-    widgets.add(BudgetSummaryCard(budget: budget, hideAmounts: hideAmounts));
+    widgets.add(_Summary(budget: budget, hidden: hideAmounts));
 
     if (!budget.initialized) {
-      widgets.add(const SizedBox(height: SureSpacing.lg));
-      widgets.add(
-        _message(
-          context,
-          icon: Icons.tune,
-          title: null,
-          body: l.budgetsNotSetUpMessage,
-        ),
-      );
+      widgets.add(const SizedBox(height: 16));
+      widgets.add(Text(l.budgetsNotSetUpMessage,
+          style: HouseholdText.body(c.muted, size: 14)));
     }
 
-    widgets.addAll(_buildCategories(context, provider, budget, hideAmounts));
+    widgets.add(const SizedBox(height: 24));
+    widgets.addAll(_buildRows(context, provider, budget, hideAmounts));
     return widgets;
   }
 
-  List<Widget> _buildCategories(
+  List<Widget> _buildRows(
     BuildContext context,
     BudgetsProvider provider,
     Budget budget,
     bool hideAmounts,
   ) {
-    final l = AppLocalizations.of(context);
-    final palette = SureColors.of(context).palette;
-    final groups = provider.visibleGroups;
-    final overCount = provider.overBudgetCount;
-    final filter = overCount == 0 ? _CategoryFilter.all : _filter;
-
     final rows = <Widget>[];
-    void addRow(BudgetCategory bc, List<String> ids, {bool indented = false}) {
-      if (rows.isNotEmpty) {
-        rows.add(Divider(height: 1, color: palette.borderSecondary));
-      }
-      rows.add(
-        BudgetCategoryRow(
-          key: ValueKey('budget-category-${bc.id}'),
-          budgetCategory: bc,
-          hideAmounts: hideAmounts,
-          indented: indented,
-          onTap: () => _openCategory(budget, bc, ids),
-        ),
-      );
-    }
-
-    for (final group in groups) {
+    for (final group in provider.visibleGroups) {
       // Like the web, a parent that isn't itself visible only exists as the
       // container of its visible subcategories: no row, no indent.
       final showParent = provider.showsAllCategories || group.parent.isVisible;
-      if (filter == _CategoryFilter.overBudget) {
-        if (group.parent.isOverBudget) {
-          addRow(group.parent, group.categoryIds);
-        }
-        for (final child in group.children.where((c) => c.isOverBudget)) {
-          addRow(
-            child,
-            [child.category.id],
-            indented: group.parent.isOverBudget,
-          );
-        }
-      } else {
-        if (showParent) addRow(group.parent, group.categoryIds);
-        for (final child in group.children) {
-          addRow(child, [child.category.id], indented: showParent);
-        }
+      if (showParent) {
+        rows.add(_BudgetLine(
+          key: ValueKey('budget-category-${group.parent.id}'),
+          line: group.parent,
+          currency: budget.currency,
+          hidden: hideAmounts,
+          onTap: () => _openCategory(budget, group.parent, group.categoryIds),
+        ));
+      }
+      for (final child in group.children) {
+        rows.add(_BudgetLine(
+          key: ValueKey('budget-category-${child.id}'),
+          line: child,
+          currency: budget.currency,
+          hidden: hideAmounts,
+          indented: showParent,
+          onTap: () => _openCategory(budget, child, [child.category.id]),
+        ));
       }
     }
-
-    return [
-      const SizedBox(height: SureSpacing.xxxl),
-      Padding(
-        padding: const EdgeInsets.only(bottom: SureSpacing.md),
-        child: Text(
-          l.budgetsCategoriesTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-      ),
-      if (overCount > 0)
-        Padding(
-          padding: const EdgeInsets.only(bottom: SureSpacing.lg),
-          child: SureSegmentedControl<_CategoryFilter>(
-            segments: [
-              SureSegment(value: _CategoryFilter.all, label: l.commonAll),
-              SureSegment(
-                value: _CategoryFilter.overBudget,
-                label: l.budgetsFilterOverBudget(overCount),
-              ),
-            ],
-            selected: filter,
-            onChanged: (value) => setState(() => _filter = value),
-          ),
-        ),
-      if (rows.isEmpty)
-        _message(
-          context,
-          icon: Icons.category_outlined,
-          title: null,
-          body: l.budgetsNoCategories,
-        )
-      else
-        SureCard(
-          padding: EdgeInsets.zero,
-          child: Column(children: rows),
-        ),
-    ];
+    if (rows.isEmpty) {
+      final c = HouseholdColors.of(context);
+      return [
+        Text(AppLocalizations.of(context).budgetsNoCategories,
+            style: HouseholdText.body(c.muted)),
+      ];
+    }
+    return rows;
   }
 
   Widget _message(
     BuildContext context, {
-    required IconData icon,
-    required String? title,
+    required String title,
     String? body,
     VoidCallback? onRetry,
   }) {
-    final l = AppLocalizations.of(context);
-    final palette = SureColors.of(context).palette;
-    final textTheme = Theme.of(context).textTheme;
+    final c = HouseholdColors.of(context);
     return Padding(
-      padding: EdgeInsets.only(
-        top: title == null ? 0 : SureSpacing.huge * 2,
-      ),
+      padding: const EdgeInsets.only(top: 32),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: title == null ? 32 : 56, color: palette.textSubdued),
-          if (title != null) ...[
-            const SizedBox(height: SureSpacing.xl),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: textTheme.titleMedium,
-            ),
-          ],
+          LedgerHead(title: title),
           if (body != null && body.isNotEmpty) ...[
-            const SizedBox(height: SureSpacing.md),
-            Text(
-              body,
-              textAlign: TextAlign.center,
-              style:
-                  textTheme.bodyMedium?.copyWith(color: palette.textSecondary),
-            ),
+            const SizedBox(height: 12),
+            Text(body, style: HouseholdText.body(c.muted, size: 15)),
           ],
           if (onRetry != null) ...[
-            const SizedBox(height: SureSpacing.xl),
-            SureButton(
-              label: l.commonTryAgain,
+            const SizedBox(height: 16),
+            OutlineInkButton(
+              label: AppLocalizations.of(context).commonTryAgain,
               onPressed: onRetry,
-              variant: SureButtonVariant.outline,
-              size: SureButtonSize.sm,
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+String _money(int cents, String currency, bool hidden) =>
+    MoneyMasker.mask(formatMoneyCents(cents, currency), hidden: hidden);
+
+/// "Spent of Rs 200,000 planned", big spent figure, bar with today marker.
+class _Summary extends StatelessWidget {
+  const _Summary({required this.budget, required this.hidden});
+
+  final Budget budget;
+  final bool hidden;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = HouseholdColors.of(context);
+    final planned =
+        budget.budgetedSpendingCents ?? budget.allocatedSpendingCents ?? 0;
+    final spent = budget.actualSpendingCents ?? 0;
+    final left = budget.availableToSpendCents ?? (planned - spent);
+    final currency = budget.currency;
+
+    final today = DateUtils.dateOnly(DateTime.now());
+    final start = DateUtils.dateOnly(budget.startDate);
+    final end = DateUtils.dateOnly(budget.endDate);
+    final days = end.difference(start).inDays + 1;
+    final inPeriod = !today.isBefore(start) && !today.isAfter(end);
+    final day = today.difference(start).inDays + 1;
+    final daysLeft = days - day;
+
+    final String note;
+    if (left < 0) {
+      note = 'Over by ${_money(-left, currency, hidden)}.';
+    } else if (inPeriod) {
+      note = '${_money(left, currency, hidden)} left for the last '
+          '$daysLeft ${daysLeft == 1 ? 'day' : 'days'}. Blue line is today.';
+    } else {
+      note = '${_money(left, currency, hidden)} left.';
+    }
+
+    return Container(
+      padding: const EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: c.ink)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  planned > 0
+                      ? 'Spent of ${_money(planned, currency, hidden)} planned'
+                      : 'Spent',
+                  style: HouseholdText.body(c.muted, size: 14),
+                ),
+              ),
+              if (inPeriod)
+                Text('day $day of $days',
+                    style: HouseholdText.mono(c.muted, size: 13)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(_money(spent, currency, hidden),
+              style:
+                  HouseholdText.mono(c.ink, size: 30, weight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          if (!hidden)
+            SizedBox(
+              height: 24,
+              child: LayoutBuilder(builder: (context, box) {
+                final share =
+                    planned <= 0 ? 0.0 : (spent / planned).clamp(0.0, 1.0);
+                return Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 5,
+                      height: 14,
+                      child: ColoredBox(color: c.hairline),
+                    ),
+                    Positioned(
+                      left: 0,
+                      top: 5,
+                      height: 14,
+                      width: box.maxWidth * share,
+                      child: ColoredBox(color: left < 0 ? c.amber : c.ink),
+                    ),
+                    if (inPeriod)
+                      Positioned(
+                        left: (box.maxWidth * day / days) - 1,
+                        top: 0,
+                        bottom: 0,
+                        width: 2,
+                        child: ColoredBox(color: c.cobalt),
+                      ),
+                  ],
+                );
+              }),
+            ),
+          const SizedBox(height: 8),
+          Text(
+            note,
+            style: HouseholdText.body(left < 0 ? c.amber : c.muted,
+                size: 14, weight: left < 0 ? FontWeight.w600 : FontWeight.w400),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One label row: name and spent, progress, then "left"/"over" and limit.
+class _BudgetLine extends StatelessWidget {
+  const _BudgetLine({
+    super.key,
+    required this.line,
+    required this.currency,
+    required this.hidden,
+    required this.onTap,
+    this.indented = false,
+  });
+
+  final BudgetCategory line;
+  final String currency;
+  final bool hidden;
+  final bool indented;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = HouseholdColors.of(context);
+    final spent = line.actualSpendingCents ?? 0;
+    final limit = line.inheritsParentBudget
+        ? (line.sharedBudgetCents ?? line.effectiveBudgetCents)
+        : spent + (line.availableToSpendCents ?? 0);
+    final over = line.isOverBudget;
+    final dot = parseHexColor(line.category.color) ?? c.muted;
+
+    final String note;
+    if (!line.isBudgeted) {
+      note = 'No limit set';
+    } else if (over) {
+      note = 'Over by ${_money(spent - limit, currency, hidden)}';
+    } else {
+      note = '${_money(limit - spent, currency, hidden)} left';
+    }
+
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(indented ? 18 : 0, 14, 0, 14),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.hairline)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                LabelSquare(color: dot),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(line.name,
+                      style:
+                          HouseholdText.body(c.ink, size: indented ? 15 : 16)),
+                ),
+                Text(_money(spent, currency, hidden),
+                    style: HouseholdText.mono(c.ink, size: 15)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 6,
+              child: ColoredBox(
+                color: c.track,
+                child: hidden
+                    ? null
+                    : FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: line.isBudgeted
+                            ? line.spentFraction.clamp(0.0, 1.0)
+                            : (spent > 0 ? 1 : 0),
+                        child: ColoredBox(color: over ? c.amber : c.ink),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    note,
+                    style: over
+                        ? HouseholdText.body(c.amber,
+                            size: 13, weight: FontWeight.w600)
+                        : HouseholdText.body(c.muted, size: 13),
+                  ),
+                ),
+                if (line.isBudgeted)
+                  Text('of ${_money(limit, currency, hidden)}',
+                      style: HouseholdText.mono(c.muted, size: 13)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

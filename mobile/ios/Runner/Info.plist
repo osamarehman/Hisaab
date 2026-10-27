@@ -47,6 +47,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo of a receipt or bill to keep with an expense.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a receipt or bill screenshot to keep with an expense.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authenticate with Face ID to unlock the app</string>
 	<key>CFBundleURLTypes</key>

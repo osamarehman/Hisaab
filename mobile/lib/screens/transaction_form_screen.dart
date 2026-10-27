@@ -1,23 +1,32 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
+import 'package:provider/provider.dart';
+
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../models/category.dart' as models;
+import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
-import '../providers/privacy_provider.dart';
 import '../providers/transactions_provider.dart';
-import '../services/log_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/log_service.dart';
 import '../utils/amount_parser.dart';
-import '../utils/money_masker.dart';
-import '../widgets/sure_segmented_control.dart';
-import '../l10n/app_localizations.dart';
+import '../utils/money_format.dart';
+import '../widgets/ledger/ledger.dart';
+import 'labels_screen.dart';
 
+/// Add expense / income. Saves offline-first, then uploads the receipt once
+/// the transaction reaches the server. Pops `true` when saved.
 class TransactionFormScreen extends StatefulWidget {
-  final Account account;
+  const TransactionFormScreen({super.key, this.account});
 
-  const TransactionFormScreen({super.key, required this.account});
+  /// Preselected "Paid from" account.
+  final Account? account;
 
   @override
   State<TransactionFormScreen> createState() => _TransactionFormScreenState();
@@ -26,44 +35,67 @@ class TransactionFormScreen extends StatefulWidget {
 class _TransactionFormScreenState extends State<TransactionFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  final _dateController = TextEditingController();
   final _nameController = TextEditingController();
+  final _notesController = TextEditingController();
   final _log = LogService.instance;
 
   String _nature = 'expense';
-  bool _showMoreFields = false;
-  bool _isSubmitting = false;
-  models.Category? _selectedCategory;
+  DateTime _date = DateTime.now();
+  String? _accountId;
+  models.Category? _category;
+  File? _receipt;
+  bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
-    // Set default values
-    final now = DateTime.now();
-    final formattedDate = DateFormat('yyyy/MM/dd').format(now);
-    _dateController.text = formattedDate;
-    _nameController.text = 'SureApp';
-    _fetchCategories();
-  }
-
-  Future<void> _fetchCategories() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final categoriesProvider = Provider.of<CategoriesProvider>(
-      context,
-      listen: false,
-    );
-    final accessToken = await authProvider.getValidAccessToken();
-    if (accessToken != null) {
-      categoriesProvider.fetchCategories(accessToken: accessToken);
-    }
+    _accountId = widget.account?.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   @override
   void dispose() {
     _amountController.dispose();
-    _dateController.dispose();
     _nameController.dispose();
+    _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _load({bool forceLabels = false}) async {
+    final auth = context.read<AuthProvider>();
+    final categories = context.read<CategoriesProvider>();
+    final accounts = context.read<AccountsProvider>();
+    final token = await auth.getValidAccessToken();
+    if (token == null) return;
+    await Future.wait([
+      categories.fetchCategories(accessToken: token, force: forceLabels),
+      if (accounts.accounts.isEmpty) accounts.fetchAccounts(accessToken: token),
+    ]);
+  }
+
+  /// Cash first, then the rest, so the common case needs no change.
+  List<Account> _accounts(List<Account> all) {
+    bool isCash(Account a) =>
+        a.name.toLowerCase().contains('cash') ||
+        a.subtype?.toLowerCase() == 'cash';
+    return [...all.where(isCash), ...all.where((a) => !isCash(a))];
+  }
+
+  Future<void> _openLabels() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const LabelsScreen()),
+    );
+    if (mounted) await _load(forceLabels: true);
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked != null && mounted) setState(() => _date = picked);
   }
 
   String? _validateAmount(String? value) {
@@ -71,447 +103,455 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (value == null || value.trim().isEmpty) {
       return l.transactionFormAmountRequiredPrompt;
     }
-
-    final double amount;
     try {
-      amount = AmountParser.parse(value, locale: _currentLocaleName()).value;
+      if (AmountParser.parse(value, locale: 'en_US').value <= 0) {
+        return l.transactionFormAmountTooSmall;
+      }
     } on FormatException {
       return l.transactionFormAmountInvalidNumber;
     }
-
-    if (amount <= 0) {
-      return l.transactionFormAmountTooSmall;
-    }
-
     return null;
   }
 
-  String _currentLocaleName() {
-    return Localizations.maybeLocaleOf(context)?.toString() ??
-        Intl.getCurrentLocale();
-  }
-
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null && mounted) {
-      setState(() {
-        _dateController.text = DateFormat('yyyy/MM/dd').format(picked);
-      });
-    }
-  }
-
-  Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _submit(Account? account) async {
+    final l = AppLocalizations.of(context);
+    if (!_formKey.currentState!.validate()) return;
+    if (account == null) {
+      _toast(l.formPickAccount);
       return;
     }
+    setState(() => _submitting = true);
 
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    _log.info('TransactionForm', 'Starting transaction creation...');
-
-    final l = AppLocalizations.of(context);
+    final auth = context.read<AuthProvider>();
+    final provider = context.read<TransactionsProvider>();
+    final online = context.read<ConnectivityService?>()?.isOnline ?? true;
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final transactionsProvider = Provider.of<TransactionsProvider>(
-        context,
-        listen: false,
-      );
-      final accessToken = await authProvider.getValidAccessToken();
-
-      if (accessToken == null) {
-        _log.warning(
-          'TransactionForm',
-          'Access token is null, session expired',
-        );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l.transactionFormSessionExpired),
-              backgroundColor: Colors.red,
-            ),
-          );
-          await authProvider.logout();
-        }
+      final token = await auth.getValidAccessToken();
+      if (token == null) {
+        _toast(l.transactionFormSessionExpired);
+        await auth.logout();
         return;
       }
 
-      // Convert date format from yyyy/MM/dd to yyyy-MM-dd
-      final parsedDate = DateFormat('yyyy/MM/dd').parse(_dateController.text);
-      final apiDate = DateFormat('yyyy-MM-dd').format(parsedDate);
-      final canonicalAmount = AmountParser.canonicalize(
-        _amountController.text,
-        locale: _currentLocaleName(),
-      );
+      final name = _nameController.text.trim().isNotEmpty
+          ? _nameController.text.trim()
+          : (_category?.name ??
+              (_nature == 'income' ? l.formTypeIncome : l.formTypeExpense));
+      final notes = _notesController.text.trim();
 
-      _log.info(
-        'TransactionForm',
-        'Calling TransactionsProvider.createTransaction (offline-first)',
-      );
-
-      // Use TransactionsProvider for offline-first transaction creation
-      final success = await transactionsProvider.createTransaction(
-        accessToken: accessToken,
-        accountId: widget.account.id,
-        name: _nameController.text.trim(),
-        date: apiDate,
-        amount: canonicalAmount,
-        currency: widget.account.currency,
+      final ok = await provider.createTransaction(
+        accessToken: token,
+        accountId: account.id,
+        name: name,
+        date: DateFormat('yyyy-MM-dd').format(_date),
+        amount: AmountParser.canonicalize(
+          _amountController.text,
+          locale: 'en_US',
+        ),
+        currency: account.currency,
         nature: _nature,
-        notes: 'This transaction via mobile app.',
-        categoryId: _selectedCategory?.id,
-        categoryName: _selectedCategory?.name,
+        notes: notes.isEmpty ? null : notes,
+        categoryId: _category?.id,
+        categoryName: _category?.name,
+        attachments: _receipt == null ? null : [_receipt!],
       );
 
-      if (mounted) {
-        if (success) {
-          _log.info(
-            'TransactionForm',
-            'Transaction created successfully (saved locally)',
-          );
-
-          // Check current connectivity status to show appropriate message
-          final connectivityService = Provider.of<ConnectivityService>(
-            context,
-            listen: false,
-          );
-          final isOnline = connectivityService.isOnline;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isOnline
-                    ? l.transactionFormCreateSuccessOnline
-                    : l.transactionFormCreateSuccessOffline,
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context, true); // Return true to indicate success
-        } else {
-          _log.error('TransactionForm', 'Failed to create transaction');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l.transactionFormCreateFailed),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+      if (!mounted) return;
+      if (ok) {
+        _toast(!online && _receipt != null
+            ? l.formSavedReceiptOffline
+            : online
+                ? l.formSaved
+                : l.transactionFormCreateSuccessOffline);
+        Navigator.pop(context, true);
+      } else {
+        _toast(l.transactionFormCreateFailed);
       }
     } catch (e) {
-      _log.error(
-        'TransactionForm',
-        'Exception during transaction creation: $e',
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l.transactionFormGenericError(e.toString())),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _log.error('TransactionForm', 'Create failed with ${e.runtimeType}');
+      if (mounted) _toast(l.transactionFormCreateFailed);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
+      if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  void _toast(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final hideAmounts = context.watch<PrivacyProvider>().hidden;
+    final c = LedgerColors.of(context);
+    final categories = context.watch<CategoriesProvider>().categories;
+    final accountsProvider = context.watch<AccountsProvider>();
+    final accounts = _accounts(accountsProvider.accounts);
+    final account = accounts.where((a) => a.id == _accountId).firstOrNull ??
+        accounts.firstOrNull;
+    final currency = account?.currency ?? accountsProvider.familyCurrency;
+    final isIncome = _nature == 'income';
+
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leadingWidth: 96,
+        leading: TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(l.commonCancel, style: const TextStyle(fontSize: 16)),
+        ),
+        centerTitle: true,
+        title: _TypeToggle(
+          value: _nature,
+          expenseLabel: l.formTypeExpense,
+          incomeLabel: l.formTypeIncome,
+          onChanged: (v) => setState(() => _nature = v),
+        ),
+        actions: const [SizedBox(width: 96)],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+          children: [
+            Text(l.transactionFormAmountLabel,
+                style: TextStyle(fontSize: 14, color: c.muted)),
+            const SizedBox(height: 6),
+            _amountField(c, currency),
+            const SizedBox(height: 26),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(l.formLabel,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w500)),
+                ),
+                TextButton(onPressed: _openLabels, child: Text(l.formManage)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final cat in categories)
+                  LabelChip(
+                    name: cat.name,
+                    color: parseHexColor(cat.color, c.ink),
+                    selected: _category?.id == cat.id,
+                    onTap: () => setState(
+                        () => _category = _category?.id == cat.id ? null : cat),
+                  ),
+                LabelChip(
+                  name: l.formNewLabel,
+                  subdued: true,
+                  onTap: _openLabels,
+                ),
+              ],
+            ),
+            const SizedBox(height: 26),
+            Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: c.ink)),
+              ),
+              child: Column(
+                children: [
+                  _row(
+                    c,
+                    l.formWhatFor,
+                    TextFormField(
+                      controller: _nameController,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: _bare.copyWith(hintText: l.formWhatForHint),
+                      textInputAction: TextInputAction.next,
+                    ),
+                  ),
+                  _row(
+                    c,
+                    isIncome ? l.formPaidInto : l.formPaidFrom,
+                    accounts.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Text(l.formNoAccounts,
+                                style: TextStyle(color: c.muted)),
+                          )
+                        : DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: account?.id,
+                              isExpanded: true,
+                              style: TextStyle(fontSize: 16, color: c.ink),
+                              items: [
+                                for (final a in accounts)
+                                  DropdownMenuItem(
+                                    value: a.id,
+                                    child: Text(a.name,
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                              ],
+                              onChanged: (id) =>
+                                  setState(() => _accountId = id),
+                            ),
+                          ),
+                  ),
+                  _row(
+                    c,
+                    l.transactionFormDateLabel,
+                    InkWell(
+                      onTap: _pickDate,
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        constraints: const BoxConstraints(minHeight: 52),
+                        child: Text(
+                          DateFormat('EEE d MMM yyyy', 'en_US').format(_date),
+                          style: TextStyle(fontSize: 16, color: c.ink),
+                        ),
+                      ),
+                    ),
+                  ),
+                  _row(
+                    c,
+                    l.detailNote,
+                    TextFormField(
+                      controller: _notesController,
+                      minLines: 1,
+                      maxLines: 3,
+                      decoration: _bare.copyWith(hintText: l.formOptional),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 26),
+            Text(l.formReceipt,
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 10),
+            if (_receipt == null)
+              ReceiptSourceButtons(
+                takePhotoLabel: l.receiptTakePhoto,
+                galleryLabel: l.receiptFromGallery,
+                onPick: (source) async {
+                  final file = await pickReceipt(source);
+                  if (file != null && mounted) setState(() => _receipt = file);
+                },
+              )
+            else
+              _receiptPreview(l, c),
+          ],
+        ),
+      ),
+      bottomNavigationBar: LedgerBottomBar(
+        child: ElevatedButton(
+          onPressed: _submitting ? null : () => _submit(account),
+          child: _submitting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(isIncome ? l.formSaveIncome : l.formSaveExpense),
+        ),
+      ),
+    );
+  }
+
+  static const _bare = InputDecoration(
+    border: InputBorder.none,
+    enabledBorder: InputBorder.none,
+    focusedBorder: InputBorder.none,
+    errorBorder: InputBorder.none,
+    focusedErrorBorder: InputBorder.none,
+    filled: false,
+    isDense: true,
+    contentPadding: EdgeInsets.symmetric(vertical: 16),
+  );
+
+  Widget _amountField(LedgerColors c, String? currency) {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.ink, width: 2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(
+            MoneyFormat.symbol(currency),
+            style: LedgerText.display(size: 28, color: c.muted),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextFormField(
+              controller: _amountController,
+              autofocus: true,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [GroupedAmountFormatter()],
+              validator: _validateAmount,
+              style: LedgerText.display(
+                size: 52,
+                color: c.ink,
+                letterSpacing: -1.5,
+                height: 1.1,
+              ),
+              decoration: _bare.copyWith(
+                hintText: '0',
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(LedgerColors c, String label, Widget field) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 54),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.hairline)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 104,
+            child: Text(label, style: TextStyle(fontSize: 14, color: c.muted)),
+          ),
+          Expanded(child: field),
+        ],
+      ),
+    );
+  }
+
+  Widget _receiptPreview(AppLocalizations l, LedgerColors c) {
+    final file = _receipt!;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: c.sheet,
+        border: Border.all(color: c.ink),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 72,
+            height: 96,
+            decoration: BoxDecoration(border: Border.all(color: c.hairline)),
+            child: Image.file(file, fit: BoxFit.cover),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              p.basename(file.path),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 15, color: c.ink),
+            ),
+          ),
+          IconButton(
+            tooltip: l.receiptRemove,
+            onPressed: () => setState(() => _receipt = null),
+            icon: Icon(Icons.close, color: c.ink),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Expense / Income segmented toggle with an ink-filled selected half.
+class _TypeToggle extends StatelessWidget {
+  const _TypeToggle({
+    required this.value,
+    required this.expenseLabel,
+    required this.incomeLabel,
+    required this.onChanged,
+  });
+
+  final String value;
+  final String expenseLabel;
+  final String incomeLabel;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = LedgerColors.of(context);
+    Widget half(String key, String label) {
+      final on = value == key;
+      return Semantics(
+        selected: on,
+        button: true,
+        child: Material(
+          color: on ? c.ink : Colors.transparent,
+          child: InkWell(
+            onTap: () => onChanged(key),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 44),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'IBM Plex Sans',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: on ? c.onInk : c.ink,
+                  letterSpacing: 0,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+        border: Border.all(color: c.ink),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(1),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            half('expense', expenseLabel),
+            half('income', incomeLabel)
+          ],
         ),
       ),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) {
-          return Column(
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              // Title
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l.transactionFormNewTitle,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              // Form content
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    top: 16,
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Account info card
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.account_balance_wallet,
-                                  color: colorScheme.primary,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.account.name,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${MoneyMasker.mask(widget.account.balance, hidden: hideAmounts)} ${widget.account.currency}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color:
-                                                  colorScheme.onSurfaceVariant,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
+    );
+  }
+}
 
-                        // Transaction type selection
-                        Text(
-                          l.transactionFormTypeLabel,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        SureSegmentedControl<String>(
-                          selected: _nature,
-                          onChanged: (value) {
-                            setState(() {
-                              _nature = value;
-                            });
-                          },
-                          segments: [
-                            SureSegment<String>(
-                              value: 'expense',
-                              label: l.transactionFormTypeExpense,
-                              icon: const Icon(Icons.arrow_downward),
-                            ),
-                            SureSegment<String>(
-                              value: 'income',
-                              label: l.transactionFormTypeIncome,
-                              icon: const Icon(Icons.arrow_upward),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
+/// Keeps the amount field as "2,450.5": digits, one dot, en-US grouping.
+class GroupedAmountFormatter extends TextInputFormatter {
+  static final _group = NumberFormat('#,##0', 'en_US');
 
-                        // Amount field
-                        TextFormField(
-                          controller: _amountController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: '${l.transactionFormAmountLabel} *',
-                            prefixIcon: const Icon(Icons.attach_money),
-                            suffixText: widget.account.currency,
-                            helperText: l.transactionFormAmountHelper,
-                          ),
-                          validator: _validateAmount,
-                        ),
-                        const SizedBox(height: 24),
-
-                        // More button
-                        TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _showMoreFields = !_showMoreFields;
-                            });
-                          },
-                          icon: Icon(
-                            _showMoreFields
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                          ),
-                          label: Text(
-                            _showMoreFields
-                                ? l.transactionFormLess
-                                : l.transactionFormMore,
-                          ),
-                        ),
-
-                        // Optional fields (shown when More is clicked)
-                        if (_showMoreFields) ...[
-                          const SizedBox(height: 16),
-
-                          // Date field
-                          TextFormField(
-                            controller: _dateController,
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              labelText: l.transactionFormDateLabel,
-                              prefixIcon: const Icon(Icons.calendar_today),
-                              helperText: l.transactionFormDateHelper,
-                            ),
-                            onTap: _selectDate,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Name field
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: l.transactionFormNameLabel,
-                              prefixIcon: const Icon(Icons.label),
-                              helperText: l.transactionFormNameHelper,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Category picker
-                          Consumer<CategoriesProvider>(
-                            builder: (context, categoriesProvider, _) {
-                              if (categoriesProvider.isLoading) {
-                                return InputDecorator(
-                                  decoration: InputDecoration(
-                                    labelText: l.transactionFormCategoryLabel,
-                                    prefixIcon: const Icon(Icons.category),
-                                  ),
-                                  child: Text(
-                                    l.transactionFormCategoryLoading,
-                                  ),
-                                );
-                              }
-
-                              final categories = categoriesProvider.categories;
-
-                              return DropdownButtonFormField<String?>(
-                                value: _selectedCategory?.id,
-                                decoration: InputDecoration(
-                                  labelText: l.transactionFormCategoryLabel,
-                                  prefixIcon: const Icon(Icons.category),
-                                  helperText: l.transactionFormCategoryHelper,
-                                ),
-                                isExpanded: true,
-                                items: [
-                                  DropdownMenuItem<String?>(
-                                    value: null,
-                                    child: Text(l.transactionFormNoCategory),
-                                  ),
-                                  ...categories.map((category) {
-                                    return DropdownMenuItem<String?>(
-                                      value: category.id,
-                                      child: Text(category.displayName),
-                                    );
-                                  }),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    if (value == null) {
-                                      _selectedCategory = null;
-                                    } else {
-                                      _selectedCategory = categories.firstWhere(
-                                        (c) => c.id == value,
-                                      );
-                                    }
-                                  });
-                                },
-                              );
-                            },
-                          ),
-                        ],
-
-                        const SizedBox(height: 32),
-
-                        // Submit button
-                        ElevatedButton(
-                          onPressed: _isSubmitting ? null : _handleSubmit,
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(l.transactionFormCreateButton),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var raw = newValue.text.replaceAll(RegExp(r'[^0-9.]'), '');
+    final dot = raw.indexOf('.');
+    if (dot != -1) {
+      // Keep the first dot and at most two decimals.
+      final decimals = raw.substring(dot + 1).replaceAll('.', '');
+      raw =
+          '${raw.substring(0, dot)}.${decimals.length > 2 ? decimals.substring(0, 2) : decimals}';
+    }
+    if (raw.isEmpty) return const TextEditingValue();
+    final parts = raw.split('.');
+    final whole = parts[0].isEmpty ? '0' : parts[0];
+    final grouped = whole.length > 15 ? whole : _group.format(int.parse(whole));
+    final text = parts.length > 1 ? '$grouped.${parts[1]}' : grouped;
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }

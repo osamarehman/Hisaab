@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/transaction.dart';
 import '../models/offline_transaction.dart';
@@ -172,6 +173,7 @@ class TransactionsProvider with ChangeNotifier {
     String? merchantName,
     List<String>? tagIds,
     List<String>? tagNames,
+    List<File>? attachments,
   }) async {
     _lastAccessToken = accessToken; // Store for auto-sync
 
@@ -235,6 +237,20 @@ class TransactionsProvider with ChangeNotifier {
             _log.info(
                 'TransactionsProvider', 'Transaction uploaded successfully');
             final serverTransaction = result['transaction'] as Transaction;
+            if (attachments != null &&
+                attachments.isNotEmpty &&
+                serverTransaction.id != null) {
+              final upload = await _transactionsService.uploadAttachments(
+                accessToken: accessToken,
+                transactionId: serverTransaction.id!,
+                files: attachments,
+              );
+              if (upload['success'] != true) {
+                _log.warning('TransactionsProvider',
+                    'Receipt upload failed: ${upload['error']}');
+                _error = 'Saved, but the receipt could not be attached.';
+              }
+            }
             // Update local transaction with server ID and mark as synced
             await _offlineStorage.updateTransactionSyncStatus(
               localId: localTransaction.localId,

@@ -13,8 +13,6 @@ import 'package:sure_mobile/screens/budgets_screen.dart';
 import 'package:sure_mobile/services/budgets_service.dart';
 import 'package:sure_mobile/services/preferences_service.dart';
 import 'package:sure_mobile/theme/sure_theme.dart';
-import 'package:sure_mobile/widgets/budget_category_row.dart';
-import 'package:sure_mobile/widgets/budget_progress_bar.dart';
 
 import '../support/budget_fixtures.dart';
 
@@ -57,6 +55,12 @@ void main() {
     );
   }
 
+  final lineRows = find.byWidgetPredicate(
+    (w) =>
+        w.key is ValueKey<String> &&
+        (w.key! as ValueKey<String>).value.startsWith('budget-category-'),
+  );
+
   Future<void> pumpScreen(
     WidgetTester tester,
     BudgetsProvider provider, {
@@ -77,52 +81,31 @@ void main() {
       (tester) async {
     await pumpScreen(tester, buildProvider());
 
-    expect(find.text('October 2026'), findsOneWidget);
-    expect(find.text('Budgeted'), findsOneWidget);
-    expect(find.text(r'$2,000.00'), findsOneWidget);
-    expect(find.text(r'$1,500.00'), findsOneWidget);
-    expect(find.text(r'$500.00'), findsOneWidget);
+    expect(find.text('Oct 2026'), findsOneWidget);
+    expect(find.text(r'Spent of $2,000 planned'), findsOneWidget);
+    expect(find.text(r'$1,500'), findsOneWidget);
+    expect(find.textContaining(r'$500 left'), findsOneWidget);
 
-    expect(find.byType(BudgetCategoryRow), findsNWidgets(4));
+    expect(lineRows, findsNWidgets(4));
     expect(find.text('Gifts'), findsNothing);
     expect(find.text('Groceries'), findsOneWidget);
-    expect(find.text(r'$120.00 over'), findsOneWidget);
-    expect(find.text('Over budget'), findsOneWidget);
-    expect(find.text('Near limit'), findsOneWidget);
-    expect(find.text('Shared budget'), findsOneWidget);
-    expect(find.text(r'+$50.00 rolled over'), findsOneWidget);
+    expect(find.text(r'Over by $120'), findsOneWidget);
 
     // Planned future months stay reachable from the current month.
-    final next = tester.widget<IconButton>(
-      find.widgetWithIcon(IconButton, Icons.chevron_right),
-    );
-    expect(next.onPressed, isNotNull);
-  });
-
-  testWidgets('over-budget filter shows only over-budget lines',
-      (tester) async {
-    await pumpScreen(tester, buildProvider());
-
-    await tester.tap(find.text('Over budget (1)'));
+    await tester.tap(find.byTooltip('Next month'));
     await tester.pumpAndSettle();
-
-    expect(find.byType(BudgetCategoryRow), findsOneWidget);
-    expect(find.text('Groceries'), findsOneWidget);
-    expect(find.text('Transport'), findsNothing);
+    expect(find.text('Nov 2026'), findsOneWidget);
   });
 
-  testWidgets('privacy mode masks every amount', (tester) async {
+  testWidgets('privacy mode masks every amount and hides the bars',
+      (tester) async {
     await pumpScreen(tester, buildProvider(), hidden: true);
 
-    expect(find.text(r'$2,000.00'), findsNothing);
-    expect(find.textContaining(r'$1,500.00'), findsNothing);
+    expect(find.text(r'$1,500'), findsNothing);
+    expect(find.textContaining(r'$2,000'), findsNothing);
     expect(find.text(r'$••••'), findsWidgets);
-    expect(find.text(r'$•••• over'), findsOneWidget);
-    // The bars would give the share spent away.
-    final bars =
-        tester.widgetList<BudgetProgressBar>(find.byType(BudgetProgressBar));
-    expect(bars, isNotEmpty);
-    expect(bars.every((bar) => bar.hidden), isTrue);
+    expect(find.text(r'Over by $••••'), findsOneWidget);
+    expect(find.byType(FractionallySizedBox), findsNothing);
   });
 
   testWidgets('formats the month in Swedish without extra date setup',
@@ -141,7 +124,7 @@ void main() {
     await pumpScreen(tester, buildProvider(budgets: []));
 
     expect(find.text('No budget for October 2026'), findsOneWidget);
-    expect(find.byType(BudgetCategoryRow), findsNothing);
+    expect(lineRows, findsNothing);
   });
 
   testWidgets('previous month loads that month', (tester) async {
@@ -151,10 +134,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No budget for September 2026'), findsOneWidget);
-    final next = tester.widget<IconButton>(
-      find.widgetWithIcon(IconButton, Icons.chevron_right),
-    );
-    expect(next.onPressed, isNotNull);
+    expect(find.byTooltip('Next month'), findsOneWidget);
   });
 
   testWidgets('tapping a parent opens its transactions with subcategories',
@@ -191,14 +171,14 @@ void main() {
       clock: () => DateTime(2026, 10, 19),
     );
     await pumpScreen(tester, provider);
-    expect(find.text('Budgeted'), findsOneWidget);
+    expect(find.text(r'$1,500'), findsOneWidget);
 
     fail = true;
     await provider.loadMonth(accessToken: 'token', forceRefresh: true);
     await tester.pumpAndSettle();
 
     expect(find.text("Couldn't load budgets"), findsNothing);
-    expect(find.text('Budgeted'), findsOneWidget);
+    expect(find.text(r'$1,500'), findsOneWidget);
     expect(
       find.text("Couldn't refresh. Showing the figures loaded earlier."),
       findsOneWidget,

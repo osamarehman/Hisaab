@@ -1,774 +1,581 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../models/account.dart';
-import '../providers/auth_provider.dart';
-import '../providers/accounts_provider.dart';
-import '../providers/transactions_provider.dart';
-import '../services/log_service.dart';
-import '../services/preferences_service.dart';
-import '../widgets/account_card.dart';
-import '../widgets/connectivity_banner.dart';
-import '../widgets/net_worth_card.dart';
-import '../widgets/currency_filter.dart';
-import '../widgets/sure_button.dart';
-import '../widgets/sure_icon.dart';
-import '../theme/sure_colors.dart';
-import '../theme/sure_spacing.dart';
-import '../theme/sure_tokens.dart';
-import '../theme/sure_typography.dart';
-import 'transaction_form_screen.dart';
-import 'transactions_list_screen.dart';
-import '../l10n/app_localizations.dart';
 
+import '../l10n/app_localizations.dart';
+import '../models/transaction.dart';
+import '../providers/accounts_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/categories_provider.dart';
+import '../providers/transactions_provider.dart';
+import '../services/balance_sheet_service.dart';
+import '../services/cash_flow_service.dart';
+import '../services/log_service.dart';
+import '../services/transactions_service.dart';
+import '../utils/money_format.dart';
+import '../widgets/connectivity_banner.dart';
+import '../widgets/ledger/ledger.dart';
+import 'budgets_screen.dart';
+import 'settings_screen.dart';
+import 'statement_review_screen.dart';
+import 'transactions_list_screen.dart';
+
+/// One label's share of a month's spending.
+class _LabelSpend {
+  _LabelSpend(this.categoryId, this.name, this.color);
+  final String? categoryId;
+  final String name;
+  final String? color;
+  double amount = 0;
+}
+
+/// Home: the month at a glance (spent, in/out, labels, net worth).
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.onOpenActivity, this.onOpenAccounts});
+
+  /// Jump to Activity for [month], optionally filtered to a label.
+  final void Function(DateTime month, String? categoryId)? onOpenActivity;
+  final VoidCallback? onOpenAccounts;
 
   @override
   DashboardScreenState createState() => DashboardScreenState();
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
-  final LogService _log = LogService.instance;
-  bool _showSyncSuccess = false;
-  int _previousPendingCount = 0;
-  Timer? _syncSuccessTimer;
-  TransactionsProvider? _transactionsProvider;
+  final _transactionsService = TransactionsService();
+  final _cashFlowService = CashFlowService();
+  final _balanceSheetService = BalanceSheetService();
+  final _log = LogService.instance;
 
-  // Filter state
-  AccountFilter _accountFilter = AccountFilter.all;
-  Set<String> _selectedCurrencies = {};
+  DateTime _month = MonthSwitcher.firstOf(DateTime.now());
+  bool _loading = true;
+  String? _error;
+  int _loadToken = 0;
 
-  // Group by type state
-  bool _groupByType = false;
-  final Set<String> _collapsedGroups = {};
+  MonthCashFlow? _cashFlow;
+  List<Transaction> _transactions = const [];
+  int _unlabelled = 0;
+  double? _netWorth;
+  double? _assets;
+  double? _liabilities;
+  String? _currency;
 
   @override
   void initState() {
     super.initState();
-    _loadAccounts();
-    _loadPreferences();
-
-    // Listen for sync completion to show success indicator
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-      _previousPendingCount = _transactionsProvider?.pendingCount ?? 0;
-      _transactionsProvider?.addListener(_onTransactionsChanged);
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => reload());
   }
 
-  @override
-  void dispose() {
-    _syncSuccessTimer?.cancel();
-    _transactionsProvider?.removeListener(_onTransactionsChanged);
-    super.dispose();
-  }
-
-  void _onTransactionsChanged() {
-    final transactionsProvider = _transactionsProvider;
-    if (transactionsProvider == null || !mounted) {
-      return;
-    }
-
-    final currentPendingCount = transactionsProvider.pendingCount;
-
-    // Show sync success when pending count decreased (local transactions uploaded)
-    if (_previousPendingCount > 0 && currentPendingCount < _previousPendingCount) {
-      _showSyncSuccessIndicator();
-    }
-
-    _previousPendingCount = currentPendingCount;
-  }
-
-  void _showSyncSuccessIndicator() {
-    _syncSuccessTimer?.cancel();
-
+  Future<void> reload() async {
+    final token = ++_loadToken;
+    final auth = context.read<AuthProvider>();
+    final accounts = context.read<AccountsProvider>();
+    final categories = context.read<CategoriesProvider>();
     setState(() {
-      _showSyncSuccess = true;
+      _loading = true;
+      _error = null;
     });
 
-    _syncSuccessTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _showSyncSuccess = false;
-        });
-      }
-    });
-  }
-
-  Future<void> _loadAccounts() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final accountsProvider = Provider.of<AccountsProvider>(context, listen: false);
-    
-    final accessToken = await authProvider.getValidAccessToken();
+    final accessToken = await auth.getValidAccessToken();
     if (accessToken == null) {
-      // Token is invalid, redirect to login
-      await authProvider.logout();
+      await auth.logout();
       return;
     }
 
-    await accountsProvider.fetchAccounts(accessToken: accessToken);
-    
-    // Check if unauthorized
-    if (accountsProvider.errorMessage == 'unauthorized') {
-      await authProvider.logout();
-    }
-  }
-
-  Future<void> _loadPreferences() async {
-    final groupByType = await PreferencesService.instance.getGroupByType();
-    if (mounted) {
-      setState(() {
-        _groupByType = groupByType;
-      });
-    }
-  }
-
-  void reloadPreferences() {
-    _loadPreferences();
-  }
-
-  Future<void> _handleRefresh() async {
-    await _performManualSync();
-  }
-
-  Future<void> _performManualSync() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-    final l = AppLocalizations.of(context);
-    final palette = SureColors.of(context).palette;
-
-    final accessToken = await authProvider.getValidAccessToken();
-    if (accessToken == null) {
-      await authProvider.logout();
-      return;
-    }
-
-    // Show syncing indicator
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(l.dashboardSyncing)),
-            ],
-          ),
-          duration: const Duration(seconds: 30),
-        ),
-      );
-    }
+    final month = _month;
+    final start = DateFormat('yyyy-MM-dd').format(month);
+    final end = DateFormat('yyyy-MM-dd')
+        .format(DateTime(month.year, month.month + 1, 0));
 
     try {
-      // Perform full sync: upload pending, download from server, sync accounts
-      await transactionsProvider.syncTransactions(accessToken: accessToken);
+      final results = await Future.wait<Map<String, dynamic>>([
+        _cashFlowService.getMonth(accessToken: accessToken, month: month),
+        _transactionsService.getAllTransactions(
+          accessToken: accessToken,
+          startDate: start,
+          endDate: end,
+        ),
+        _transactionsService.getTransactions(
+          accessToken: accessToken,
+          startDate: start,
+          endDate: end,
+          uncategorized: true,
+          perPage: 1,
+        ),
+        _balanceSheetService.getBalanceSheet(accessToken: accessToken),
+      ]);
+      // Fire-and-forget: shared caches other screens read.
+      categories.fetchCategories(accessToken: accessToken);
+      accounts.fetchAccounts(accessToken: accessToken);
 
-      // Reload accounts to show updated balances
-      await _loadAccounts();
+      if (!mounted || token != _loadToken) return;
+      if (results.any((r) => r['error'] == 'unauthorized')) {
+        await auth.logout();
+        return;
+      }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        if (transactionsProvider.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  SureIcon(SureIcons.circleAlert, color: palette.textInverse),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      l.dashboardSyncFailed,
-                      style: TextStyle(color: palette.textInverse),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: palette.destructive,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        } else {
-          _showSyncSuccessIndicator();
+      final txResult = results[1];
+      final uncategorized = results[2];
+      final sheet = results[3];
+      final pagination = uncategorized['pagination'];
+
+      setState(() {
+        _cashFlow = results[0]['cash_flow'] as MonthCashFlow?;
+        _transactions = txResult['success'] == true
+            ? txResult['transactions'] as List<Transaction>
+            : const [];
+        _unlabelled = pagination is Map
+            ? int.tryParse(pagination['total_count']?.toString() ?? '') ?? 0
+            : (uncategorized['transactions'] as List?)?.length ?? 0;
+        if (sheet['success'] == true) {
+          _currency = sheet['currency'] as String?;
+          _netWorth = _moneyAmount(sheet['net_worth']);
+          _assets = _moneyAmount(sheet['assets']);
+          _liabilities = _moneyAmount(sheet['liabilities']);
         }
-      }
+        _error = (txResult['success'] != true && _cashFlow == null)
+            ? txResult['error']?.toString()
+            : null;
+        _loading = false;
+      });
     } catch (e) {
-      _log.error('DashboardScreen', 'Error in _performManualSync: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                SureIcon(SureIcons.circleAlert, color: palette.textInverse),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l.dashboardSyncError,
-                    style: TextStyle(color: palette.textInverse),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: palette.destructive,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+      _log.error('DashboardScreen', 'Home load failed with ${e.runtimeType}');
+      if (mounted && token == _loadToken) {
+        setState(() {
+          _loading = false;
+          _error = e.toString();
+        });
       }
     }
   }
 
-  String _formatAmount(String currency, double amount) {
-    final symbol = _getCurrencySymbol(currency);
-    final isSmallAmount = amount.abs() < 1 && amount != 0;
-    final formattedAmount = amount.toStringAsFixed(isSmallAmount ? 4 : 0);
-
-    // Split into integer and decimal parts
-    final parts = formattedAmount.split('.');
-    final integerPart = parts[0].replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
-
-    final finalAmount = parts.length > 1 ? '$integerPart.${parts[1]}' : integerPart;
-    return '$symbol$finalAmount $currency';
+  static double? _moneyAmount(dynamic money) {
+    if (money is Map) return double.tryParse(money['amount']?.toString() ?? '');
+    return null;
   }
 
-  Set<String> _getAllCurrencies(AccountsProvider accountsProvider) {
-    final currencies = <String>{};
-    for (var account in accountsProvider.accounts) {
-      currencies.add(account.currency);
+  Future<void> _refresh() async {
+    final auth = context.read<AuthProvider>();
+    final transactions = context.read<TransactionsProvider>();
+    final token = await auth.getValidAccessToken();
+    if (token != null && transactions.hasPendingTransactions) {
+      await transactions.syncTransactions(accessToken: token);
     }
-    return currencies;
+    await reload();
   }
 
-  List<Account> _getFilteredAccounts(AccountsProvider accountsProvider) {
-    var accounts = accountsProvider.accounts.toList();
-
-    // Filter by account type
-    switch (_accountFilter) {
-      case AccountFilter.assets:
-        accounts = accounts.where((a) => a.isAsset).toList();
-        break;
-      case AccountFilter.liabilities:
-        accounts = accounts.where((a) => a.isLiability).toList();
-        break;
-      case AccountFilter.all:
-        // Show all accounts (assets and liabilities)
-        accounts = accounts.where((a) => a.isAsset || a.isLiability).toList();
-        break;
-    }
-
-    // Filter by currency if any selected
-    if (_selectedCurrencies.isNotEmpty) {
-      accounts = accounts.where((a) => _selectedCurrencies.contains(a.currency)).toList();
-    }
-
-    return accounts;
+  void _changeMonth(DateTime month) {
+    setState(() => _month = month);
+    reload();
   }
 
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'TWD':
-        return '\$';
-      case 'BTC':
-        return '₿';
-      case 'ETH':
-        return 'Ξ';
-      case 'EUR':
-        return '€';
-      case 'GBP':
-        return '£';
-      case 'JPY':
-        return '¥';
-      case 'CNY':
-        return '¥';
-      default:
-        return ' ';
+  String get _currencyCode =>
+      _cashFlow?.currency ??
+      _currency ??
+      context.read<AccountsProvider>().familyCurrency ??
+      'PKR';
+
+  ({double income, double spending}) get _totals {
+    final flow = _cashFlow;
+    if (flow != null) return (income: flow.income, spending: flow.spending);
+    var income = 0.0, spending = 0.0;
+    for (final t in _transactions.where((t) => !t.isTransfer)) {
+      if (t.isIncome) {
+        income += t.absAmount;
+      } else {
+        spending += t.absAmount;
+      }
     }
+    return (income: income, spending: spending);
   }
 
-  Future<void> _handleAccountTap(Account account) async {
-    final l = AppLocalizations.of(context);
-    final palette = SureColors.of(context).palette;
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TransactionFormScreen(account: account),
-    );
-
-    // Refresh accounts if transaction was created successfully
-    if (result == true && mounted) {
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(l.dashboardRefreshing)),
-            ],
-          ),
-          duration: const Duration(seconds: 2),
+  List<_LabelSpend> _byLabel(AppLocalizations l) {
+    final colors = {
+      for (final c in context.watch<CategoriesProvider>().categories)
+        c.id: c.color,
+    };
+    final groups = <String?, _LabelSpend>{};
+    for (final t in _transactions) {
+      if (t.isTransfer || !t.isExpense) continue;
+      final key = t.categoryId;
+      final group = groups.putIfAbsent(
+        key,
+        () => _LabelSpend(
+          key,
+          t.categoryName ?? l.homeNoLabel,
+          t.categoryColor ?? colors[key],
         ),
       );
-
-      // Small delay to ensure smooth UI transition
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      // Refresh the accounts
-      await _loadAccounts();
-
-      // Hide loading snackbar and show success
-      if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                SureIcon(SureIcons.circleCheck, color: palette.textInverse),
-                const SizedBox(width: 12),
-                Text(
-                  l.dashboardAccountsUpdated,
-                  style: TextStyle(color: palette.textInverse),
-                ),
-              ],
-            ),
-            backgroundColor: palette.success,
-            duration: const Duration(seconds: 1),
-          ),
-        );
-      }
+      group.amount += t.absAmount;
     }
+    return groups.values.toList()..sort((a, b) => b.amount.compareTo(a.amount));
   }
 
-  Future<void> _handleAccountSwipe(Account account) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TransactionsListScreen(account: account),
+  void _openSettings() {
+    final l = AppLocalizations.of(context);
+    final auth = context.read<AuthProvider>();
+    final navigator = Navigator.of(context);
+    final route = MaterialPageRoute<void>(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: Text(l.homeSettings)),
+        body: const SettingsScreen(),
       ),
     );
-
-    // Refresh accounts when returning from transaction list
-    if (mounted) {
-      await _loadAccounts();
+    // Settings used to be a tab; as a pushed route it must close itself on
+    // sign-out so the login screen underneath is not hidden.
+    void closeOnSignOut() {
+      if (!auth.isAuthenticated && route.isActive) {
+        navigator.popUntil((r) => r.isFirst);
+      }
     }
+
+    auth.addListener(closeOnSignOut);
+    navigator
+        .push(route)
+        .whenComplete(() => auth.removeListener(closeOnSignOut));
+  }
+
+  Future<void> _openReview() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StatementReviewScreen(
+          startDate: _month,
+          endDate: DateTime(_month.year, _month.month + 1, 0),
+        ),
+      ),
+    );
+    if (mounted) reload();
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final palette = SureColors.of(context).palette;
+    final c = LedgerColors.of(context);
+    final monthLong = DateFormat('MMMM', 'en_US').format(_month);
+    final prevMonth = DateFormat('MMMM', 'en_US')
+        .format(DateTime(_month.year, _month.month - 1));
 
     return Scaffold(
-      body: Column(
-        children: [
-          const ConnectivityBanner(),
-          if (_showSyncSuccess)
-            AnimatedOpacity(
-              opacity: _showSyncSuccess ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: SureSpacing.xl, vertical: SureSpacing.sm),
-                color: palette.success.withValues(alpha: 0.1),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const ConnectivityBanner(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                   children: [
-                    SureIcon(
-                      SureIcons.cloudCheck,
-                      color: palette.success,
-                      size: 18,
-                    ),
-                    const SizedBox(width: SureSpacing.md),
-                    Text(
-                      l.dashboardSynced,
-                      style: TextStyle(
-                          color: palette.success, fontSize: SureTypography.sm),
-                    ),
+                    _header(l, c),
+                    const SizedBox(height: 28),
+                    if (_loading && _cashFlow == null && _transactions.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 80),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_error != null)
+                      _errorBox(l, c)
+                    else
+                      ..._body(l, c, monthLong, prevMonth),
                   ],
                 ),
               ),
             ),
-          Expanded(
-            child: Consumer2<AuthProvider, AccountsProvider>(
-              builder: (context, authProvider, accountsProvider, _) {
-                // Show loading state during initialization or when loading
-                if (accountsProvider.isInitializing || accountsProvider.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
+          ],
+        ),
+      ),
+    );
+  }
 
-          // Show error state
-          if (accountsProvider.errorMessage != null && 
-              accountsProvider.errorMessage != 'unauthorized') {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SureIcon(
-                      SureIcons.circleAlert,
-                      size: 64,
-                      color: palette.destructive,
-                    ),
-                    const SizedBox(height: SureSpacing.xl),
-                    Text(
-                      l.dashboardErrorLoadingAccounts,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: SureSpacing.md),
-                    Text(
-                      accountsProvider.errorMessage!,
-                      style: TextStyle(color: palette.textSecondary),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: SureSpacing.xxxl),
-                    SureButton(
-                      label: l.commonTryAgain,
-                      onPressed: _handleRefresh,
-                      leading: const SureIcon(SureIcons.refresh, size: 18),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          // Show empty state
-          if (accountsProvider.accounts.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SureIcon(
-                      SureIcons.wallet,
-                      size: 64,
-                      color: palette.textSubdued,
-                    ),
-                    const SizedBox(height: SureSpacing.xl),
-                    Text(
-                      l.dashboardNoAccounts,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: SureSpacing.md),
-                    Text(
-                      l.dashboardNoAccountsSubtitle,
-                      style: TextStyle(color: palette.textSecondary),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: SureSpacing.xxxl),
-                    SureButton(
-                      label: l.commonRefresh,
-                      onPressed: _handleRefresh,
-                      leading: const SureIcon(SureIcons.refresh, size: 18),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          // Show accounts list
-          return RefreshIndicator(
-            onRefresh: _handleRefresh,
-            child: CustomScrollView(
-              slivers: [
-                // Net Worth Card with Asset/Liability filter
-                SliverToBoxAdapter(
-                  child: NetWorthCard(
-                    assetTotalsByCurrency: accountsProvider.assetTotalsByCurrency,
-                    liabilityTotalsByCurrency: accountsProvider.liabilityTotalsByCurrency,
-                    currentFilter: _accountFilter,
-                    onFilterChanged: (filter) {
-                      setState(() {
-                        _accountFilter = filter;
-                      });
-                    },
-                    formatAmount: _formatAmount,
-                    netWorthFormatted: accountsProvider.netWorthFormatted,
-                    isStale: accountsProvider.isBalanceSheetStale,
-                  ),
-                ),
-
-                // Currency filter
-                SliverToBoxAdapter(
-                  child: CurrencyFilter(
-                    availableCurrencies: _getAllCurrencies(accountsProvider),
-                    selectedCurrencies: _selectedCurrencies,
-                    onSelectionChanged: (currencies) {
-                      setState(() {
-                        _selectedCurrencies = currencies;
-                      });
-                    },
-                  ),
-                ),
-
-                // Spacing
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 8),
-                ),
-
-                // Filtered accounts section
-                ..._buildFilteredAccountsSection(accountsProvider),
-
-                // Bottom padding
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 24),
-                ),
-              ],
-            ),
-          );
-              },
-            ),
+  Widget _header(AppLocalizations l, LedgerColors c) {
+    return Row(
+      children: [
+        Text(
+          'Sure',
+          style: LedgerText.display(
+            size: 26,
+            weight: FontWeight.w700,
+            color: c.ink,
+            letterSpacing: -0.8,
           ),
+        ),
+        const Spacer(),
+        MonthSwitcher(month: _month, onChanged: _changeMonth),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: l.homeSettings,
+          onPressed: _openSettings,
+          icon: Icon(Icons.settings_outlined, color: c.ink),
+        ),
+      ],
+    );
+  }
+
+  Widget _errorBox(AppLocalizations l, LedgerColors c) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(border: Border.all(color: c.ink)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.homeLoadFailed, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 12),
+          OutlinedButton(onPressed: reload, child: Text(l.commonTryAgain)),
         ],
       ),
     );
   }
 
-  List<Widget> _buildFilteredAccountsSection(AccountsProvider accountsProvider) {
-    final filteredAccounts = _getFilteredAccounts(accountsProvider);
-    final l = AppLocalizations.of(context);
+  List<Widget> _body(
+    AppLocalizations l,
+    LedgerColors c,
+    String monthLong,
+    String prevMonth,
+  ) {
+    final currency = _currencyCode;
+    final totals = _totals;
+    final left = totals.income - totals.spending;
+    final delta = _cashFlow?.spendingDelta;
+    String? compare;
+    if (delta != null) {
+      final amount = MoneyFormat.format(delta.abs(), currency: currency);
+      compare = delta > 0
+          ? l.homeMoreThan(amount, prevMonth)
+          : delta < 0
+              ? l.homeLessThan(amount, prevMonth)
+              : l.homeSameAs(prevMonth);
+    }
+    final labels = _byLabel(l);
+    final maxLabel = labels.isEmpty ? 0.0 : labels.first.amount;
+    final outShare = totals.income <= 0
+        ? (totals.spending > 0 ? 1.0 : 0.0)
+        : (totals.spending / totals.income).clamp(0.0, 1.0);
+    final sorted = _transactions
+        .where((t) => !t.isTransfer && t.categoryId != null)
+        .length;
 
-    final palette = SureColors.of(context).palette;
+    return [
+      // Spent this month.
+      Text(l.homeSpentIn(monthLong),
+          style: TextStyle(fontSize: 14, color: c.muted)),
+      const SizedBox(height: 6),
+      HeadlineAmount(totals.spending, currency: currency),
+      if (compare != null) ...[
+        const SizedBox(height: 6),
+        Text(compare, style: TextStyle(fontSize: 14, color: c.muted)),
+      ],
+      const SizedBox(height: 28),
 
-    if (filteredAccounts.isEmpty) {
-      return [
-        SliverToBoxAdapter(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(SureSpacing.huge),
-              child: Column(
-                children: [
-                  SureIcon(
-                    SureIcons.wallet,
-                    size: 48,
-                    color: palette.textSubdued,
-                  ),
-                  const SizedBox(height: SureSpacing.xl),
-                  Text(
-                    l.dashboardFilterEmpty,
-                    style: TextStyle(
-                      color: palette.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      // In / out / left over.
+      Container(
+        padding: const EdgeInsets.only(top: 12),
+        decoration:
+            BoxDecoration(border: Border(top: BorderSide(color: c.ink))),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _figure(l.homeCameIn, totals.income, currency, c.moneyIn, c),
+            const SizedBox(width: 12),
+            _figure(l.homeWentOut, totals.spending, currency, c.moneyOut, c),
+            const SizedBox(width: 12),
+            _figure(l.homeLeftOver, left, currency, c.ink, c),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      ExcludeSemantics(
+        child: SizedBox(
+          height: 14,
+          child: Row(
+            children: [
+              if (outShare > 0)
+                Expanded(
+                  flex: (outShare * 1000).round(),
+                  child: ColoredBox(color: c.moneyOut),
+                ),
+              if (outShare > 0 && outShare < 1) const SizedBox(width: 2),
+              if (outShare < 1)
+                Expanded(
+                  flex: ((1 - outShare) * 1000).round(),
+                  child: ColoredBox(color: c.ink),
+                ),
+            ],
           ),
         ),
-      ];
-    }
+      ),
+      const SizedBox(height: 28),
 
-    // Sort accounts: by type, then currency, then balance
-    filteredAccounts.sort((a, b) {
-      if (a.isAsset && !b.isAsset) return -1;
-      if (!a.isAsset && b.isAsset) return 1;
-      int typeComparison = a.accountType.compareTo(b.accountType);
-      if (typeComparison != 0) return typeComparison;
-      int currencyComparison = a.currency.compareTo(b.currency);
-      if (currencyComparison != 0) return currencyComparison;
-      return b.balanceAsDouble.compareTo(a.balanceAsDouble);
-    });
+      if (_unlabelled > 0) ...[
+        _reviewBanner(l, c, sorted),
+        const SizedBox(height: 28),
+      ],
 
-    if (_groupByType) {
-      return _buildGroupedAccountsList(filteredAccounts);
-    }
+      // Where it went.
+      LedgerSectionHeader(
+        title: l.homeWhereItWent,
+        actionLabel: l.homeBudget,
+        onAction: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const BudgetsScreen()),
+        ),
+      ),
+      if (labels.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(l.homeNothingSpent,
+              style: TextStyle(fontSize: 15, color: c.muted)),
+        )
+      else
+        for (final label in labels) _labelRow(label, maxLabel, currency, c),
+      const SizedBox(height: 28),
 
-    return _buildFlatAccountsList(filteredAccounts);
-  }
-
-  List<Widget> _buildFlatAccountsList(List<Account> accounts) {
-    return [
-      SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final account = accounts[index];
-              return AccountCard(
-                account: account,
-                onTap: () => _handleAccountTap(account),
-                onSwipe: () => _handleAccountSwipe(account),
-              );
-            },
-            childCount: accounts.length,
+      // Net worth.
+      LedgerSectionHeader(
+        title: l.homeNetWorth,
+        actionLabel: l.homeBalanceSheet,
+        onAction: widget.onOpenAccounts,
+      ),
+      InkWell(
+        onTap: widget.onOpenAccounts,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.hairline)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _netWorth == null
+                  ? Text('—', style: LedgerText.figures(size: 22))
+                  : RupeeAmount(_netWorth!,
+                      currency: currency, size: 22, weight: FontWeight.w500),
+              if (_assets != null && _liabilities != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  l.homeAssetsOwed(
+                    MoneyFormat.format(_assets!, currency: currency),
+                    MoneyFormat.format(_liabilities!, currency: currency),
+                  ),
+                  style: TextStyle(fontSize: 13, color: c.muted),
+                ),
+              ],
+            ],
           ),
         ),
       ),
     ];
   }
 
-  List<Widget> _buildGroupedAccountsList(List<Account> accounts) {
-    // Group accounts by accountType
-    final groups = <String, List<Account>>{};
-    for (final account in accounts) {
-      groups.putIfAbsent(account.accountType, () => []).add(account);
-    }
-
-    final slivers = <Widget>[];
-    for (final entry in groups.entries) {
-      final accountType = entry.key;
-      final groupAccounts = entry.value;
-      final isCollapsed = _collapsedGroups.contains(accountType);
-
-      // Use first account to get display name and icon
-      final displayName = groupAccounts.first.displayAccountType;
-
-      slivers.add(
-        SliverToBoxAdapter(
-          child: _CollapsibleTypeHeader(
-            title: displayName,
-            count: groupAccounts.length,
-            accountType: accountType,
-            isCollapsed: isCollapsed,
-            onToggle: () {
-              setState(() {
-                if (isCollapsed) {
-                  _collapsedGroups.remove(accountType);
-                } else {
-                  _collapsedGroups.add(accountType);
-                }
-              });
-            },
+  Widget _figure(
+    String label,
+    double value,
+    String currency,
+    Color color,
+    LedgerColors c,
+  ) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, color: c.muted)),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: RupeeAmount(value, currency: currency, color: color),
           ),
-        ),
-      );
-
-      if (!isCollapsed) {
-        slivers.add(
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final account = groupAccounts[index];
-                  return AccountCard(
-                    account: account,
-                    onTap: () => _handleAccountTap(account),
-                    onSwipe: () => _handleAccountSwipe(account),
-                  );
-                },
-                childCount: groupAccounts.length,
-              ),
-            ),
-          ),
-        );
-      }
-    }
-
-    return slivers;
-  }
-}
-
-class _CollapsibleTypeHeader extends StatelessWidget {
-  final String title;
-  final int count;
-  final String accountType;
-  final bool isCollapsed;
-  final VoidCallback onToggle;
-
-  const _CollapsibleTypeHeader({
-    required this.title,
-    required this.count,
-    required this.accountType,
-    required this.isCollapsed,
-    required this.onToggle,
-  });
-
-  String _getTypeIconName() {
-    switch (accountType) {
-      case 'depository':
-        return SureIcons.landmark;
-      case 'credit_card':
-        return SureIcons.creditCard;
-      case 'investment':
-        return SureIcons.trendingUp;
-      case 'loan':
-        return SureIcons.receipt;
-      case 'property':
-        return SureIcons.house;
-      case 'vehicle':
-        return SureIcons.car;
-      case 'crypto':
-        return SureIcons.bitcoin;
-      case 'other_asset':
-        return SureIcons.shapes;
-      case 'other_liability':
-        return SureIcons.handCoins;
-      default:
-        return SureIcons.wallet;
-    }
+        ],
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final palette = SureColors.of(context).palette;
-
-    return InkWell(
-      onTap: onToggle,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-            SureSpacing.xl, SureSpacing.xl, SureSpacing.xl, SureSpacing.md),
-        child: Row(
-          children: [
-            SureIcon(
-              _getTypeIconName(),
-              size: 18,
-              color: palette.textSubdued,
-            ),
-            const SizedBox(width: SureSpacing.lg),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: SureTokens.weightMedium,
-                  ),
-            ),
-            const SizedBox(width: SureSpacing.md),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
-              decoration: BoxDecoration(
-                color: palette.surfaceInset,
-                borderRadius: BorderRadius.circular(SureTokens.radiusLg),
-              ),
-              child: Text(
-                count.toString(),
-                style: TextStyle(
-                  color: palette.textSecondary,
-                  fontWeight: SureTokens.weightMedium,
-                  fontSize: SureTypography.xs,
+  Widget _reviewBanner(AppLocalizations l, LedgerColors c, int sorted) {
+    final month = DateFormat('MMM yyyy', 'en_US').format(_month);
+    return Material(
+      color: c.ink,
+      borderRadius: BorderRadius.circular(2),
+      child: InkWell(
+        onTap: _openReview,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.homeNeedLabel(_unlabelled),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: c.onInk,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l.homeNeedLabelDetail(month, sorted),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: c.onInk.withValues(alpha: 0.75),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              Icon(Icons.chevron_right, color: c.onInk),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _labelRow(
+    _LabelSpend label,
+    double max,
+    String currency,
+    LedgerColors c,
+  ) {
+    final color =
+        label.categoryId == null ? null : parseHexColor(label.color, c.ink);
+    final fraction = max <= 0 ? 0.0 : label.amount / max;
+    return InkWell(
+      onTap: widget.onOpenActivity == null
+          ? null
+          : () => widget.onOpenActivity!(
+                _month,
+                label.categoryId ?? TransactionsFilter.noLabel,
+              ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.hairline)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                LabelDot(color: color),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(label.name,
+                      style: TextStyle(fontSize: 16, color: c.ink)),
+                ),
+                RupeeAmount(label.amount, currency: currency),
+              ],
             ),
-            const Spacer(),
-            SureIcon(
-              isCollapsed ? SureIcons.chevronDown : SureIcons.chevronUp,
-              size: SureIconSize.md,
-              color: palette.textSubdued,
+            const SizedBox(height: 6),
+            ExcludeSemantics(
+              child: Container(
+                height: 3,
+                color: c.track,
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: fraction.clamp(0.0, 1.0),
+                  child: Container(color: color ?? c.muted),
+                ),
+              ),
             ),
           ],
         ),

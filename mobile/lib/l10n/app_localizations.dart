@@ -63,7 +63,7 @@ import 'app_localizations_sv.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('sv'),
+    Locale('sv')
   ];
 
   /// Application title shown in the OS task switcher.
@@ -2119,6 +2119,450 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t load transactions'**
   String get budgetCategoryTransactionsLoadFailed;
+
+  /// Bottom navigation label for the Activity (transactions) tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get navActivity;
+
+  /// Bottom navigation label for the Statements tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Statements'**
+  String get navStatements;
+
+  /// Bottom navigation label for the Accounts tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get navAccounts;
+
+  /// Accessibility label for the centre Add button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense'**
+  String get navAddExpense;
+
+  /// Spending group for transactions without a label (category).
+  ///
+  /// In en, this message translates to:
+  /// **'No label'**
+  String get homeNoLabel;
+
+  /// Settings button tooltip and settings page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get homeSettings;
+
+  /// Home error when the month's data fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this month.'**
+  String get homeLoadFailed;
+
+  /// Heading over the month's spending total.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent in {month}'**
+  String homeSpentIn(String month);
+
+  /// Spending compared with the previous month (higher).
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} more than {month}'**
+  String homeMoreThan(String amount, String month);
+
+  /// Spending compared with the previous month (lower).
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} less than {month}'**
+  String homeLessThan(String amount, String month);
+
+  /// Spending equal to the previous month.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as {month}'**
+  String homeSameAs(String month);
+
+  /// Label for money in this month.
+  ///
+  /// In en, this message translates to:
+  /// **'Came in'**
+  String get homeCameIn;
+
+  /// Label for money out this month.
+  ///
+  /// In en, this message translates to:
+  /// **'Went out'**
+  String get homeWentOut;
+
+  /// Label for money in minus money out.
+  ///
+  /// In en, this message translates to:
+  /// **'Left over'**
+  String get homeLeftOver;
+
+  /// Section title for spending by label.
+  ///
+  /// In en, this message translates to:
+  /// **'Where it went'**
+  String get homeWhereItWent;
+
+  /// Link to the budget screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get homeBudget;
+
+  /// Empty state for spending by label.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing spent this month yet.'**
+  String get homeNothingSpent;
+
+  /// Section title for net worth.
+  ///
+  /// In en, this message translates to:
+  /// **'Net worth'**
+  String get homeNetWorth;
+
+  /// Link to the accounts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance sheet'**
+  String get homeBalanceSheet;
+
+  /// Net worth breakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets {assets} · Owed {owed}'**
+  String homeAssetsOwed(String assets, String owed);
+
+  /// Banner linking to statement review.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 statement item needs a label} other{{count} statement items need a label}}'**
+  String homeNeedLabel(int count);
+
+  /// Banner detail line.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} · {sorted} sorted already'**
+  String homeNeedLabelDetail(String month, int sorted);
+
+  /// Filter chip and row label for transactions without a label.
+  ///
+  /// In en, this message translates to:
+  /// **'No label'**
+  String get activityNoLabel;
+
+  /// Activity search field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this month'**
+  String get activitySearchHint;
+
+  /// Tooltip for clearing the search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get activityClearSearch;
+
+  /// Activity note when offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline. Showing what is saved on this phone.'**
+  String get activityOfflineNote;
+
+  /// Activity note when the server fetch fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server. Showing what is saved on this phone.'**
+  String get activityLoadFailedNote;
+
+  /// Activity empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here for this month.'**
+  String get activityEmpty;
+
+  /// Activity strip: money in.
+  ///
+  /// In en, this message translates to:
+  /// **'In'**
+  String get activityIn;
+
+  /// Activity strip: money out.
+  ///
+  /// In en, this message translates to:
+  /// **'Out'**
+  String get activityOut;
+
+  /// Activity strip: number of transactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get activityEntries;
+
+  /// Row status for a transaction saved offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to sync'**
+  String get activityWaitingToSync;
+
+  /// Row status for a transaction deleted offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be deleted'**
+  String get activityWaitingToDelete;
+
+  /// Row label for a transfer between accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get activityTransfer;
+
+  /// Accessibility label for the paperclip icon.
+  ///
+  /// In en, this message translates to:
+  /// **'Has receipt'**
+  String get activityHasReceipt;
+
+  /// Tooltip for the delete button on the transaction detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete transaction'**
+  String get detailDelete;
+
+  /// Shown under an income amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Money in'**
+  String get detailMoneyIn;
+
+  /// Shown under an expense amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Money out'**
+  String get detailMoneyOut;
+
+  /// Label for the note field.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get detailNote;
+
+  /// Hint for the note field.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note'**
+  String get detailNoteHint;
+
+  /// Receipt section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get detailReceipt;
+
+  /// Action to attach a receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach'**
+  String get detailAttachReceipt;
+
+  /// Action to replace the receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get detailReplaceReceipt;
+
+  /// Shown when a transaction has no receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'No receipt attached.'**
+  String get detailNoReceipt;
+
+  /// More attachments beyond the one shown.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String detailMoreReceipts(int count);
+
+  /// Tooltip for removing a receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove receipt'**
+  String get receiptRemove;
+
+  /// Shown when attaching while offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet to attach a receipt.'**
+  String get receiptNeedsInternet;
+
+  /// Receipt upload error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not attach the receipt.'**
+  String get receiptUploadFailed;
+
+  /// Receipt delete error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove the receipt.'**
+  String get receiptRemoveFailed;
+
+  /// Open the camera for a receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get receiptTakePhoto;
+
+  /// Pick a receipt from the gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'From gallery'**
+  String get receiptFromGallery;
+
+  /// Add screen toggle: expense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get formTypeExpense;
+
+  /// Add screen toggle: income.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get formTypeIncome;
+
+  /// Label (category) picker title.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get formLabel;
+
+  /// Link to the labels screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get formManage;
+
+  /// Chip that opens the labels screen to add one.
+  ///
+  /// In en, this message translates to:
+  /// **'+ New label'**
+  String get formNewLabel;
+
+  /// Label for the transaction name field.
+  ///
+  /// In en, this message translates to:
+  /// **'What for'**
+  String get formWhatFor;
+
+  /// Hint for the transaction name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Imtiaz Supermarket'**
+  String get formWhatForHint;
+
+  /// Account picker label for an expense.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid from'**
+  String get formPaidFrom;
+
+  /// Account picker label for income.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid into'**
+  String get formPaidInto;
+
+  /// Shown when there are no accounts to pick.
+  ///
+  /// In en, this message translates to:
+  /// **'No accounts yet'**
+  String get formNoAccounts;
+
+  /// Hint for optional fields.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get formOptional;
+
+  /// Receipt section title on the add screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt or screenshot'**
+  String get formReceipt;
+
+  /// Save button for an expense.
+  ///
+  /// In en, this message translates to:
+  /// **'Save expense'**
+  String get formSaveExpense;
+
+  /// Save button for income.
+  ///
+  /// In en, this message translates to:
+  /// **'Save income'**
+  String get formSaveIncome;
+
+  /// Shown when saving without an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an account first.'**
+  String get formPickAccount;
+
+  /// Confirmation after saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get formSaved;
+
+  /// Saved offline with a receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. The receipt was not attached because you are offline.'**
+  String get formSavedReceiptOffline;
+
+  /// Tagline under the wordmark on sign in.
+  ///
+  /// In en, this message translates to:
+  /// **'Every rupee, month by month.'**
+  String get loginTagline;
+
+  /// Label for the server row on sign in.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get loginServer;
+
+  /// Action to change the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get loginServerChange;
+
+  /// Tooltip for the password visibility toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get loginShowPassword;
+
+  /// Prefix before the create-account link.
+  ///
+  /// In en, this message translates to:
+  /// **'New here? '**
+  String get loginNewHere;
+
+  /// Link to sign up.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get loginCreateAccount;
 }
 
 class _AppLocalizationsDelegate
@@ -2148,9 +2592,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

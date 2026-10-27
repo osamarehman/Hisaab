@@ -1,20 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../models/category.dart' as models;
-import '../models/merchant.dart';
+
+import '../l10n/app_localizations.dart';
 import '../models/offline_transaction.dart';
-import '../models/transaction_tag.dart';
+import '../models/transaction.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
-import '../providers/merchants_provider.dart';
-import '../providers/tags_provider.dart';
 import '../providers/transactions_provider.dart';
-import '../l10n/app_localizations.dart';
+import '../services/connectivity_service.dart';
+import '../services/transactions_service.dart';
+import '../widgets/ledger/ledger.dart';
 
+/// Transaction detail: amount, label, receipt, name and note. Pops `true`
+/// when something changed.
 class TransactionEditScreen extends StatefulWidget {
-  final OfflineTransaction transaction;
-
   const TransactionEditScreen({super.key, required this.transaction});
+
+  final Transaction transaction;
 
   @override
   State<TransactionEditScreen> createState() => _TransactionEditScreenState();
@@ -25,24 +31,24 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   static const _maxNotesLength = 2000;
 
   final _formKey = GlobalKey<FormState>();
+  final _service = TransactionsService();
   late final TextEditingController _nameController;
   late final TextEditingController _notesController;
-  String? _selectedCategoryId;
-  String? _selectedMerchantId;
-  late Set<String> _selectedTagIds;
-  bool _isSaving = false;
+  late Transaction _tx;
+  String? _categoryId;
+  bool _saving = false;
+  bool _receiptBusy = false;
+  bool _changed = false;
+  String? _accessToken;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.transaction.name);
-    _notesController = TextEditingController(
-      text: widget.transaction.notes ?? '',
-    );
-    _selectedCategoryId = widget.transaction.categoryId;
-    _selectedMerchantId = widget.transaction.merchantId;
-    _selectedTagIds = widget.transaction.tagIds.toSet();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadMetadata());
+    _tx = widget.transaction;
+    _nameController = TextEditingController(text: _tx.name);
+    _notesController = TextEditingController(text: _tx.notes ?? '');
+    _categoryId = _tx.categoryId;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   @override
@@ -52,96 +58,189 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     super.dispose();
   }
 
-  Future<void> _loadMetadata() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final categoriesProvider = Provider.of<CategoriesProvider>(
-      context,
-      listen: false,
-    );
-    final merchantsProvider = Provider.of<MerchantsProvider>(
-      context,
-      listen: false,
-    );
-    final tagsProvider = Provider.of<TagsProvider>(context, listen: false);
-    final accessToken = await authProvider.getValidAccessToken();
-    if (accessToken == null || !mounted) return;
-
-    try {
-      await Future.wait([
-        categoriesProvider.fetchCategories(accessToken: accessToken),
-        merchantsProvider.fetchMerchants(accessToken: accessToken),
-        tagsProvider.fetchTags(accessToken: accessToken),
-      ]);
-    } catch (_) {
-      // Providers expose their own error state; avoid an uncaught async error.
+  Future<void> _load() async {
+    final auth = context.read<AuthProvider>();
+    final categories = context.read<CategoriesProvider>();
+    final token = await auth.getValidAccessToken();
+    if (token == null || !mounted) return;
+    setState(() => _accessToken = token);
+    categories.fetchCategories(accessToken: token);
+    // Offline-cached rows lack attachments; refresh from the server.
+    if (_tx.id != null) {
+      final result = await _service.getTransaction(
+          accessToken: token, transactionId: _tx.id!);
+      if (mounted && result['success'] == true) {
+        setState(() => _tx = result['transaction'] as Transaction);
+      }
     }
+  }
+
+  bool get _online => context.read<ConnectivityService?>()?.isOnline ?? true;
+
+  void _toast(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<String?> _token() async {
+    final token = await context.read<AuthProvider>().getValidAccessToken();
+    if (token == null && mounted) {
+      _toast(AppLocalizations.of(context).transactionEditSessionExpired);
+    }
+    return token;
   }
 
   Future<void> _save() async {
     final l = AppLocalizations.of(context);
-    if (!_formKey.currentState!.validate() || widget.transaction.id == null) {
+    if (!_formKey.currentState!.validate() || _tx.id == null) return;
+    setState(() => _saving = true);
+    final provider = context.read<TransactionsProvider>();
+    final token = await _token();
+    if (token == null) {
+      if (mounted) setState(() => _saving = false);
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final transactionsProvider = Provider.of<TransactionsProvider>(
-      context,
-      listen: false,
-    );
-    final accessToken = await authProvider.getValidAccessToken();
-
-    if (accessToken == null) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l.transactionEditSessionExpired),
-          backgroundColor: Colors.red,
-        ),
-      );
-      setState(() {
-        _isSaving = false;
-      });
-      return;
-    }
-
-    // Empty notes intentionally clear the server-side note.
-    final notesText = _notesController.text.trim();
-
-    final success = await transactionsProvider.updateTransaction(
-      accessToken: accessToken,
-      transaction: widget.transaction,
+    final tx = _tx;
+    final offline = tx is OfflineTransaction
+        ? tx
+        : OfflineTransaction.fromTransaction(tx, localId: tx.id!);
+    final success = await provider.updateTransaction(
+      accessToken: token,
+      transaction: offline,
       name: _nameController.text.trim(),
-      notes: notesText,
-      categoryId: _selectedCategoryId,
-      merchantId: _selectedMerchantId,
-      tagIds: _selectedTagIds.toList(),
+      // Empty notes intentionally clear the server-side note.
+      notes: _notesController.text.trim(),
+      categoryId: _categoryId,
     );
-
     if (!mounted) return;
-
-    setState(() {
-      _isSaving = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? l.transactionEditUpdated
-              : transactionsProvider.error ?? l.transactionEditUpdateFailed,
-        ),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
-    );
-
+    setState(() => _saving = false);
     if (success) {
       Navigator.pop(context, true);
+    } else {
+      _toast(provider.error ?? l.transactionEditUpdateFailed);
     }
+  }
+
+  Future<void> _delete() async {
+    final l = AppLocalizations.of(context);
+    if (_tx.id == null) return;
+    final provider = context.read<TransactionsProvider>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.transactionsListDeleteTitle),
+        content: Text(l.transactionsListDeleteSingleContent(_tx.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: LedgerColors.of(context).danger,
+            ),
+            child: Text(l.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final token = await _token();
+    if (token == null) return;
+    final ok = await provider.deleteTransaction(
+        accessToken: token, transactionId: _tx.id!);
+    if (!mounted) return;
+    if (ok) {
+      Navigator.pop(context, true);
+    } else {
+      _toast(l.transactionsListSingleDeleteFailed);
+    }
+  }
+
+  /// Uploads a new receipt; with [replace], removes the old one afterwards.
+  Future<void> _attach({TransactionAttachment? replace}) async {
+    final l = AppLocalizations.of(context);
+    if (_tx.id == null) return;
+    if (!_online) {
+      _toast(l.receiptNeedsInternet);
+      return;
+    }
+    final File? file = await showReceiptSourceSheet(context);
+    if (file == null || !mounted) return;
+    final token = await _token();
+    if (token == null) return;
+    setState(() => _receiptBusy = true);
+    final result = await _service.uploadAttachments(
+      accessToken: token,
+      transactionId: _tx.id!,
+      files: [file],
+    );
+    if (result['success'] == true && replace != null) {
+      await _service.deleteAttachment(
+        accessToken: token,
+        transactionId: _tx.id!,
+        attachmentId: replace.id,
+      );
+    }
+    final refreshed = await _service.getTransaction(
+        accessToken: token, transactionId: _tx.id!);
+    if (!mounted) return;
+    setState(() {
+      _receiptBusy = false;
+      if (refreshed['success'] == true) {
+        _tx = refreshed['transaction'] as Transaction;
+      }
+      _changed = _changed || result['success'] == true;
+    });
+    if (result['success'] != true) {
+      _toast(result['error']?.toString() ?? l.receiptUploadFailed);
+    }
+  }
+
+  Future<void> _remove(TransactionAttachment attachment) async {
+    final l = AppLocalizations.of(context);
+    if (_tx.id == null) return;
+    final token = await _token();
+    if (token == null) return;
+    setState(() => _receiptBusy = true);
+    final result = await _service.deleteAttachment(
+      accessToken: token,
+      transactionId: _tx.id!,
+      attachmentId: attachment.id,
+    );
+    if (!mounted) return;
+    setState(() {
+      _receiptBusy = false;
+      if (result['success'] == true) {
+        _changed = true;
+        _tx = _copyWithAttachments(
+          _tx,
+          _tx.attachments.where((a) => a.id != attachment.id).toList(),
+        );
+      }
+    });
+    if (result['success'] != true) _toast(l.receiptRemoveFailed);
+  }
+
+  static Transaction _copyWithAttachments(
+    Transaction t,
+    List<TransactionAttachment> attachments,
+  ) {
+    final json = t.toJson()
+      ..['attachments'] = attachments.map((a) => a.toJson()).toList()
+      ..['account'] = {'id': t.accountId, 'name': t.accountName}
+      ..['amount_decimal'] = t.amountDecimal
+      ..['kind'] = t.kind;
+    if (t.categoryId != null) {
+      json['category'] = {
+        'id': t.categoryId,
+        'name': t.categoryName,
+        'color': t.categoryColor,
+      };
+    }
+    return Transaction.fromJson(json);
   }
 
   String? _validateName(String? value) {
@@ -149,36 +248,28 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     if (value == null || value.trim().isEmpty) {
       return l.transactionEditNameRequired;
     }
-
     if (value.trim().length > _maxNameLength) {
       return l.transactionEditNameMaxLength(_maxNameLength);
     }
-
     if (_containsControlCharacter(value)) {
       return l.transactionEditNameInvalidChars;
     }
-
     return null;
   }
 
   String? _validateNotes(String? value) {
     final l = AppLocalizations.of(context);
-    if (value == null || value.trim().isEmpty) {
-      return null;
-    }
-
+    if (value == null || value.trim().isEmpty) return null;
     if (value.trim().length > _maxNotesLength) {
       return l.transactionEditNotesMaxLength(_maxNotesLength);
     }
-
     if (_containsControlCharacter(value, allowWhitespace: true)) {
       return l.transactionEditNotesInvalidChars;
     }
-
     return null;
   }
 
-  bool _containsControlCharacter(
+  static bool _containsControlCharacter(
     String value, {
     bool allowWhitespace = false,
   }) {
@@ -190,239 +281,277 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         if (!allowedWhitespace) return true;
       }
     }
-
     return false;
-  }
-
-  List<DropdownMenuItem<String?>> _categoryItems(
-    List<models.Category> categories,
-  ) {
-    final l = AppLocalizations.of(context);
-    final items = <DropdownMenuItem<String?>>[];
-    if (_selectedCategoryId == null) {
-      items.add(
-        DropdownMenuItem<String?>(
-          value: null,
-          child: Text(l.transactionEditNoCategory),
-        ),
-      );
-    }
-
-    final hasCurrent = _selectedCategoryId == null ||
-        categories.any((category) => category.id == _selectedCategoryId);
-    if (!hasCurrent) {
-      items.add(
-        DropdownMenuItem<String?>(
-          value: _selectedCategoryId,
-          child: Text(widget.transaction.categoryName ?? l.transactionEditCurrentCategory),
-        ),
-      );
-    }
-
-    items.addAll(
-      categories.map((category) {
-        return DropdownMenuItem<String?>(
-          value: category.id,
-          child: Text(category.displayName),
-        );
-      }),
-    );
-
-    return items;
-  }
-
-  List<DropdownMenuItem<String?>> _merchantItems(List<Merchant> merchants) {
-    final l = AppLocalizations.of(context);
-    final items = <DropdownMenuItem<String?>>[];
-    if (_selectedMerchantId == null) {
-      items.add(
-        DropdownMenuItem<String?>(
-          value: null,
-          child: Text(l.transactionEditNoMerchant),
-        ),
-      );
-    }
-
-    final hasCurrent = _selectedMerchantId == null ||
-        merchants.any((merchant) => merchant.id == _selectedMerchantId);
-    if (!hasCurrent) {
-      items.add(
-        DropdownMenuItem<String?>(
-          value: _selectedMerchantId,
-          child: Text(widget.transaction.merchantName ?? l.transactionEditCurrentMerchant),
-        ),
-      );
-    }
-
-    items.addAll(
-      merchants.map((merchant) {
-        return DropdownMenuItem<String?>(
-          value: merchant.id,
-          child: Text(merchant.name),
-        );
-      }),
-    );
-
-    return items;
-  }
-
-  Widget _buildTags(List<TransactionTag> tags, {required bool enabled}) {
-    final l = AppLocalizations.of(context);
-    if (tags.isEmpty && _selectedTagIds.isEmpty) {
-      return Text(l.transactionEditNoTags);
-    }
-
-    final tagById = {for (final tag in tags) tag.id: tag};
-    final combinedTags = [...tags];
-    for (final selectedId in _selectedTagIds) {
-      if (!tagById.containsKey(selectedId)) {
-        final nameIndex = widget.transaction.tagIds.indexOf(selectedId);
-        final fallbackName =
-            nameIndex >= 0 && nameIndex < widget.transaction.tagNames.length
-                ? widget.transaction.tagNames[nameIndex]
-                : '';
-        combinedTags.add(
-          TransactionTag(
-            id: selectedId,
-            name: fallbackName.isNotEmpty ? fallbackName : l.transactionEditUnknownTag,
-          ),
-        );
-      }
-    }
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: combinedTags.map((tag) {
-        final selected = _selectedTagIds.contains(tag.id);
-        return FilterChip(
-          label: Text(tag.name),
-          selected: selected,
-          onSelected: enabled
-              ? (value) {
-                  setState(() {
-                    if (value) {
-                      _selectedTagIds.add(tag.id);
-                    } else {
-                      _selectedTagIds.remove(tag.id);
-                    }
-                  });
-                }
-              : null,
-        );
-      }).toList(),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final canEdit = widget.transaction.id != null &&
-        widget.transaction.syncStatus == SyncStatus.synced;
-
     final l = AppLocalizations.of(context);
+    final c = LedgerColors.of(context);
+    final categories = context.watch<CategoriesProvider>().categories;
+    final accounts = context.watch<AccountsProvider>().accounts;
+    final accountName = _tx.accountName ??
+        accounts.where((a) => a.id == _tx.accountId).firstOrNull?.name;
+    final date = DateTime.tryParse(_tx.date);
+    final subtitle = [
+      if (date != null) DateFormat('EEE d MMM yyyy', 'en_US').format(date),
+      if (accountName != null && accountName.isNotEmpty) accountName,
+    ].join(' · ');
+    final canEdit = _tx.id != null;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.transactionEditTitle)),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (!canEdit) ...[
-              Card(
-                color: colorScheme.errorContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    l.transactionEditSyncedOnly,
-                    style: TextStyle(color: colorScheme.onErrorContainer),
-                  ),
-                ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop(_changed);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          titleSpacing: 0,
+          title: TextButton.icon(
+            onPressed: () => Navigator.of(context).pop(_changed),
+            icon: const Icon(Icons.chevron_left),
+            label: Text(l.navActivity, style: const TextStyle(fontSize: 16)),
+          ),
+          actions: [
+            if (canEdit)
+              IconButton(
+                tooltip: l.detailDelete,
+                onPressed: _saving ? null : _delete,
+                icon: Icon(Icons.delete_outline, color: c.danger),
               ),
-              const SizedBox(height: 16),
-            ],
-            TextFormField(
-              controller: _nameController,
-              enabled: canEdit && !_isSaving,
-              validator: _validateName,
-              maxLength: _maxNameLength,
-              decoration: InputDecoration(
-                labelText: l.transactionEditNameLabel,
-                prefixIcon: const Icon(Icons.label),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _notesController,
-              enabled: canEdit && !_isSaving,
-              validator: _validateNotes,
-              maxLength: _maxNotesLength,
-              minLines: 2,
-              maxLines: 4,
-              decoration: InputDecoration(
-                labelText: l.transactionEditNotesLabel,
-                prefixIcon: const Icon(Icons.notes),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Consumer<CategoriesProvider>(
-              builder: (context, categoriesProvider, _) {
-                return DropdownButtonFormField<String?>(
-                  value: _selectedCategoryId,
-                  decoration: InputDecoration(
-                    labelText: l.transactionEditCategoryLabel,
-                    prefixIcon: const Icon(Icons.category),
-                    helperText: l.transactionEditCategoryHelper,
-                  ),
-                  isExpanded: true,
-                  items: _categoryItems(categoriesProvider.categories),
-                  onChanged: canEdit && !_isSaving
-                      ? (value) => setState(() => _selectedCategoryId = value)
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            Consumer<MerchantsProvider>(
-              builder: (context, merchantsProvider, _) {
-                return DropdownButtonFormField<String?>(
-                  value: _selectedMerchantId,
-                  decoration: InputDecoration(
-                    labelText: l.transactionEditMerchantLabel,
-                    prefixIcon: const Icon(Icons.storefront),
-                    helperText: l.transactionEditMerchantHelper,
-                  ),
-                  isExpanded: true,
-                  items: _merchantItems(merchantsProvider.merchants),
-                  onChanged: canEdit && !_isSaving
-                      ? (value) => setState(() => _selectedMerchantId = value)
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            Text(l.transactionEditTagsLabel, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Consumer<TagsProvider>(
-              builder: (context, tagsProvider, _) =>
-                  _buildTags(tagsProvider.tags, enabled: canEdit && !_isSaving),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: canEdit && !_isSaving ? _save : null,
-              icon: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save),
-              label: Text(_isSaving ? l.transactionEditSaving : l.commonSave),
-            ),
           ],
         ),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            children: [
+              if (subtitle.isNotEmpty)
+                Text(subtitle, style: TextStyle(fontSize: 14, color: c.muted)),
+              const SizedBox(height: 6),
+              HeadlineAmount(
+                _tx.absAmount,
+                currency: _tx.currency,
+                size: 46,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _tx.isIncome ? l.detailMoneyIn : l.detailMoneyOut,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: _tx.isIncome ? c.moneyIn : c.moneyOut,
+                ),
+              ),
+              if (!canEdit) ...[
+                const SizedBox(height: 16),
+                Text(l.transactionEditSyncedOnly,
+                    style: TextStyle(fontSize: 14, color: c.muted)),
+              ],
+              const SizedBox(height: 24),
+              Text(l.formLabel,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final cat in categories)
+                    LabelChip(
+                      name: cat.name,
+                      color: parseHexColor(cat.color, c.ink),
+                      selected: _categoryId == cat.id,
+                      onTap: canEdit
+                          ? () => setState(() => _categoryId = cat.id)
+                          : null,
+                    ),
+                  if (categories.isEmpty && _tx.categoryName != null)
+                    LabelChip(
+                      name: _tx.categoryName!,
+                      color: parseHexColor(_tx.categoryColor, c.ink),
+                      selected: true,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _receiptSection(l, c, canEdit),
+              const SizedBox(height: 24),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: c.ink)),
+                ),
+                child: Column(
+                  children: [
+                    _fieldRow(
+                      c,
+                      l.transactionEditNameLabel,
+                      TextFormField(
+                        controller: _nameController,
+                        enabled: canEdit,
+                        decoration: _bare,
+                        validator: _validateName,
+                        textInputAction: TextInputAction.next,
+                      ),
+                    ),
+                    _fieldRow(
+                      c,
+                      l.detailNote,
+                      TextFormField(
+                        controller: _notesController,
+                        enabled: canEdit,
+                        minLines: 1,
+                        maxLines: 4,
+                        decoration: _bare.copyWith(hintText: l.detailNoteHint),
+                        validator: _validateNotes,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: canEdit
+            ? LedgerBottomBar(
+                child: ElevatedButton(
+                  onPressed: _saving ? null : _save,
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l.commonSave),
+                ),
+              )
+            : null,
       ),
     );
+  }
+
+  static const _bare = InputDecoration(
+    border: InputBorder.none,
+    enabledBorder: InputBorder.none,
+    focusedBorder: InputBorder.none,
+    errorBorder: InputBorder.none,
+    focusedErrorBorder: InputBorder.none,
+    disabledBorder: InputBorder.none,
+    filled: false,
+    isDense: true,
+    contentPadding: EdgeInsets.symmetric(vertical: 14),
+  );
+
+  Widget _fieldRow(LedgerColors c, String label, Widget field) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 54),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.hairline)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 96,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child:
+                  Text(label, style: TextStyle(fontSize: 14, color: c.muted)),
+            ),
+          ),
+          Expanded(child: field),
+        ],
+      ),
+    );
+  }
+
+  Widget _receiptSection(AppLocalizations l, LedgerColors c, bool canEdit) {
+    final attachment = _tx.attachments.firstOrNull;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(l.detailReceipt,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w500)),
+            ),
+            if (canEdit && !_receiptBusy)
+              TextButton(
+                onPressed: () => _attach(replace: attachment),
+                child: Text(attachment == null
+                    ? l.detailAttachReceipt
+                    : l.detailReplaceReceipt),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        if (_receiptBusy)
+          const SizedBox(
+            height: 88,
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (attachment == null)
+          Text(l.detailNoReceipt,
+              style: TextStyle(fontSize: 14, color: c.muted))
+        else
+          Container(
+            decoration: BoxDecoration(border: Border.all(color: c.ink)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (attachment.isImage && _accessToken != null)
+                  ReceiptImage(url: attachment.url, accessToken: _accessToken!)
+                else
+                  SizedBox(
+                    height: 88,
+                    child: Icon(Icons.picture_as_pdf_outlined,
+                        size: 36, color: c.muted),
+                  ),
+                Container(
+                  color: c.sheet,
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _describe(attachment),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: LedgerText.figures(size: 13, color: c.ink),
+                        ),
+                      ),
+                      if (canEdit)
+                        IconButton(
+                          tooltip: l.receiptRemove,
+                          onPressed: () => _remove(attachment),
+                          icon: Icon(Icons.close, color: c.ink),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (_tx.attachments.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              l.detailMoreReceipts(_tx.attachments.length - 1),
+              style: TextStyle(fontSize: 13, color: c.muted),
+            ),
+          ),
+      ],
+    );
+  }
+
+  static String _describe(TransactionAttachment a) {
+    final size = a.byteSize;
+    if (size == null) return a.filename;
+    final kb = (size / 1024).round();
+    return kb >= 1024
+        ? '${a.filename} · ${(kb / 1024).toStringAsFixed(1)} MB'
+        : '${a.filename} · $kb KB';
   }
 }

@@ -36,4 +36,11 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <!-- Receipt photos: let image_picker find the camera app on Android 11+.
+         No CAMERA permission: declaring it would force a runtime prompt. -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 </manifest>

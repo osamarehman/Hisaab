@@ -83,21 +83,20 @@ void main() {
     );
   });
 
-  test('generated shadow scale carries mode-aware color and geometry', () {
-    final lightSm = SureTokens.light.shadowSm.single;
-    expect(lightSm.offset, const Offset(0, 1));
-    expect(lightSm.blurRadius, 6.0);
-    expect(lightSm.spreadRadius, 0.0);
-    expect(
-      lightSm.color.value,
-      _resolveColorValue(tokens, '{color.black|6%}', dark: false),
-    );
-    expect(
-      SureTokens.dark.shadowSm.single.color.value,
-      _resolveColorValue(tokens, '{color.white|8%}', dark: true),
-    );
-    // The xl step keeps the canonical negative spread (0px 20px 24px -4px).
-    expect(SureTokens.light.shadowXl.single.spreadRadius, -4.0);
+  test('generated shadow scale is flat (ledger language has no shadows)', () {
+    for (final palette in [SureTokens.light, SureTokens.dark]) {
+      for (final shadow in [
+        ...palette.shadowXs,
+        ...palette.shadowSm,
+        ...palette.shadowMd,
+        ...palette.shadowLg,
+        ...palette.shadowXl,
+      ]) {
+        expect(shadow.offset, Offset.zero);
+        expect(shadow.blurRadius, 0.0);
+        expect(shadow.color.a, 0.0);
+      }
+    }
   });
 }
 

@@ -1,3 +1,43 @@
+import '../utils/amount_parser.dart';
+
+/// A file attached to a transaction (receipt photo, bill screenshot, PDF).
+class TransactionAttachment {
+  final String id;
+  final String filename;
+  final String? contentType;
+  final int? byteSize;
+  final String url;
+
+  const TransactionAttachment({
+    required this.id,
+    required this.filename,
+    this.contentType,
+    this.byteSize,
+    required this.url,
+  });
+
+  bool get isImage => contentType?.startsWith('image/') ?? false;
+
+  factory TransactionAttachment.fromJson(Map<String, dynamic> json) {
+    final size = json['byte_size'];
+    return TransactionAttachment(
+      id: json['id']?.toString() ?? '',
+      filename: json['filename']?.toString() ?? '',
+      contentType: json['content_type']?.toString(),
+      byteSize: size is int ? size : int.tryParse(size?.toString() ?? ''),
+      url: json['url']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'filename': filename,
+        if (contentType != null) 'content_type': contentType,
+        if (byteSize != null) 'byte_size': byteSize,
+        'url': url,
+      };
+}
+
 class Transaction {
   final String? id;
   final String accountId;
@@ -16,6 +56,15 @@ class Transaction {
   final List<String> tagIds;
   final List<String> tagNames;
   final bool tagsProvided;
+  final String? accountName;
+  final String? categoryColor;
+
+  /// Server `kind` ("standard", "funds_movement", "cc_payment", ...).
+  final String? kind;
+
+  /// Unrounded amount in entry sign convention (positive = outflow).
+  final String? amountDecimal;
+  final List<TransactionAttachment> attachments;
 
   Transaction({
     this.id,
@@ -35,7 +84,13 @@ class Transaction {
     List<String> tagIds = const [],
     List<String> tagNames = const [],
     bool? tagsProvided,
+    this.accountName,
+    this.categoryColor,
+    this.kind,
+    this.amountDecimal,
+    List<TransactionAttachment> attachments = const [],
   })  : tagIds = List.unmodifiable(tagIds),
+        attachments = List.unmodifiable(attachments),
         tagNames = List.unmodifiable(tagNames),
         categoryProvided =
             categoryProvided ?? (categoryId != null || categoryName != null),
@@ -49,8 +104,10 @@ class Transaction {
     // 1. New format: {"account": {"id": "xxx", "name": "..."}}
     // 2. Old format: {"account_id": "xxx"}
     String accountId = '';
+    String? accountName;
     if (json['account'] != null && json['account'] is Map) {
       accountId = json['account']['id']?.toString() ?? '';
+      accountName = json['account']['name']?.toString();
     } else if (json['account_id'] != null) {
       accountId = json['account_id']?.toString() ?? '';
     }
@@ -68,12 +125,14 @@ class Transaction {
     // Parse category from API response
     String? categoryId;
     String? categoryName;
+    String? categoryColor;
     final categoryProvided = json.containsKey('category') ||
         json.containsKey('category_id') ||
         json.containsKey('category_name');
     if (json['category'] != null && json['category'] is Map) {
       categoryId = json['category']['id']?.toString();
       categoryName = json['category']['name']?.toString();
+      categoryColor = json['category']['color']?.toString();
     } else if (json['category_id'] != null) {
       categoryId = json['category_id']?.toString();
       categoryName = json['category_name']?.toString();
@@ -124,6 +183,16 @@ class Transaction {
       tagNames.add('');
     }
 
+    final attachments = <TransactionAttachment>[];
+    if (json['attachments'] is List) {
+      for (final a in json['attachments']) {
+        if (a is Map) {
+          attachments
+              .add(TransactionAttachment.fromJson(Map<String, dynamic>.from(a)));
+        }
+      }
+    }
+
     return Transaction(
       id: json['id']?.toString(),
       accountId: accountId,
@@ -142,6 +211,11 @@ class Transaction {
       tagIds: tagIds,
       tagNames: tagNames,
       tagsProvided: tagsProvided,
+      accountName: accountName,
+      categoryColor: categoryColor,
+      kind: json['kind']?.toString(),
+      amountDecimal: json['amount_decimal']?.toString(),
+      attachments: attachments,
     );
   }
 
@@ -162,6 +236,24 @@ class Transaction {
       if (tagIds.isNotEmpty) 'tag_ids': tagIds,
       if (tagNames.isNotEmpty) 'tag_names': tagNames,
     };
+  }
+
+  bool get hasAttachments => attachments.isNotEmpty;
+
+  /// Money moving between the family's own accounts; left out of in/out
+  /// totals, matching the server's budget rules.
+  bool get isTransfer => kind == 'funds_movement' || kind == 'cc_payment';
+
+  /// Unsigned amount as a number. Prefers the locale-free `amount_decimal`
+  /// and falls back to parsing the formatted `amount` (offline rows).
+  double get absAmount {
+    final decimal = double.tryParse(amountDecimal ?? '');
+    if (decimal != null) return decimal.abs();
+    try {
+      return AmountParser.parse(amount).value.abs();
+    } on FormatException {
+      return 0;
+    }
   }
 
   bool get isExpense => nature == 'expense';

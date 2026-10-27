@@ -34,7 +34,7 @@ void main() {
         SureTokens.light.textInverse);
     expect(
       theme.elevatedButtonTheme.style?.minimumSize?.resolve({}),
-      const Size(double.infinity, 50),
+      const Size(double.infinity, 52),
     );
   });
 
@@ -64,7 +64,7 @@ void main() {
         SureTokens.dark.textInverse);
     expect(
       theme.elevatedButtonTheme.style?.minimumSize?.resolve({}),
-      const Size(double.infinity, 50),
+      const Size(double.infinity, 52),
     );
   });
 
