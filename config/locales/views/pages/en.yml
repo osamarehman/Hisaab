@@ -83,7 +83,7 @@ en:
         retention:
           heading: How long we keep it and how to delete it
           paragraphs:
-            - "We keep your data while your account exists. You can delete your account at any time in the app (Settings > Delete Account) or on the website (Settings > Profile > Delete account). This signs you out everywhere and removes your data; if you are the last member of your household, the whole household and everything in it is deleted. Copies in server backups, if any, are overwritten in the normal backup cycle."
+            - "We keep your data while your account exists. You can delete your account at any time in the app (Settings > Delete Account) or on the website (Settings > Profile > Delete account). This signs you out everywhere and removes your data; if you are the last member of your household, the whole household and everything in it is deleted. Server backups are kept for 14 days, so deleted data is gone from backups within 14 days."
             - "You can also ask us by email to export, correct or delete your data, and we will reply within 30 days."
         children:
           heading: Children
@@ -117,7 +117,7 @@ en:
         what:
           heading: What is deleted
           paragraphs:
-            - "You are signed out on every device straight away. Your profile, accounts, transactions, labels, budgets, receipt photos, imported statements and assistant chats are then deleted. If other people share your household, the accounts you own are handed to another member and the household stays; if you are the last member, the whole household is deleted. Copies in server backups, if any, are overwritten in the normal backup cycle. Nothing is kept for analytics or advertising."
+            - "You are signed out on every device straight away. Your profile, accounts, transactions, labels, budgets, receipt photos, imported statements and assistant chats are then deleted. If other people share your household, the accounts you own are handed to another member and the household stays; if you are the last member, the whole household is deleted. Server backups are kept for 14 days, so deleted data is gone from backups within 14 days. Nothing is kept for analytics or advertising."
             - "A household admin who still has other members must remove them, or make another member admin, before deleting their own account."
     terms:
       title: Terms of Service

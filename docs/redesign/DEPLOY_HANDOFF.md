@@ -20,11 +20,10 @@ assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 
 ## Target
 
-- VPS `109.123.247.217` (root). It already runs **SureCaller** under
-  `/root/surecaller` — do not touch its containers, volumes, ports or proxy
-  config beyond adding a new site.
-- Hostname: `sure.shipdeck.dev` (the APK defaults to it; DNS
-  A record → 109.123.247.217 must exist before TLS can issue).
+- A VPS you control that may already run other apps — do not touch their
+  containers, volumes, ports or proxy config beyond adding a new site.
+- Hostname: `sure.shipdeck.dev` (the APK defaults to it; the DNS A record
+  must point at the VPS before TLS can issue).
 
 ## Steps
 
@@ -72,9 +71,8 @@ joins Caddy's shared network, where the name `db` resolves to another app's
 Postgres, so the override points Sure at its own database and Redis. Keep it in
 every compose command.
 
-Live deployment (2026-10-27): `https://sure.shipdeck.dev`, `/root/sure-household`,
-port 3010, Caddy site `/root/core-stack/caddy.d/sure.caddy`, backups via
-`/root/scripts/sure-backup.sh` → `/root/backups/sure` (14 days).
+Live deployment: `https://sure.shipdeck.dev`, app in `/root/sure-household`,
+port 3010, nightly database + storage backups kept for 14 days.
 
 ## Mobile app
 
