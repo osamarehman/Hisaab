@@ -2,3 +2,4 @@
 *.json
 *.tmp
 suppress.txt
+__pycache__/
