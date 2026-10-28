@@ -1,0 +1,43 @@
+<%# locals: (page:) %>
+<% vars = legal_page_interpolations %>
+<% contact_email = Rails.configuration.x.legal_contact_email %>
+<% steps = page == "account_deletion" %>
+
+<div class="flex justify-center p-4 sm:p-6 lg:p-8">
+  <article class="w-full max-w-2xl bg-container border border-primary rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
+    <header class="space-y-3">
+      <h1 class="text-2xl font-bold text-primary"><%= t("pages.#{page}.heading", **vars) %></h1>
+      <p class="text-sm text-secondary"><%= t("pages.legal_document.last_updated", date: l(LegalPagesHelper::LEGAL_PAGES_UPDATED_ON, format: :long)) %></p>
+      <p class="text-base text-primary"><%= t("pages.#{page}.intro", **vars) %></p>
+    </header>
+
+    <% t("pages.#{page}.sections", deep_interpolation: true, **vars).each do |key, section| %>
+      <section id="<%= key %>" class="space-y-2">
+        <h2 class="text-lg font-semibold text-primary"><%= section[:heading] %></h2>
+        <% Array(section[:paragraphs]).each do |paragraph| %>
+          <p class="text-sm text-secondary"><%= paragraph %></p>
+        <% end %>
+        <% if section[:items].present? %>
+          <%= content_tag(steps ? :ol : :ul, class: "#{steps ? "list-decimal" : "list-disc"} pl-5 space-y-1 text-sm text-secondary") do %>
+            <% section[:items].each do |item| %>
+              <li><%= item %></li>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% Array(section[:after]).each do |paragraph| %>
+          <p class="text-sm text-secondary"><%= paragraph %></p>
+        <% end %>
+      </section>
+    <% end %>
+
+    <footer class="pt-4 border-t border-primary space-y-2 text-sm text-secondary">
+      <p><%= t("pages.legal_document.contact_html", email: mail_to(contact_email, contact_email, class: "text-primary underline")) %></p>
+      <nav class="flex flex-wrap gap-x-4 gap-y-1">
+        <%= link_to t("pages.legal_document.nav_privacy"), privacy_path, class: "text-primary underline" unless page == "privacy" %>
+        <%= link_to t("pages.legal_document.nav_terms"), terms_path, class: "text-primary underline" unless page == "terms" %>
+        <%= link_to t("pages.legal_document.nav_account_deletion"), account_deletion_path, class: "text-primary underline" unless page == "account_deletion" %>
+        <%= link_to t("pages.legal_document.source_code"), Rails.configuration.x.source_code_url, class: "text-primary underline", target: "_blank", rel: "noopener noreferrer" %>
+      </nav>
+    </footer>
+  </article>
+</div>

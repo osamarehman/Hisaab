@@ -29,14 +29,137 @@ en:
     release_notes_unavailable:
       name: Release notes unavailable
       body_html: "<p>Unable to fetch the latest release notes at this time. Please check back later or visit our <a href='https://github.com/we-promise/sure/releases' target='_blank' rel='noopener noreferrer'>GitHub releases page</a> directly.</p>"
+    legal_document:
+      contact_html: "Questions or requests: %{email}"
+      last_updated: "Last updated: %{date}"
+      nav_account_deletion: Delete your account
+      nav_privacy: Privacy Policy
+      nav_terms: Terms of Service
+      source_code: Source code
     privacy:
       title: Privacy Policy
       heading: Privacy Policy
-      placeholder: Privacy policy content will be displayed here.
+      intro: "%{product_name} is a household expense tracker made by %{publisher}. This policy explains what the %{product_name} app and website collect, why, who else sees it, and how to delete it."
+      sections:
+        collect:
+          heading: What we collect
+          paragraphs:
+            - "Only what you or your household members enter or upload:"
+          items:
+            - "Account details: your name, email address, password (stored only as a one-way hash), optional profile photo, and household settings such as currency and language."
+            - "Financial records: accounts, balances, transactions, labels, budgets, auto-label keywords and notes."
+            - "Files: receipt photos and other attachments you add to transactions, and bank statements (PDF or CSV) you import."
+            - "Assistant conversations: the messages you send to the AI assistant and its replies."
+            - "Sign-in and device data: when you sign in we store your IP address, browser or device name, operating system version, app version and a random device identifier, so we can keep you signed in and let you sign out other devices."
+          after:
+            - "If you choose Sign in with Google, Google shares your name and email address with us. We do not collect your location, contacts, or any data from other apps."
+        use:
+          heading: How we use it
+          paragraphs:
+            - "Your data is used only to run %{product_name} for you: to show and total your spending, file statement lines under the right month, suggest labels, answer assistant questions, send account emails such as password resets, and keep your account secure. We do not show ads, we do not sell or rent your data, and we do not use it to build advertising profiles."
+        ai:
+          heading: AI features and OpenRouter
+          paragraphs:
+            - "Some features use a large language model reached through OpenRouter (openrouter.ai), a third-party AI service, which passes the request to the model provider it routes to. These features run only when AI is enabled for your account:"
+          items:
+            - "The assistant: your message and the financial data it needs to answer (for example matching transactions or balances)."
+            - "Statement import: the text of a PDF bank statement you upload, so its lines can be read."
+            - "Auto-labelling: transaction descriptions, amounts and your label names, so a label can be suggested."
+          after:
+            - "Those services process the data to return a response, under their own privacy terms. Importing CSV statements and labelling by hand do not send anything to them."
+        storage:
+          heading: Where it is stored and how it is protected
+          paragraphs:
+            - "%{product_name} runs on a virtual private server rented by the publisher. Data travels between your device and the server over HTTPS. Passwords are hashed, and access from the app uses revocable tokens. No system is perfectly secure, but access to the server is limited to the publisher."
+            - "The app keeps a cached copy of your records on your phone so it works offline. Signing out, or Settings > Clear local data, removes it."
+        sharing:
+          heading: Who else sees it
+          paragraphs:
+            - "Members of your household can see the accounts you share with them. Apart from the AI services above, the hosting provider that runs the server, and the email service that delivers account emails, we share nothing with anyone, unless the law requires it."
+        diagnostics:
+          heading: Analytics and crash reports
+          paragraphs:
+            - "The app contains no advertising or analytics SDKs, and crash reporting is turned off in the published app. Error logs stay on your phone (Settings > Debug logs)."
+        retention:
+          heading: How long we keep it and how to delete it
+          paragraphs:
+            - "We keep your data while your account exists. You can delete your account at any time in the app (Settings > Delete Account) or on the website (Settings > Profile > Delete account). This signs you out everywhere and removes your data; if you are the last member of your household, the whole household and everything in it is deleted. Copies in server backups, if any, are overwritten in the normal backup cycle."
+            - "You can also ask us by email to export, correct or delete your data, and we will reply within 30 days."
+        children:
+          heading: Children
+          paragraphs:
+            - "%{product_name} is not directed at children under 13, and we do not knowingly collect their data."
+        changes:
+          heading: Changes to this policy
+          paragraphs:
+            - "If this policy changes, we will update this page and its date. Significant changes will also be shown in the app."
+    account_deletion:
+      title: Delete your account
+      heading: "Delete your %{product_name} account"
+      intro: "You can delete your %{product_name} account and its data at any time. Choose whichever way suits you."
+      sections:
+        app:
+          heading: In the app
+          items:
+            - "Open %{product_name} and sign in."
+            - "On Home, tap the settings icon in the top corner."
+            - "Scroll to Danger Zone, tap Delete Account and confirm both steps."
+        web:
+          heading: On the website
+          items:
+            - "Sign in on this website."
+            - "Open Settings, then Profile."
+            - "At the bottom, choose Delete account and confirm."
+        email:
+          heading: By email
+          paragraphs:
+            - "Cannot sign in? Email %{contact_email} from the address you signed up with and ask us to delete your account. We will confirm and delete it within 30 days."
+        what:
+          heading: What is deleted
+          paragraphs:
+            - "You are signed out on every device straight away. Your profile, accounts, transactions, labels, budgets, receipt photos, imported statements and assistant chats are then deleted. If other people share your household, the accounts you own are handed to another member and the household stays; if you are the last member, the whole household is deleted. Copies in server backups, if any, are overwritten in the normal backup cycle. Nothing is kept for analytics or advertising."
+            - "A household admin who still has other members must remove them, or make another member admin, before deleting their own account."
     terms:
       title: Terms of Service
       heading: Terms of Service
-      placeholder: Terms of service content will be displayed here.
+      intro: "These terms apply when you use the %{product_name} app or website, provided by %{publisher}. By creating an account you agree to them."
+      sections:
+        service:
+          heading: The service
+          paragraphs:
+            - "%{product_name} helps a household record expenses, import bank statements, label spending and plan budgets. It is free, provided as is, and may change or stop. We will give notice in the app before shutting it down so you can export your data."
+        account:
+          heading: Your account
+          paragraphs:
+            - "Give a working email address, keep your password private, and tell us if you think someone else is using your account. You are responsible for what happens in your account and for the data you add."
+        acceptable_use:
+          heading: Acceptable use
+          paragraphs:
+            - "Do not use %{product_name} to break the law, upload content you have no right to share, attack or overload the service, or access other people's data. We may suspend accounts that do."
+        advice:
+          heading: Not financial advice
+          paragraphs:
+            - "Totals, budgets, suggested labels and assistant answers are for your own record-keeping. AI output can be wrong; check it before relying on it. Nothing in %{product_name} is financial, tax or legal advice."
+        ai:
+          heading: AI features
+          paragraphs:
+            - "AI features depend on a third-party service and may be limited, unavailable for some accounts, or removed. CSV import and manual labelling always work without them."
+        open_source:
+          heading: Open source
+          paragraphs:
+            - "%{product_name} is based on Sure, an open-source personal finance app, and is released under the GNU Affero General Public License v3.0. The source code of the version running here is published at %{source_url}."
+        liability:
+          heading: Liability
+          paragraphs:
+            - "To the extent the law allows, %{product_name} is provided without warranties, and the publisher is not liable for indirect losses or for data loss. Keep your own copies of anything important."
+        ending:
+          heading: Ending your use
+          paragraphs:
+            - "You can stop using %{product_name} and delete your account at any time. We may close accounts that break these terms or have been inactive for a long time, after notice by email where possible."
+        changes:
+          heading: Changes
+          paragraphs:
+            - "We may update these terms. The date below shows the latest version; continuing to use %{product_name} after a change means you accept it."
     dashboard:
       welcome: "Welcome back, %{name}"
       subtitle: "Here's what's happening with your finances"

@@ -92,4 +92,10 @@
   </div>
 
   <%= form.submit t(".submit") %>
+
+  <p class="text-xs text-secondary text-center">
+    <%= t(".agreement_html",
+          terms: link_to(t(".agreement_terms"), terms_path, class: "text-primary underline", target: "_blank"),
+          privacy: link_to(t(".agreement_privacy"), privacy_path, class: "text-primary underline", target: "_blank")) %>
+  </p>
 <% end %>

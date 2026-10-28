@@ -4,3 +4,10 @@ en:
     doorkeeper:
       application:
         title: "%{product_name} Authorization"
+    shared:
+      footer:
+        account_deletion: Delete account
+        copyright: "© %{year} %{product_name}, based on Sure (AGPL-3.0)"
+        privacy: Privacy Policy
+        source_code: Source code
+        terms: Terms of Service
