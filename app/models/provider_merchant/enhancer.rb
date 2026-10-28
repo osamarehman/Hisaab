@@ -84,7 +84,7 @@ class ProviderMerchant::Enhancer
     # configured provider, with fallback handled by
     # Provider::Registry.preferred_llm_provider.
     def llm_provider
-      @llm_provider ||= Provider::Registry.preferred_llm_provider
+      @llm_provider ||= @family.llm_provider
     end
 
     def unenhanced_merchants

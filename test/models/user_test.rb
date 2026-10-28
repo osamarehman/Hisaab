@@ -456,6 +456,22 @@ class UserTest < ActiveSupport::TestCase
     assert_match %r{issuer=#{Rails.configuration.x.product_name}}, user.provisioning_uri
   end
 
+  test "ai_available? is false for a household outside AI_ALLOWED_EMAILS" do
+    Rails.application.config.app_mode.stubs(:self_hosted?).returns(false)
+
+    with_env_overrides AI_ALLOWED_EMAILS: "someone-else@example.com" do
+      assert_not @user.ai_available?
+    end
+
+    with_env_overrides AI_ALLOWED_EMAILS: " Someone-Else@example.com , #{@user.email.upcase}" do
+      assert @user.ai_available?
+    end
+
+    with_env_overrides AI_ALLOWED_EMAILS: "" do
+      assert @user.ai_available?
+    end
+  end
+
   test "ai_available? returns true when openai access token set in settings" do
     Rails.application.config.app_mode.stubs(:self_hosted?).returns(true)
     previous = Setting.openai_access_token

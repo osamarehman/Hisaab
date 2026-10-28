@@ -66,7 +66,7 @@ class Family::AutoMerchantDetector
     # configured provider, with fallback handled by
     # Provider::Registry.preferred_llm_provider.
     def llm_provider
-      Provider::Registry.preferred_llm_provider
+      family.llm_provider
     end
 
     def user_merchants_input

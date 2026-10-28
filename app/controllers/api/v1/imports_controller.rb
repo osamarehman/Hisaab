@@ -231,6 +231,7 @@ class Api::V1::ImportsController < Api::V1::BaseController
     def create_pdf_import(family)
       user = current_resource_owner
       return render_import_forbidden_for_statements unless AccountStatement.statement_manager?(user)
+      return render_pdf_ai_unavailable unless family.ai_allowed?
 
       file = params[:file]
       return render_validation_error("file is required") unless file.respond_to?(:read)
@@ -274,6 +275,10 @@ class Api::V1::ImportsController < Api::V1::BaseController
 
     def render_import_forbidden_for_statements
       render json: { error: "forbidden", message: "You do not have permission to import statements" }, status: :forbidden
+    end
+
+    def render_pdf_ai_unavailable
+      render json: { error: "ai_unavailable", message: I18n.t("imports.create.pdf_ai_unavailable") }, status: :unprocessable_entity
     end
 
     def render_invalid_pdf

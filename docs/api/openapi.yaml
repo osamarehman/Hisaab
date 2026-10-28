@@ -7956,7 +7956,8 @@ paths:
                 - "$ref": "#/components/schemas/ErrorResponse"
                 - "$ref": "#/components/schemas/ErrorResponseWithImportId"
         '422':
-          description: validation error or publish rejection
+          description: validation error, publish rejection, or ai_unavailable for
+            a PDF statement
           content:
             application/json:
               schema:

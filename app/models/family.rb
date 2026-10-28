@@ -185,6 +185,25 @@ class Family < ApplicationRecord
     effective_assistant_type != "mcp_only"
   end
 
+  # AI_ALLOWED_EMAILS (comma-separated) keeps an open-signup instance's LLM
+  # quota for the listed people: only households with one of them as an active
+  # member get the assistant, AI labelling and PDF statement reading. Empty
+  # means every household may use AI.
+  def self.ai_allowed_emails
+    ENV.fetch("AI_ALLOWED_EMAILS", "").split(",").map { |email| email.strip.downcase }.reject(&:blank?)
+  end
+
+  def ai_allowed?
+    allowed = self.class.ai_allowed_emails
+    allowed.empty? || users.where(active: true).where("LOWER(email) IN (?)", allowed).exists?
+  end
+
+  # The LLM provider this family's AI features may call, or nil when none is
+  # configured or the family is outside AI_ALLOWED_EMAILS.
+  def llm_provider
+    Provider::Registry.preferred_llm_provider if ai_allowed?
+  end
+
   # The provider that will actually categorize this family's transactions,
   # falling back to the LLM path when Jev is unselected or unconfigured.
   # Credentials alone never select Jev; the family has to choose it, because
@@ -195,11 +214,13 @@ class Family < ApplicationRecord
   # call it while rendering, so it writes nothing itself; a caller that runs
   # categorization passes a block to hear why Jev could not be built.
   def resolved_categorization_provider(&on_jev_error)
+    return unless ai_allowed?
+
     jev = configured_jev_provider(&on_jev_error) if effective_categorization_provider == "jev"
 
     # Honors Setting.llm_provider (#2113); Provider::Anthropic gained
     # auto_categorize in #1984, so either LLM provider can serve this.
-    jev || Provider::Registry.preferred_llm_provider
+    jev || llm_provider
   end
 
   def categorization_model_name
@@ -233,8 +254,10 @@ class Family < ApplicationRecord
   # returns whichever of the two is not selected, so either can be trialled
   # against the other without a second mechanism.
   def shadow_categorization_provider(&on_jev_error)
+    return unless ai_allowed?
+
     if effective_categorization_provider == "jev"
-      Provider::Registry.preferred_llm_provider
+      llm_provider
     else
       configured_jev_provider(&on_jev_error)
     end

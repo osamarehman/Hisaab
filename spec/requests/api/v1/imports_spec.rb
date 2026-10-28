@@ -269,7 +269,7 @@ RSpec.describe 'API V1 Imports', type: :request do
         run_test!
       end
 
-      response '422', 'validation error or publish rejection' do
+      response '422', 'validation error, publish rejection, or ai_unavailable for a PDF statement' do
         schema oneOf: [
           { '$ref' => '#/components/schemas/ErrorResponse' },
           { '$ref' => '#/components/schemas/ErrorResponseWithImportId' }

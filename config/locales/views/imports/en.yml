@@ -451,6 +451,7 @@ en:
       invalid_pdf: The uploaded file is not a valid PDF.
       missing_upload: We didn't receive your file. Please try uploading it again.
       duplicate_pdf_unavailable: This PDF is already stored as a statement you cannot access.
+      pdf_ai_unavailable: Reading PDF statements uses AI, which is not available on your account. Download the statement as CSV from your bank and import that instead.
       document_too_large: Document file is too large. Maximum size is %{max_size}MB.
       invalid_document_file_type: Invalid document file type for the active vector store.
       document_uploaded: Document uploaded successfully.
@@ -547,6 +548,7 @@ en:
       processing_failed_generic: "Processing failed: %{error}"
       errors:
         provider_not_configured: AI provider not configured
+        ai_not_allowed: AI is not available on your account. Import a CSV statement instead.
         provider_no_pdf_support: AI provider does not support PDF processing
       ready_for_review_title: Ready for Review
       ready_for_review_description:

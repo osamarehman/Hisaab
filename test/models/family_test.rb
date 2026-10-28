@@ -8,6 +8,28 @@ class FamilyTest < ActiveSupport::TestCase
     @syncable = families(:dylan_family)
   end
 
+  test "AI_ALLOWED_EMAILS limits LLM features to households with a listed active member" do
+    family = families(:dylan_family)
+    member = family.users.where(active: true).first
+    Provider::Registry.stubs(:preferred_llm_provider).returns(:llm)
+
+    with_env_overrides AI_ALLOWED_EMAILS: nil do
+      assert family.ai_allowed?
+      assert_equal :llm, family.llm_provider
+    end
+
+    with_env_overrides AI_ALLOWED_EMAILS: "stranger@example.com" do
+      assert_not family.ai_allowed?
+      assert_nil family.llm_provider
+      assert_nil family.resolved_categorization_provider
+    end
+
+    with_env_overrides AI_ALLOWED_EMAILS: "stranger@example.com,#{member.email.upcase}" do
+      assert family.ai_allowed?
+      assert_equal :llm, family.llm_provider
+    end
+  end
+
   test "local_date is the date in the family's zone" do
     family = families(:dylan_family)
     evening_utc = Time.utc(2026, 1, 15, 19, 0, 0)

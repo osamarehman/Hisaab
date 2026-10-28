@@ -1406,6 +1406,27 @@ class Api::V1::ImportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @account, import.account_statement.account
   end
 
+  test "should refuse a pdf statement when the family is outside AI_ALLOWED_EMAILS" do
+    PdfImport.any_instance.expects(:process_with_ai_later).never
+
+    with_env_overrides AI_ALLOWED_EMAILS: "someone-else@example.com" do
+      assert_no_difference [ "Import.count", "AccountStatement.count" ] do
+        post api_v1_imports_url,
+          params: {
+            type: "PdfImport",
+            account_id: @account.id,
+            file: file_fixture_upload("imports/sample_bank_statement.pdf", "application/pdf")
+          },
+          headers: api_headers(@api_key)
+      end
+    end
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert_equal "ai_unavailable", body["error"]
+    assert_match "CSV", body["message"]
+  end
+
   test "should detect a pdf upload without an explicit type" do
     PdfImport.any_instance.stubs(:process_with_ai_later).returns(true)
 
