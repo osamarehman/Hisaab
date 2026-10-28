@@ -9,10 +9,11 @@
   `any` size, so maskable gets its own more-padded file; pointing both at the
   one full-bleed image is what clipped the wordmark's outer letters on Android.
 
-  Current geometry (artwork is 160x145, from public/logo-offline.svg):
-    any / apple-touch  -> artwork at 72% of the canvas (~14% side margin)
-    maskable           -> artwork at 59%, so its corners need a 79.6% circle
-                          and clear the 80% safe zone
+  Current geometry (masters in design/brand/, 512x512 canvas):
+    any / apple-touch  -> hisaab-mark.svg; the H and double rule reach a 74%
+                          circle, so this one would survive masking too
+    maskable           -> hisaab-mark-maskable.svg, artwork at 90%, well inside
+                          the 80% safe zone
 
   iOS reads this file (manifest `icons` since 15.4), but the
   <link rel="apple-touch-icon"> tags in layouts/shared/_head.html.erb take
@@ -47,6 +48,6 @@
   "scope": "/",
   "orientation": "any",
   "description": "<%= j product_name %> is your personal finance assistant.",
-  "theme_color": "#F9F9F9",
-  "background_color": "#F9F9F9"
+  "theme_color": "#F3F4EF",
+  "background_color": "#F3F4EF"
 }
