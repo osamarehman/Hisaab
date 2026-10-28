@@ -67,7 +67,9 @@ and family scoping.
   Returns `202` with import JSON. A PDF `file` is also detected without
   `type`. `account_id` must be an account the user can write to (else `422`).
   Errors: `422` `invalid_file_type` (not a PDF), `file_too_large` (25 MB),
-  `duplicate_upload`; `403` when the user may not import statements. CSV
+  `duplicate_upload`, `ai_unavailable` (the household is outside
+  `AI_ALLOWED_EMAILS`; `message` tells the user to import CSV instead);
+  `403` when the user may not import statements. CSV
   continues to work with `type=TransactionImport` as before (`201`).
 - `GET /api/v1/imports/:id` → `data` includes `status` (`pending`,
   `importing`, `complete`, `failed`), `rows_count`, `error` (null when none),
@@ -115,3 +117,22 @@ balance changes are recorded as valuations exactly as on the web.
 - New: `DELETE /api/v1/accounts/:id` → `204`. Like the web, the account is
   marked `pending_deletion` and removed by a background job; linked
   (bank-synced) accounts return `422`. Same `403`/`404` rules as update.
+
+## AI access
+
+`AI_ALLOWED_EMAILS` (comma-separated, case-insensitive) limits the server's
+LLM quota on an open-signup instance. Only households with one of those
+emails as an active member get the assistant (`ai_enabled` stays false in
+`/api/v1/auth/*` user payloads and `PATCH /auth/enable_ai` is refused), AI
+auto-labelling and PDF statement reading. Empty means every household may
+use AI. `Family#ai_allowed?` and `Family#llm_provider` are the single check.
+
+## Account deletion
+
+- `DELETE /api/v1/users/me` (write scope) deactivates the caller, revokes
+  every token and queues `UserPurgeJob`, which deletes the household when the
+  caller is its last member and otherwise hands their accounts to another
+  member. `422` with `details` when an admin still has other members.
+- `/account-deletion` is the public page explaining in-app, web and email
+  deletion (the URL Google Play asks for). `/privacy` and `/terms` are the
+  public legal pages.
