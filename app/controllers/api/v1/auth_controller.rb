@@ -2,6 +2,7 @@ module Api
   module V1
     class AuthController < BaseController
       include Invitable
+      include WebauthnRelyingParty
 
       skip_before_action :authenticate_request!
       skip_before_action :check_api_key_rate_limit
@@ -141,6 +142,41 @@ module Api
         else
           render json: { error: "Invalid email or password" }, status: :unauthorized
         end
+      end
+
+      # Challenge for a passwordless passkey sign-in. The app hands these
+      # options to the platform passkey prompt and sends the `challenge` back
+      # with the resulting assertion to passkey_login.
+      def passkey_options
+        return render_passkey_login_disabled unless AuthConfig.passkey_login_enabled?
+
+        options = webauthn_relying_party.options_for_authentication(user_verification: "required")
+        WebauthnChallenge.issue!(:api_login, options.challenge)
+
+        render json: options
+      end
+
+      # Signs in with a discoverable passkey and returns the same token payload
+      # as login. The passkey is verified with user verification required, so
+      # it stands in for both the password and the two-factor code.
+      def passkey_login
+        return render_passkey_login_disabled unless AuthConfig.passkey_login_enabled?
+
+        unless valid_device_info?
+          render json: { error: "Device information is required" }, status: :bad_request
+          return
+        end
+
+        challenge = params[:challenge].to_s
+        return render_invalid_passkey unless WebauthnChallenge.consume!(:api_login, challenge)
+
+        credential = WebAuthn::Credential.from_get(webauthn_credential_payload, relying_party: webauthn_relying_party)
+        user = WebauthnCredential.authenticate_passkey(credential, challenge)
+        return render_invalid_passkey unless user
+
+        issue_mobile_tokens(user, device_params.to_h)
+      rescue WebAuthn::Error, ActionController::BadRequest
+        render_invalid_passkey
       end
 
       def sso_exchange
@@ -514,6 +550,14 @@ module Api
           end
 
           cached
+        end
+
+        def render_passkey_login_disabled
+          render json: { error: "Passkey sign-in is disabled" }, status: :forbidden
+        end
+
+        def render_invalid_passkey
+          render json: { error: "That passkey could not be verified. Please try again." }, status: :unauthorized
         end
 
         def render_removed_identity

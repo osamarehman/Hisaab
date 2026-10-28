@@ -29,6 +29,29 @@ Rails.application.configure do
     end
   end
 
+  # The Android app signs its WebAuthn requests with the origin
+  # "android:apk-key-hash:<base64url SHA-256 of the signing certificate>", and
+  # Credential Manager only lets it use this RP ID once
+  # /.well-known/assetlinks.json names the same package and certificates.
+  # List every signing certificate in use (upload key, Play App Signing key,
+  # debug keys for local builds) as colon-separated SHA-256 hex fingerprints.
+  android_package = ENV["ANDROID_APP_PACKAGE_NAME"].presence || "dev.shipdeck.hisaab"
+  android_fingerprints = (ENV["ANDROID_APP_SHA256_CERT_FINGERPRINTS"].presence ||
+    "05:5D:5B:82:1A:F1:8D:4B:BB:BA:0B:DB:1D:14:76:2B:1E:7A:09:DF:54:FA:47:53:E2:AA:73:1A:3B:8D:90:21")
+    .split(",")
+    .map { |fingerprint| fingerprint.strip.upcase }
+    .select { |fingerprint| fingerprint.match?(/\A(?:[0-9A-F]{2}:){31}[0-9A-F]{2}\z/) }
+    .uniq
+
+  android_origins = android_fingerprints.map do |fingerprint|
+    digest = [ fingerprint.delete(":") ].pack("H*")
+    "android:apk-key-hash:#{Base64.urlsafe_encode64(digest, padding: false)}"
+  end
+
   config.x.webauthn.rp_id = rp_id
-  config.x.webauthn.allowed_origins = allowed_origins
+  config.x.webauthn.allowed_origins = (allowed_origins + android_origins).uniq
+
+  config.x.android_app = ActiveSupport::OrderedOptions.new
+  config.x.android_app.package_name = android_package
+  config.x.android_app.sha256_cert_fingerprints = android_fingerprints
 end

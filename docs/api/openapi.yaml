@@ -1359,6 +1359,69 @@ components:
       type: array
       items:
         "$ref": "#/components/schemas/TagDetail"
+    Passkey:
+      type: object
+      required:
+      - id
+      - nickname
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        nickname:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+    PasskeyCollection:
+      type: object
+      required:
+      - passkeys
+      - step_up
+      properties:
+        passkeys:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Passkey"
+        step_up:
+          type: string
+          nullable: true
+          enum:
+          - code
+          - password
+          -
+          description: 'What adding a passkey asks for: the authenticator or backup
+            `code` when two-factor authentication is on, otherwise the account `password`;
+            null when the account has neither.'
+    WebauthnCredential:
+      type: object
+      description: A WebAuthn PublicKeyCredential serialized as JSON, binary fields
+        base64url-encoded.
+      required:
+      - id
+      - rawId
+      - type
+      - response
+      properties:
+        id:
+          type: string
+        rawId:
+          type: string
+        type:
+          type: string
+          enum:
+          - public-key
+        response:
+          type: object
+          additionalProperties: true
+        clientExtensionResults:
+          type: object
+          additionalProperties: true
     RuleAction:
       type: object
       required:
@@ -5216,6 +5279,138 @@ paths:
               - password
               - device
         required: true
+  "/api/v1/auth/passkey/options":
+    post:
+      summary: Get passkey sign-in options
+      tags:
+      - Auth
+      description: Returns WebAuthn PublicKeyCredentialRequestOptions for a passwordless
+        sign-in with a discoverable passkey. The challenge is single-use and expires
+        after 5 minutes.
+      responses:
+        '200':
+          description: sign-in options
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                properties:
+                  challenge:
+                    type: string
+                  rpId:
+                    type: string
+                  userVerification:
+                    type: string
+                    enum:
+                    - required
+                  timeout:
+                    type: integer
+        '403':
+          description: passkey sign-in is disabled on this instance
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/auth/passkey/login":
+    post:
+      summary: Log in with a passkey
+      tags:
+      - Auth
+      description: Verifies a passkey assertion for the challenge from /api/v1/auth/passkey/options
+        and returns the same tokens as /api/v1/auth/login. User verification is required,
+        so a passkey also satisfies two-factor authentication.
+      parameters: []
+      responses:
+        '200':
+          description: login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  token_type:
+                    type: string
+                  expires_in:
+                    type: integer
+                  created_at:
+                    type: integer
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      ui_layout:
+                        type: string
+                        enum:
+                        - dashboard
+                        - intro
+                      ai_enabled:
+                        type: boolean
+        '400':
+          description: device information is missing
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+          description: unknown or reused challenge, or the passkey could not be verified
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+          description: passkey sign-in is disabled on this instance
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                challenge:
+                  type: string
+                  description: The challenge from the sign-in options
+                credential:
+                  "$ref": "#/components/schemas/WebauthnCredential"
+                device:
+                  type: object
+                  properties:
+                    device_id:
+                      type: string
+                    device_name:
+                      type: string
+                    device_type:
+                      type: string
+                    os_version:
+                      type: string
+                    app_version:
+                      type: string
+                  required:
+                  - device_id
+                  - device_name
+                  - device_type
+                  - os_version
+                  - app_version
+              required:
+              - challenge
+              - credential
+              - device
+        required: true
   "/api/v1/auth/sso_exchange":
     post:
       summary: Exchange mobile SSO authorization code for tokens
@@ -8688,6 +8883,166 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/passkeys":
+    get:
+      summary: List passkeys
+      tags:
+      - Passkeys
+      security:
+      - apiKeyAuth: []
+      description: Lists the signed-in user's passkeys and which step-up adding a
+        new one needs.
+      responses:
+        '200':
+          description: passkeys listed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PasskeyCollection"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    post:
+      summary: Register a passkey
+      tags:
+      - Passkeys
+      security:
+      - apiKeyAuth: []
+      description: Saves the credential the device created for the options from POST
+        /api/v1/passkeys/options. The step-up is checked again and spent here.
+      parameters: []
+      responses:
+        '201':
+          description: passkey registered
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Passkey"
+        '422':
+          description: challenge, credential or step-up rejected
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  nullable: true
+                  description: Authenticator or backup code (when two-factor authentication
+                    is on)
+                password:
+                  type: string
+                  nullable: true
+                  description: Account password (when two-factor authentication is
+                    off)
+                challenge:
+                  type: string
+                  description: The challenge from the registration options
+                credential:
+                  "$ref": "#/components/schemas/WebauthnCredential"
+                nickname:
+                  type: string
+                  nullable: true
+                  description: Name shown in the passkey list
+              required:
+              - challenge
+              - credential
+        required: true
+  "/api/v1/passkeys/options":
+    post:
+      summary: Get passkey registration options
+      tags:
+      - Passkeys
+      security:
+      - apiKeyAuth: []
+      description: Checks the step-up without spending it and returns WebAuthn PublicKeyCredentialCreationOptions
+        for a discoverable, user-verified passkey. The challenge is single-use and
+        expires after 5 minutes.
+      parameters: []
+      responses:
+        '200':
+          description: registration options
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                properties:
+                  challenge:
+                    type: string
+                  rp:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      displayName:
+                        type: string
+        '403':
+          description: the account has neither a password nor two-factor authentication
+            to confirm with
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '422':
+          description: wrong password or code
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  nullable: true
+                  description: Authenticator or backup code (when two-factor authentication
+                    is on)
+                password:
+                  type: string
+                  nullable: true
+                  description: Account password (when two-factor authentication is
+                    off)
+        required: true
+  "/api/v1/passkeys/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: Passkey ID
+      schema:
+        type: string
+    delete:
+      summary: Remove a passkey
+      tags:
+      - Passkeys
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: passkey removed
+        '404':
+          description: passkey not found
   "/api/v1/provider_connections":
     get:
       summary: Lists provider connection status summaries

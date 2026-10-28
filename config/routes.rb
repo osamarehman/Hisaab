@@ -267,6 +267,7 @@ Rails.application.routes.draw do
   end
   get ".well-known/oauth-protected-resource", to: "oauth_metadata#protected_resource"
   get ".well-known/oauth-authorization-server", to: "oauth_metadata#authorization_server"
+  get ".well-known/assetlinks.json", to: "asset_links#show", format: false, defaults: { format: :json }
   post "register", to: "oauth_registration#create"
   use_doorkeeper do |mapping|
     mapping.controllers authorizations: "oauth/authorizations"
@@ -769,7 +770,12 @@ Rails.application.routes.draw do
       post "auth/sso_exchange", to: "auth#sso_exchange"
       post "auth/sso_link", to: "auth#sso_link"
       post "auth/sso_create_account", to: "auth#sso_create_account"
+      post "auth/passkey/options", to: "auth#passkey_options"
+      post "auth/passkey/login", to: "auth#passkey_login"
       patch "auth/enable_ai", to: "auth#enable_ai"
+      resources :passkeys, only: [ :index, :create, :destroy ] do
+        post :options, on: :collection
+      end
 
       # Production API endpoints
       resources :accounts, only: [ :index, :show, :create, :update, :destroy ]

@@ -22,6 +22,7 @@ class Rack::Attack
          /mfa/webauthn_options
          /mfa/verify_webauthn
          /sessions/passkey
+         /api/v1/auth/passkey/login
        ])
       request.ip
     end
@@ -34,7 +35,7 @@ class Rack::Attack
   # reveals nothing, and the assertion it produces is still verified under the
   # stricter limit.
   throttle("passkey/options", limit: 30, period: 1.minute) do |request|
-    request.ip if request.post? && request.path == "/sessions/passkey_options"
+    request.ip if request.post? && request.path.in?(%w[/sessions/passkey_options /api/v1/auth/passkey/options])
   end
 
   # Throttle admin endpoints to prevent brute-force attacks

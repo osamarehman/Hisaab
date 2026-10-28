@@ -799,6 +799,41 @@ RSpec.configure do |config|
             type: :array,
             items: { '$ref' => '#/components/schemas/TagDetail' }
           },
+          Passkey: {
+            type: :object,
+            required: %w[id nickname created_at],
+            properties: {
+              id: { type: :string, format: :uuid },
+              nickname: { type: :string },
+              created_at: { type: :string, format: :'date-time' },
+              last_used_at: { type: :string, format: :'date-time', nullable: true }
+            }
+          },
+          PasskeyCollection: {
+            type: :object,
+            required: %w[passkeys step_up],
+            properties: {
+              passkeys: { type: :array, items: { '$ref' => '#/components/schemas/Passkey' } },
+              step_up: {
+                type: :string,
+                nullable: true,
+                enum: [ 'code', 'password', nil ],
+                description: 'What adding a passkey asks for: the authenticator or backup `code` when '                              'two-factor authentication is on, otherwise the account `password`; null '                              'when the account has neither.'
+              }
+            }
+          },
+          WebauthnCredential: {
+            type: :object,
+            description: 'A WebAuthn PublicKeyCredential serialized as JSON, binary fields base64url-encoded.',
+            required: %w[id rawId type response],
+            properties: {
+              id: { type: :string },
+              rawId: { type: :string },
+              type: { type: :string, enum: %w[public-key] },
+              response: { type: :object, additionalProperties: true },
+              clientExtensionResults: { type: :object, additionalProperties: true }
+            }
+          },
           RuleAction: {
             type: :object,
             required: %w[id action_type created_at updated_at],

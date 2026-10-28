@@ -135,6 +135,96 @@ RSpec.describe 'API V1 Auth', type: :request do
     end
   end
 
+  path '/api/v1/auth/passkey/options' do
+    post 'Get passkey sign-in options' do
+      tags 'Auth'
+      produces 'application/json'
+      description 'Returns WebAuthn PublicKeyCredentialRequestOptions for a passwordless sign-in with a '                   'discoverable passkey. The challenge is single-use and expires after 5 minutes.'
+
+      response '200', 'sign-in options' do
+        schema type: :object, additionalProperties: true,
+               properties: {
+                 challenge: { type: :string },
+                 rpId: { type: :string },
+                 userVerification: { type: :string, enum: %w[required] },
+                 timeout: { type: :integer }
+               }
+        run_test!
+      end
+
+      response '403', 'passkey sign-in is disabled on this instance' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        run_test!
+      end
+    end
+  end
+
+  path '/api/v1/auth/passkey/login' do
+    post 'Log in with a passkey' do
+      tags 'Auth'
+      consumes 'application/json'
+      produces 'application/json'
+      description 'Verifies a passkey assertion for the challenge from /api/v1/auth/passkey/options and returns '                   'the same tokens as /api/v1/auth/login. User verification is required, so a passkey also '                   'satisfies two-factor authentication.'
+      parameter name: :body, in: :body, required: true, schema: {
+        type: :object,
+        properties: {
+          challenge: { type: :string, description: 'The challenge from the sign-in options' },
+          credential: { '$ref' => '#/components/schemas/WebauthnCredential' },
+          device: {
+            type: :object,
+            properties: {
+              device_id: { type: :string },
+              device_name: { type: :string },
+              device_type: { type: :string },
+              os_version: { type: :string },
+              app_version: { type: :string }
+            },
+            required: %w[device_id device_name device_type os_version app_version]
+          }
+        },
+        required: %w[challenge credential device]
+      }
+
+      response '200', 'login successful' do
+        schema type: :object,
+               properties: {
+                 access_token: { type: :string },
+                 refresh_token: { type: :string },
+                 token_type: { type: :string },
+                 expires_in: { type: :integer },
+                 created_at: { type: :integer },
+                 user: {
+                   type: :object,
+                   properties: {
+                     id: { type: :string, format: :uuid },
+                     email: { type: :string },
+                     first_name: { type: :string },
+                     last_name: { type: :string },
+                     ui_layout: { type: :string, enum: %w[dashboard intro] },
+                     ai_enabled: { type: :boolean }
+                   }
+                 }
+               }
+        run_test!
+      end
+
+      response '400', 'device information is missing' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        run_test!
+      end
+
+      response '401', 'unknown or reused challenge, or the passkey could not be verified' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        run_test!
+      end
+
+      response '403', 'passkey sign-in is disabled on this instance' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        run_test!
+      end
+    end
+  end
+
   path '/api/v1/auth/sso_exchange' do
     post 'Exchange mobile SSO authorization code for tokens' do
       tags 'Auth'
