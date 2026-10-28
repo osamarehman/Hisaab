@@ -317,5 +317,22 @@
   "budgetsSessionExpired": "Din session har gått ut. Logga in igen.",
   "budgetCategoryTransactionsEmpty": "Inga transaktioner i den här kategorin för {month}.",
   "budgetCategoryTransactionsLoadMore": "Visa fler",
-  "budgetCategoryTransactionsLoadFailed": "Kunde inte läsa in transaktioner"
+  "budgetCategoryTransactionsLoadFailed": "Kunde inte läsa in transaktioner",
+  "legalPrivacy": "Integritetspolicy",
+  "legalTerms": "Användarvillkor",
+  "legalOpenLinkError": "Det gick inte att öppna länken",
+  "signUpTitle": "Skapa konto",
+  "signUpSubtitle": "Samla hushållets utgifter på ett ställe. Kontot skapas på servern som visas på inloggningsskärmen.",
+  "signUpPasswordRules": "Minst 8 tecken med stora och små bokstäver, en siffra och en symbol.",
+  "signUpConfirmPasswordLabel": "Bekräfta lösenord",
+  "signUpPasswordsDoNotMatch": "Lösenorden matchar inte",
+  "signUpSubmit": "Skapa konto",
+  "signUpAgreementPrefix": "Genom att skapa ett konto godkänner du ",
+  "signUpAgreementAnd": " och ",
+  "settingsSourceCode": "Källkod",
+  "settingsSourceCodeSubtitle": "Hisaab bygger på Sure och är licensierat under AGPL-3.0",
+  "settingsDeleteAccountDone": "Ditt konto har raderats.",
+  "settingsDeleteAccountFinalTitle": "Radera kontot för gott?",
+  "settingsDeleteAccountFinalButton": "Radera mitt konto",
+  "settingsDeleteAccountFinalContent": "Dina konton, transaktioner, kvittobilder, kontoutdrag och chattar raderas. Om du är den sista medlemmen i hushållet raderas hela hushållet.\n\nSkriv {word} för att bekräfta."
 }

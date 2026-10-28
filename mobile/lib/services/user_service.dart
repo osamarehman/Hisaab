@@ -56,9 +56,13 @@ class UserService {
         };
       } else {
         final responseData = jsonDecode(response.body);
+        // `details` explains a refusal, e.g. an admin with other members.
+        final details = responseData['details'];
         return {
           'success': false,
-          'error': responseData['error'] ?? 'Failed to delete account',
+          'error': details is List && details.isNotEmpty
+              ? details.join(' ')
+              : responseData['error'] ?? 'Failed to delete account',
         };
       }
     } catch (e) {

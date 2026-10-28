@@ -1424,4 +1424,60 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get chatSuggestionSave => 'Where can we save next month?';
+
+  @override
+  String get legalPrivacy => 'Integritetspolicy';
+
+  @override
+  String get legalTerms => 'Användarvillkor';
+
+  @override
+  String get legalOpenLinkError => 'Det gick inte att öppna länken';
+
+  @override
+  String get signUpTitle => 'Skapa konto';
+
+  @override
+  String get signUpSubtitle =>
+      'Samla hushållets utgifter på ett ställe. Kontot skapas på servern som visas på inloggningsskärmen.';
+
+  @override
+  String get signUpPasswordRules =>
+      'Minst 8 tecken med stora och små bokstäver, en siffra och en symbol.';
+
+  @override
+  String get signUpConfirmPasswordLabel => 'Bekräfta lösenord';
+
+  @override
+  String get signUpPasswordsDoNotMatch => 'Lösenorden matchar inte';
+
+  @override
+  String get signUpSubmit => 'Skapa konto';
+
+  @override
+  String get signUpAgreementPrefix => 'Genom att skapa ett konto godkänner du ';
+
+  @override
+  String get signUpAgreementAnd => ' och ';
+
+  @override
+  String get settingsSourceCode => 'Källkod';
+
+  @override
+  String get settingsSourceCodeSubtitle =>
+      'Hisaab bygger på Sure och är licensierat under AGPL-3.0';
+
+  @override
+  String get settingsDeleteAccountDone => 'Ditt konto har raderats.';
+
+  @override
+  String get settingsDeleteAccountFinalTitle => 'Radera kontot för gott?';
+
+  @override
+  String get settingsDeleteAccountFinalButton => 'Radera mitt konto';
+
+  @override
+  String settingsDeleteAccountFinalContent(String word) {
+    return 'Dina konton, transaktioner, kvittobilder, kontoutdrag och chattar raderas. Om du är den sista medlemmen i hushållet raderas hela hushållet.\n\nSkriv $word för att bekräfta.';
+  }
 }

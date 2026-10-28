@@ -1322,5 +1322,55 @@
   "@chatSuggestionBills": {"description": "Suggested assistant question."},
 
   "chatSuggestionSave": "Where can we save next month?",
-  "@chatSuggestionSave": {"description": "Suggested assistant question."}
+  "@chatSuggestionSave": {"description": "Suggested assistant question."},
+  "legalPrivacy": "Privacy Policy",
+  "@legalPrivacy": {"description": "Link to the server's public privacy policy."},
+
+  "legalTerms": "Terms of Service",
+  "@legalTerms": {"description": "Link to the server's public terms of service."},
+
+  "legalOpenLinkError": "Couldn't open the link",
+  "@legalOpenLinkError": {"description": "Snackbar shown when a link cannot be opened."},
+
+  "signUpTitle": "Create account",
+  "@signUpTitle": {"description": "App bar title of the sign-up screen."},
+
+  "signUpSubtitle": "Keep your household's spending in one place. Your account is created on the server shown on the sign-in screen.",
+  "@signUpSubtitle": {"description": "Intro text on the sign-up screen."},
+
+  "signUpPasswordRules": "At least 8 characters with upper and lower case letters, a number and a symbol.",
+  "@signUpPasswordRules": {"description": "Password requirements on the sign-up screen."},
+
+  "signUpConfirmPasswordLabel": "Confirm password",
+  "@signUpConfirmPasswordLabel": {"description": "Label of the repeat-password field."},
+
+  "signUpPasswordsDoNotMatch": "Passwords don't match",
+  "@signUpPasswordsDoNotMatch": {"description": "Validation error when the two passwords differ."},
+
+  "signUpSubmit": "Create account",
+  "@signUpSubmit": {"description": "Submit button on the sign-up screen."},
+
+  "signUpAgreementPrefix": "By creating an account you agree to the ",
+  "@signUpAgreementPrefix": {"description": "Text before the Terms link under the sign-up button."},
+
+  "signUpAgreementAnd": " and ",
+  "@signUpAgreementAnd": {"description": "Joins the Terms and Privacy links."},
+
+  "settingsSourceCode": "Source code",
+  "@settingsSourceCode": {"description": "Settings tile linking to the app's source code."},
+
+  "settingsSourceCodeSubtitle": "Hisaab is based on Sure and licensed under AGPL-3.0",
+  "@settingsSourceCodeSubtitle": {"description": "Subtitle of the source code tile."},
+
+  "settingsDeleteAccountDone": "Your account has been deleted.",
+  "@settingsDeleteAccountDone": {"description": "Snackbar after the account is deleted."},
+
+  "settingsDeleteAccountFinalTitle": "Delete account for good?",
+  "@settingsDeleteAccountFinalTitle": {"description": "Title of the second delete-account confirmation."},
+
+  "settingsDeleteAccountFinalButton": "Delete my account",
+  "@settingsDeleteAccountFinalButton": {"description": "Final destructive button of account deletion."},
+
+  "settingsDeleteAccountFinalContent": "Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType {word} to confirm.",
+  "@settingsDeleteAccountFinalContent": {"description": "Body of the second delete-account confirmation.", "placeholders": {"word": {"type": "String"}}}
 }

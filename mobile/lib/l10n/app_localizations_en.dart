@@ -1413,4 +1413,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatSuggestionSave => 'Where can we save next month?';
+
+  @override
+  String get legalPrivacy => 'Privacy Policy';
+
+  @override
+  String get legalTerms => 'Terms of Service';
+
+  @override
+  String get legalOpenLinkError => 'Couldn\'t open the link';
+
+  @override
+  String get signUpTitle => 'Create account';
+
+  @override
+  String get signUpSubtitle =>
+      'Keep your household\'s spending in one place. Your account is created on the server shown on the sign-in screen.';
+
+  @override
+  String get signUpPasswordRules =>
+      'At least 8 characters with upper and lower case letters, a number and a symbol.';
+
+  @override
+  String get signUpConfirmPasswordLabel => 'Confirm password';
+
+  @override
+  String get signUpPasswordsDoNotMatch => 'Passwords don\'t match';
+
+  @override
+  String get signUpSubmit => 'Create account';
+
+  @override
+  String get signUpAgreementPrefix =>
+      'By creating an account you agree to the ';
+
+  @override
+  String get signUpAgreementAnd => ' and ';
+
+  @override
+  String get settingsSourceCode => 'Source code';
+
+  @override
+  String get settingsSourceCodeSubtitle =>
+      'Hisaab is based on Sure and licensed under AGPL-3.0';
+
+  @override
+  String get settingsDeleteAccountDone => 'Your account has been deleted.';
+
+  @override
+  String get settingsDeleteAccountFinalTitle => 'Delete account for good?';
+
+  @override
+  String get settingsDeleteAccountFinalButton => 'Delete my account';
+
+  @override
+  String settingsDeleteAccountFinalContent(String word) {
+    return 'Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType $word to confirm.';
+  }
 }

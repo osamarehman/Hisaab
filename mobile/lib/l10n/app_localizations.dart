@@ -2563,6 +2563,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Where can we save next month?'**
   String get chatSuggestionSave;
+
+  /// Link to the server's public privacy policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legalPrivacy;
+
+  /// Link to the server's public terms of service.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get legalTerms;
+
+  /// Snackbar shown when a link cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link'**
+  String get legalOpenLinkError;
+
+  /// App bar title of the sign-up screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get signUpTitle;
+
+  /// Intro text on the sign-up screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your household\'s spending in one place. Your account is created on the server shown on the sign-in screen.'**
+  String get signUpSubtitle;
+
+  /// Password requirements on the sign-up screen.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters with upper and lower case letters, a number and a symbol.'**
+  String get signUpPasswordRules;
+
+  /// Label of the repeat-password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get signUpConfirmPasswordLabel;
+
+  /// Validation error when the two passwords differ.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match'**
+  String get signUpPasswordsDoNotMatch;
+
+  /// Submit button on the sign-up screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get signUpSubmit;
+
+  /// Text before the Terms link under the sign-up button.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account you agree to the '**
+  String get signUpAgreementPrefix;
+
+  /// Joins the Terms and Privacy links.
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get signUpAgreementAnd;
+
+  /// Settings tile linking to the app's source code.
+  ///
+  /// In en, this message translates to:
+  /// **'Source code'**
+  String get settingsSourceCode;
+
+  /// Subtitle of the source code tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Hisaab is based on Sure and licensed under AGPL-3.0'**
+  String get settingsSourceCodeSubtitle;
+
+  /// Snackbar after the account is deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted.'**
+  String get settingsDeleteAccountDone;
+
+  /// Title of the second delete-account confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account for good?'**
+  String get settingsDeleteAccountFinalTitle;
+
+  /// Final destructive button of account deletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get settingsDeleteAccountFinalButton;
+
+  /// Body of the second delete-account confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType {word} to confirm.'**
+  String settingsDeleteAccountFinalContent(String word);
 }
 
 class _AppLocalizationsDelegate

@@ -13,6 +13,7 @@ import '../services/offline_storage_service.dart';
 import '../services/log_service.dart';
 import '../services/biometric_service.dart';
 import '../services/preferences_service.dart';
+import '../services/legal_links.dart';
 import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -284,17 +285,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _launchContactUrl(BuildContext context) async {
-    final l = AppLocalizations.of(context);
-    final uri = Uri.parse('https://discord.com/invite/36ZGBsxYEK');
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l.settingsContactOpenLinkError)),
-      );
-    }
-  }
-
   Future<void> _handleResetAccount(BuildContext context) async {
     final l = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
@@ -395,6 +385,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (confirmed != true || !context.mounted) return;
 
+    final confirmedAgain = await showDialog<bool>(
+      context: context,
+      builder: (_) => const DeleteAccountFinalDialog(),
+    );
+
+    if (confirmedAgain != true || !context.mounted) return;
+
     setState(() => _activeDestructiveAction = _deleteAction);
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -410,6 +407,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!context.mounted) return;
 
       if (result['success'] == true) {
+        await OfflineStorageService().clearAllData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l.settingsDeleteAccountDone)),
+          );
+        }
         await authProvider.logout();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -624,16 +627,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           ListTile(
-            leading: const Icon(Icons.chat_bubble_outline),
+            leading: const Icon(Icons.mail_outline),
             title: Text(l.settingsContactUs),
-            subtitle: Text(
-              'https://discord.com/invite/36ZGBsxYEK',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-            onTap: () => _launchContactUrl(context),
+            subtitle: const Text(LegalLinks.contactEmail),
+            onTap: () => LegalLinks.open(context, LegalLinks.contact),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(l.legalPrivacy),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => LegalLinks.open(context, LegalLinks.privacy),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: Text(l.legalTerms),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => LegalLinks.open(context, LegalLinks.terms),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.code),
+            title: Text(l.settingsSourceCode),
+            subtitle: Text(l.settingsSourceCodeSubtitle),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => LegalLinks.open(context, LegalLinks.sourceCode),
           ),
 
           Semantics(
@@ -863,6 +882,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Second step of account deletion: the user types DELETE, so a stray tap on
+/// the first dialog cannot erase a household's records.
+@visibleForTesting
+class DeleteAccountFinalDialog extends StatefulWidget {
+  const DeleteAccountFinalDialog({super.key});
+
+  static const confirmationWord = 'DELETE';
+
+  @override
+  State<DeleteAccountFinalDialog> createState() =>
+      _DeleteAccountFinalDialogState();
+}
+
+class _DeleteAccountFinalDialogState extends State<DeleteAccountFinalDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  bool get _matches =>
+      _controller.text.trim().toUpperCase() ==
+      DeleteAccountFinalDialog.confirmationWord;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final error = Theme.of(context).colorScheme.error;
+    return AlertDialog(
+      title: Text(l.settingsDeleteAccountFinalTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.settingsDeleteAccountFinalContent(
+              DeleteAccountFinalDialog.confirmationWord)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            autocorrect: false,
+            textCapitalization: TextCapitalization.characters,
+            decoration: const InputDecoration(
+              hintText: DeleteAccountFinalDialog.confirmationWord,
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(l.commonCancel),
+        ),
+        TextButton(
+          onPressed: _matches ? () => Navigator.pop(context, true) : null,
+          style: TextButton.styleFrom(foregroundColor: error),
+          child: Text(l.settingsDeleteAccountFinalButton),
+        ),
+      ],
     );
   }
 }

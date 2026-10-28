@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_config.dart';
+import '../services/legal_links.dart';
 import '../widgets/ledger/ledger.dart';
 import 'backend_config_screen.dart';
+import 'sign_up_screen.dart';
 import '../l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -34,36 +35,31 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  static const _emailPlaceholder = 'user@example.com';
-  static const _passwordPlaceholder = 'Password1!';
-  final _emailController = TextEditingController(text: _emailPlaceholder);
-  final _passwordController = TextEditingController(text: _passwordPlaceholder);
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _otpController = TextEditingController();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   bool _obscurePassword = true;
   late final TapGestureRecognizer _signUpTapRecognizer;
+  late final TapGestureRecognizer _privacyTapRecognizer;
+  late final TapGestureRecognizer _termsTapRecognizer;
 
   @override
   void initState() {
     super.initState();
-    _signUpTapRecognizer = TapGestureRecognizer()..onTap = _openSignUpPage;
-    _emailFocus.addListener(() => _clearPlaceholderOnFocus(
-          _emailFocus, _emailController, _emailPlaceholder));
-    _passwordFocus.addListener(() => _clearPlaceholderOnFocus(
-          _passwordFocus, _passwordController, _passwordPlaceholder));
-  }
-
-  void _clearPlaceholderOnFocus(
-      FocusNode node, TextEditingController controller, String placeholder) {
-    if (node.hasFocus && controller.text == placeholder) {
-      controller.clear();
-    }
+    _signUpTapRecognizer = TapGestureRecognizer()..onTap = _openSignUp;
+    _privacyTapRecognizer = TapGestureRecognizer()
+      ..onTap = () => LegalLinks.open(context, LegalLinks.privacy);
+    _termsTapRecognizer = TapGestureRecognizer()
+      ..onTap = () => LegalLinks.open(context, LegalLinks.terms);
   }
 
   @override
   void dispose() {
     _signUpTapRecognizer.dispose();
+    _privacyTapRecognizer.dispose();
+    _termsTapRecognizer.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _otpController.dispose();
@@ -72,19 +68,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _openSignUpPage() async {
-    final l = AppLocalizations.of(context);
-    final signUpUrl = Uri.parse('${ApiConfig.defaultBaseUrl}/registration/new');
-    final launched = await launchUrl(
-      signUpUrl,
-      mode: LaunchMode.externalApplication,
+  void _openSignUp() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const SignUpScreen()),
     );
-
-    if (!launched && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l.loginSignUpOpenError)),
-      );
-    }
   }
 
   Future<void> _showApiKeyDialog() async {
@@ -258,6 +245,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   autocorrect: false,
                   autofillHints: const [AutofillHints.username],
                   textInputAction: TextInputAction.next,
+                  decoration:
+                      const InputDecoration(hintText: 'you@example.com'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return l.loginEmailRequired;
@@ -393,6 +382,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: l.loginCreateAccount,
                         style: TextStyle(color: c.moneyIn),
                         recognizer: _signUpTapRecognizer,
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text.rich(
+                  TextSpan(
+                    style: TextStyle(fontSize: 12, color: c.muted),
+                    children: [
+                      TextSpan(
+                        text: l.legalPrivacy,
+                        recognizer: _privacyTapRecognizer,
+                      ),
+                      const TextSpan(text: '  ·  '),
+                      TextSpan(
+                        text: l.legalTerms,
+                        recognizer: _termsTapRecognizer,
                       ),
                     ],
                   ),
