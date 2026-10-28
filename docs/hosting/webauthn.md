@@ -45,7 +45,7 @@ Sign-in is "usernameless": no email is submitted, because the browser returns th
 ### Requirements
 
 - The passkey must be **discoverable** (also called a resident key). Registration asks for one with `residentKey: "preferred"`. Password managers and platform authenticators — Proton Pass, iCloud Keychain, 1Password, Bitwarden, Windows Hello — store discoverable credentials by default. A hardware security key with no free resident-key slots still registers, but only as a second factor, and will not appear in the passkey picker.
-- Users must enable two-factor authentication before they can register a passkey. Disabling 2FA removes every registered passkey, which also removes passwordless sign-in for that user.
+- Adding a passkey asks the user to confirm it's them: with an authenticator or backup code when two-factor authentication is on, otherwise with their account password. An SSO-only user without a password must turn on two-factor authentication first. Disabling 2FA keeps registered passkeys; they stop being offered as a second factor but still sign the user in.
 - Passkey sign-in follows the same policy as local login. When `AUTH_LOCAL_LOGIN_ENABLED=false`, only super admins with `AUTH_LOCAL_ADMIN_OVERRIDE_ENABLED=true` may use it.
 
 ### Upgrading an instance that already has passkeys
@@ -78,3 +78,21 @@ them in alone.
 ### Browser autofill
 
 When the browser supports conditional mediation, saved passkeys are offered from the email field's autofill menu, before any button is clicked. Browsers without it fall back to the "Sign in with a passkey" button, which works the same way.
+
+## Android app
+
+The Hisaab Android app signs in with passkeys through Android Credential Manager, and manages them from Settings → Passkeys. It uses the same relying party ID as the web app, so a passkey made on one works on the other when the password manager syncs it.
+
+Android only lets an app use passkeys for a domain that vouches for it. The server serves that statement at `/.well-known/assetlinks.json`, built from:
+
+```bash
+# Package name of the Android app (default dev.shipdeck.hisaab)
+ANDROID_APP_PACKAGE_NAME=dev.shipdeck.hisaab
+# Comma-separated SHA-256 fingerprints of every certificate that signs the
+# app: the Play App Signing key, the upload key, and any debug key you test with.
+ANDROID_APP_SHA256_CERT_FINGERPRINTS=AA:BB:...:FF,11:22:...:99
+```
+
+Fingerprints are the colon-separated hex form shown by `keytool -list -v` and in Play Console (Setup → App signing). When the variable is unset, the official app's upload key is used. Each fingerprint also becomes an allowed WebAuthn origin of the form `android:apk-key-hash:<base64url digest>`, which is what the app reports instead of a web origin; you do not add these to `WEBAUTHN_ALLOWED_ORIGINS` yourself.
+
+`WEBAUTHN_RP_ID` must be the host that serves `/.well-known/assetlinks.json` over HTTPS (or a registrable parent of it). Google caches the statement, so allow a few minutes after changing it.

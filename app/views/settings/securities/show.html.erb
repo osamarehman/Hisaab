@@ -66,7 +66,7 @@
   </div>
 <% end %>
 
-<% if Current.user.otp_required? %>
+<% if Current.user.passkey_step_up_available? %>
   <%= settings_section title: t(".webauthn_title"), subtitle: t(".webauthn_description") do %>
     <div class="space-y-4">
       <% if @webauthn_credentials.any? %>
@@ -127,12 +127,21 @@
                             label: t(".webauthn_name_label"),
                             data: { webauthn_registration_target: "nickname" } %>
 
-        <%= form.text_field :code,
-                            required: true,
-                            autocomplete: "one-time-code",
-                            label: t(".webauthn_code_label"),
-                            placeholder: t(".webauthn_code_placeholder"),
-                            data: { webauthn_registration_target: "code" } %>
+        <% if Current.user.otp_required? %>
+          <%= form.text_field :code,
+                              required: true,
+                              autocomplete: "one-time-code",
+                              label: t(".webauthn_code_label"),
+                              placeholder: t(".webauthn_code_placeholder"),
+                              data: { webauthn_registration_target: "code" } %>
+        <% else %>
+          <%= form.password_field :password,
+                                  required: true,
+                                  autocomplete: "current-password",
+                                  label: t(".webauthn_password_label"),
+                                  placeholder: t(".webauthn_password_placeholder"),
+                                  data: { webauthn_registration_target: "password" } %>
+        <% end %>
 
         <p class="text-sm text-destructive" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="true" hidden data-webauthn-registration-target="error"></p>
 

@@ -18,11 +18,14 @@ en:
         webauthn_added: Added %{date}
         webauthn_code_label: Authenticator or backup code
         webauthn_code_placeholder: Current authenticator code or an unused backup code
-        webauthn_description: Use a passkey, Touch ID, Windows Hello, or a hardware
-          security key as a second factor when signing in.
+        webauthn_description: Sign in with a passkey, fingerprint, face unlock, or a
+          hardware security key instead of your password. With two-factor
+          authentication on, a passkey also works as your second factor.
         webauthn_empty: No passkeys or security keys are registered yet.
         webauthn_last_used: Last used %{time_ago} ago
         webauthn_name_label: Key name
+        webauthn_password_label: Current password
+        webauthn_password_placeholder: Confirm it's you before adding a passkey
         webauthn_name_placeholder: MacBook Touch ID, YubiKey, etc.
         webauthn_remove: Remove
         webauthn_remove_confirm: Are you sure you want to remove this passkey or
@@ -37,7 +40,8 @@ en:
     default_name: Security key
     failure: Could not save that passkey or security key. Please try again.
     invalid_code: That code is not valid. Enter a current code from your authenticator app or an unused backup code.
-    mfa_required: Enable two-factor authentication before adding a passkey or security
-      key.
+    invalid_password: That password is not correct.
+    mfa_required: Set a password or enable two-factor authentication before adding
+      a passkey or security key.
     rate_limited: Too many attempts. Please wait a minute and try again.
     success: Passkey or security key removed.

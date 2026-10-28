@@ -331,7 +331,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
     assert_not Session.exists?(user_id: @user.id)
   end
 
-  test "disable removes MFA" do
+  test "disable removes MFA but keeps passkeys for passwordless sign-in" do
     @user.setup_mfa!
     @user.enable_mfa!
     @user.webauthn_credentials.create!(
@@ -346,7 +346,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
     assert_not @user.reload.otp_required?
     assert_nil @user.otp_secret
     assert_empty @user.otp_backup_codes
-    assert_empty @user.webauthn_credentials
+    assert_equal [ "YubiKey" ], @user.webauthn_credentials.map(&:nickname)
   end
 
 

@@ -523,7 +523,6 @@ class User < ApplicationRecord
         otp_backup_codes: [],
         otp_last_used_at: nil
       )
-      webauthn_credentials.destroy_all
     end
   end
 
@@ -590,6 +589,34 @@ class User < ApplicationRecord
 
   def webauthn_enabled?
     otp_required? && webauthn_credentials.exists?
+  end
+
+  # Adding a passkey creates a lasting sign-in, so it must prove more than the
+  # session or access token: an authenticator/backup code when MFA is on,
+  # otherwise the account password.
+  def passkey_step_up_available?
+    otp_required? || has_local_password?
+  end
+
+  # Checks the step-up without spending a single-use code, so a bad one is
+  # refused before the device creates a passkey the server would throw away.
+  def passkey_step_up_status(code: nil, password: nil)
+    otp_required? ? otp_code_status(code) : passkey_password_status(password)
+  end
+
+  # Spends the code. Call inside the transaction that saves the passkey.
+  def verify_passkey_step_up(code: nil, password: nil)
+    otp_required? ? verify_otp(code) : passkey_password_status(password)
+  end
+
+  def add_webauthn_credential!(credential, nickname:, transports: [])
+    webauthn_credentials.create!(
+      nickname: nickname,
+      credential_id: credential.id,
+      public_key: credential.public_key,
+      sign_count: credential.sign_count,
+      transports: Array(transports).compact_blank
+    )
   end
 
   def onboarded?
@@ -809,6 +836,12 @@ class User < ApplicationRecord
   end
 
   private
+    def passkey_password_status(password)
+      return :invalid unless has_local_password? && password.present?
+
+      authenticate(password) ? :accepted : :invalid
+    end
+
     def apply_ui_layout_defaults
       self.ui_layout = (ui_layout.presence || self.class.default_ui_layout)
     end

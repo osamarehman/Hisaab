@@ -5,15 +5,17 @@ module WebauthnRelyingParty
 
   private
     def webauthn_relying_party
-      webauthn_config = Rails.application.config.x.webauthn
+      @webauthn_relying_party ||= WebauthnCredential.relying_party
+    end
 
-      WebAuthn::RelyingParty.new(
-        name: Rails.configuration.x.product_name,
-        id: webauthn_config.rp_id,
-        allowed_origins: webauthn_config.allowed_origins,
-        # Accept consumer passkeys/security keys without attesting device vendor
-        # identity; this keeps MFA registration broad for self-hosted users.
-        verify_attestation_statement: false
+    def webauthn_registration_options_for(user, authenticator_selection:)
+      user.ensure_webauthn_id!
+
+      webauthn_relying_party.options_for_registration(
+        user: { id: user.webauthn_id, name: user.email, display_name: user.display_name },
+        exclude: user.webauthn_credentials.pluck(:credential_id),
+        authenticator_selection: authenticator_selection,
+        attestation: "none"
       )
     end
 

@@ -3,11 +3,11 @@ class Settings::WebauthnCredentialsController < ApplicationController
 
   layout "settings"
 
-  before_action :ensure_mfa_enabled
+  before_action :ensure_step_up_available
 
-  # Adding a passkey is confirmed with an MFA code; keep a stolen session from
-  # guessing that code. Both steps check it, so each gets its own counter:
-  # guessing through either one alone stays at 10 a minute.
+  # Adding a passkey is confirmed with an MFA code, or the password when MFA is
+  # off; keep a stolen session from guessing it. Both steps check it, so each
+  # gets its own counter: guessing through either one alone stays at 10 a minute.
   rate_limit to: 10, within: 1.minute, by: -> { Current.user.id }, only: :options, name: "code-check",
     with: -> { render json: { error: t("webauthn_credentials.rate_limited") }, status: :too_many_requests }
   rate_limit to: 10, within: 1.minute, by: -> { Current.user.id }, only: :create, name: "code-spend",
@@ -16,26 +16,18 @@ class Settings::WebauthnCredentialsController < ApplicationController
   def options
     # Refuse a bad code before the browser runs its ceremony; otherwise the
     # authenticator keeps a discoverable passkey the server never saves.
-    code_status = Current.user.otp_code_status(webauthn_credential_params[:code])
+    code_status = Current.user.passkey_step_up_status(**step_up_params)
     return render_code_error(code_status) unless code_status == :accepted
 
-    Current.user.ensure_webauthn_id!
-
-    registration_options = webauthn_relying_party.options_for_registration(
-      user: {
-        id: Current.user.webauthn_id,
-        name: Current.user.email,
-        display_name: Current.user.display_name
-      },
-      exclude: Current.user.webauthn_credentials.pluck(:credential_id),
+    registration_options = webauthn_registration_options_for(
+      Current.user,
       # `resident_key: "preferred"` asks for a discoverable credential so the
       # key can also be used for passwordless sign-in. "preferred" rather than
       # "required" so authenticators without free resident-key slots (older
       # security keys) can still register as a second factor. User verification
       # stays "preferred" here for the same reason and is enforced as
       # "required" on the passwordless sign-in ceremony instead.
-      authenticator_selection: { resident_key: "preferred", user_verification: "preferred" },
-      attestation: "none"
+      authenticator_selection: { resident_key: "preferred", user_verification: "preferred" }
     )
 
     session[:webauthn_registration_challenge] = registration_options.challenge
@@ -56,20 +48,18 @@ class Settings::WebauthnCredentialsController < ApplicationController
       user_presence: true
     )
 
-    # A passkey is a lasting second factor and also a passwordless sign-in, so
-    # adding one must prove more than the session cookie. The code is spent in
-    # the same transaction as the save, so a registration that fails (or a
-    # cancelled browser prompt) never uses up a single-use code.
+    # A passkey is a lasting sign-in, so adding one must prove more than the
+    # session cookie. The code is spent in the same transaction as the save, so
+    # a registration that fails (or a cancelled browser prompt) never uses up a
+    # single-use code.
     code_result = nil
     Current.user.transaction do
-      code_result = Current.user.verify_otp(webauthn_credential_params[:code])
+      code_result = Current.user.verify_passkey_step_up(**step_up_params)
       raise ActiveRecord::Rollback unless code_result == :accepted
 
-      Current.user.webauthn_credentials.create!(
+      Current.user.add_webauthn_credential!(
+        credential,
         nickname: webauthn_credential_name,
-        credential_id: credential.id,
-        public_key: credential.public_key,
-        sign_count: credential.sign_count,
         transports: webauthn_credential_transports
       )
     end
@@ -89,8 +79,8 @@ class Settings::WebauthnCredentialsController < ApplicationController
   end
 
   private
-    def ensure_mfa_enabled
-      return if Current.user.otp_required?
+    def ensure_step_up_available
+      return if Current.user.passkey_step_up_available?
 
       respond_to do |format|
         format.html { redirect_to settings_security_path, alert: t("webauthn_credentials.mfa_required") }
@@ -103,16 +93,26 @@ class Settings::WebauthnCredentialsController < ApplicationController
     end
 
     def webauthn_credential_transports
-      Array(credential_response_params.dig(:response, :transports)).compact_blank
+      Array(credential_response_params.dig(:response, :transports))
+    end
+
+    def step_up_params
+      { code: webauthn_credential_params[:code], password: webauthn_credential_params[:password] }
     end
 
     def render_code_error(code_status)
-      key = code_status == :replayed ? "webauthn_credentials.code_already_used" : "webauthn_credentials.invalid_code"
+      key = if code_status == :replayed
+        "webauthn_credentials.code_already_used"
+      elsif Current.user.otp_required?
+        "webauthn_credentials.invalid_code"
+      else
+        "webauthn_credentials.invalid_password"
+      end
       render json: { error: t(key) }, status: :unprocessable_entity
     end
 
     def webauthn_credential_params
-      params.fetch(:webauthn_credential, ActionController::Parameters.new).permit(:nickname, :code)
+      params.fetch(:webauthn_credential, ActionController::Parameters.new).permit(:nickname, :code, :password)
     end
 
     def credential_response_params

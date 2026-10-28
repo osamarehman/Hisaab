@@ -11,8 +11,29 @@ class Settings::WebauthnCredentialsControllerTest < ActionDispatch::IntegrationT
     @client = WebAuthn::FakeClient.new("http://www.example.com")
   end
 
-  test "options require enabled MFA" do
+  test "without MFA, adding a passkey is confirmed with the password" do
     @user.disable_mfa!
+
+    post options_settings_webauthn_credentials_path, params: { webauthn_credential: { password: "wrong" } }, as: :json
+    assert_response :unprocessable_entity
+    assert_equal I18n.t("webauthn_credentials.invalid_password"), JSON.parse(response.body).fetch("error")
+
+    post options_settings_webauthn_credentials_path, params: { webauthn_credential: { password: user_password_test } }, as: :json
+    assert_response :success
+    credential = @client.create(challenge: JSON.parse(response.body).fetch("challenge"), rp_id: "www.example.com")
+
+    assert_difference -> { @user.webauthn_credentials.count }, 1 do
+      post settings_webauthn_credentials_path, params: {
+        webauthn_credential: { nickname: "Phone", password: user_password_test },
+        credential: credential
+      }, as: :json
+    end
+    assert_response :success
+  end
+
+  test "options are refused when there is neither a password nor MFA to confirm with" do
+    @user.disable_mfa!
+    @user.update_column(:password_digest, nil)
 
     post options_settings_webauthn_credentials_path, as: :json
 

@@ -35,29 +35,8 @@ class PasskeySessionsController < ApplicationController
       relying_party: webauthn_relying_party
     )
 
-    user = user_for(credential)
-    return render_invalid unless user&.active?
-    return render_invalid unless AuthConfig.local_login_allowed_for?(user)
-
-    # Scoped to the user so an assertion can never pair one account's user
-    # handle with another account's credential.
-    stored_credential = user.webauthn_credentials.find_by(credential_id: credential.id)
-    return render_invalid unless stored_credential
-
-    stored_credential.with_lock do
-      credential.verify(
-        challenge,
-        public_key: stored_credential.public_key,
-        sign_count: stored_credential.sign_count,
-        user_presence: true,
-        user_verification: true
-      )
-
-      stored_credential.update!(
-        sign_count: credential.sign_count,
-        last_used_at: Time.current
-      )
-    end
+    user = WebauthnCredential.authenticate_passkey(credential, challenge)
+    return render_invalid unless user
 
     return render_invalid unless complete_sign_in(user)
 
@@ -67,15 +46,6 @@ class PasskeySessionsController < ApplicationController
   end
 
   private
-    def user_for(credential)
-      # `presence` matters: `find_by(webauthn_id: nil)` would match every user
-      # who never registered a credential.
-      handle = credential.user_handle.presence
-      return nil if handle.blank?
-
-      User.find_by(webauthn_id: handle)
-    end
-
     def complete_sign_in(user)
       # Drop any half-finished password + TOTP attempt from this browser.
       session.delete(:mfa_user_id)

@@ -5,7 +5,7 @@ import {
 } from "utils/webauthn";
 
 export default class extends WebauthnController {
-  static targets = ["error", "nickname", "code"];
+  static targets = ["error", "nickname", "code", "password"];
   static values = {
     optionsUrl: String,
     createUrl: String,
@@ -40,7 +40,7 @@ export default class extends WebauthnController {
       headers: this.headers,
       credentials: "same-origin",
       body: JSON.stringify({
-        webauthn_credential: { code: this.enteredCode },
+        webauthn_credential: this.stepUp,
       }),
     });
 
@@ -49,8 +49,12 @@ export default class extends WebauthnController {
     return response.json();
   }
 
-  get enteredCode() {
-    return this.hasCodeTarget ? this.codeTarget.value : "";
+  // The MFA code when two-factor is on, otherwise the account password.
+  get stepUp() {
+    return {
+      code: this.hasCodeTarget ? this.codeTarget.value : "",
+      password: this.hasPasswordTarget ? this.passwordTarget.value : "",
+    };
   }
 
   async createCredential(credential) {
@@ -62,7 +66,7 @@ export default class extends WebauthnController {
         credential,
         webauthn_credential: {
           nickname: this.hasNicknameTarget ? this.nicknameTarget.value : "",
-          code: this.enteredCode,
+          ...this.stepUp,
         },
       }),
     });

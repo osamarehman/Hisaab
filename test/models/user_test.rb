@@ -169,7 +169,7 @@ class UserTest < ActiveSupport::TestCase
     assert_empty user.otp_backup_codes
   end
 
-  test "disable_mfa! removes all MFA data" do
+  test "disable_mfa! removes MFA data but keeps passkeys for passwordless sign-in" do
     user = users(:family_member)
     user.setup_mfa!
     user.enable_mfa!
@@ -184,7 +184,33 @@ class UserTest < ActiveSupport::TestCase
     assert_nil user.otp_secret
     assert_not user.otp_required?
     assert_empty user.otp_backup_codes
-    assert_empty user.webauthn_credentials
+    assert_equal [ "YubiKey" ], user.webauthn_credentials.reload.map(&:nickname)
+    assert_not user.webauthn_enabled?
+  end
+
+  test "adding a passkey asks for the MFA code when two-factor is on, otherwise the password" do
+    user = users(:family_member)
+    user.disable_mfa! if user.otp_required?
+
+    assert user.passkey_step_up_available?
+    assert_equal :accepted, user.passkey_step_up_status(password: user_password_test)
+    assert_equal :invalid, user.passkey_step_up_status(password: "wrong")
+    assert_equal :invalid, user.passkey_step_up_status(code: "123456")
+
+    user.setup_mfa!
+    codes = user.enable_mfa!
+
+    assert_equal :invalid, user.passkey_step_up_status(password: user_password_test)
+    assert_equal :accepted, user.passkey_step_up_status(code: codes.first)
+    assert_equal :accepted, user.verify_passkey_step_up(code: codes.first)
+    assert_equal :invalid, user.verify_passkey_step_up(code: codes.first)
+  end
+
+  test "a user without a password or MFA has no way to confirm adding a passkey" do
+    user = users(:sso_only)
+
+    assert_not user.passkey_step_up_available?
+    assert_equal :invalid, user.passkey_step_up_status(password: "")
   end
 
   test "ensure_webauthn_id! generates a stable credential user handle" do
