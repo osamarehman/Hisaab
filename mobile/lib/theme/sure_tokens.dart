@@ -42,7 +42,7 @@ class SureTokens {
     link: Color(0xFF2445C8),
     shadow: Color(0x0F0B0D0C),
     focusRing: Color(0x800B0D0C),
-    bgInverse: Color(0xFF222522),
+    bgInverse: Color(0xFF121413),
     textPrimary: Color(0xFF121413),
     textInverse: Color(0xFFFFFFFF),
     textSecondary: Color(0xFF6B716C),

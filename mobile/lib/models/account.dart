@@ -80,7 +80,14 @@ class Account {
   String get displayAccountType {
     switch (accountType) {
       case 'depository':
-        return 'Bank Account';
+        switch (subtype) {
+          case 'cash':
+            return 'Cash in hand';
+          case 'savings':
+            return 'Savings account';
+          default:
+            return 'Bank account';
+        }
       case 'credit_card':
         return 'Credit Card';
       case 'investment':
