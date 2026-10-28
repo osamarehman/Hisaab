@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Sure',
+                  l.appTitle,
                   style: LedgerText.display(
                     size: 64,
                     weight: FontWeight.w700,

@@ -357,7 +357,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
               Text('Statements', style: LedgerText.title(color: c.ink)),
               const SizedBox(height: 8),
               Text(
-                'Add a bank statement. Sure reads every line, files each one '
+                'Add a bank statement. Hisaab reads every line, files each one '
                 'under the right month and suggests a label.',
                 style: LedgerText.body(size: 15, color: c.muted)
                     .copyWith(height: 1.45),
@@ -584,7 +584,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     if (job.status == ImportStatus.failed) {
       gap();
       children.add(Text(
-        job.error ?? 'Sure could not read this statement. Try another file.',
+        job.error ?? 'Hisaab could not read this statement. Try another file.',
         style: LedgerText.body(size: 14, color: c.moneyOut),
       ));
     } else if (_shouldPoll(job) || _publishing) {
@@ -598,7 +598,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
       children.add(Text(
         _published
             ? 'Adding the lines to your books…'
-            : 'Sure is reading every line. This can take a minute.',
+            : 'Hisaab is reading every line. This can take a minute.',
         style: LedgerText.body(size: 14, color: c.muted),
       ));
     } else if (job.status == ImportStatus.pending) {
@@ -607,7 +607,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
       gap();
       if (job.publishable == false) {
         children.add(Text(
-          'This file needs its columns matched on the Sure website before '
+          'This file needs its columns matched on the Hisaab website before '
           'the lines can be added.',
           style: LedgerText.body(size: 14, color: c.moneyOut),
         ));

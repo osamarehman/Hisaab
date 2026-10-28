@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Sure Finances';
+  String get appTitle => 'Hisaab';
 
   @override
   String get commonCancel => 'Cancel';
@@ -415,13 +415,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backendConfigTitle => 'Configuration';
 
   @override
-  String get backendConfigSubtitle => 'Update your Sure server URL';
+  String get backendConfigSubtitle => 'Update your Hisaab server URL';
 
   @override
   String get backendConfigExampleUrlsLabel => 'Example URLs';
 
   @override
-  String get backendConfigUrlLabel => 'Sure server URL';
+  String get backendConfigUrlLabel => 'Hisaab server URL';
 
   @override
   String get backendConfigUrlHint => 'https://app.sure.am';
@@ -707,7 +707,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginOrDivider => 'or';
 
   @override
-  String get loginServerUrlHeading => 'Sure server URL:';
+  String get loginServerUrlHeading => 'Hisaab server URL:';
 
   @override
   String get loginApiKeyLoginButton => 'API-Key Login';
@@ -912,7 +912,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String backendConfigServerError(int code) {
-    return 'Server responded with status $code. Please check if this is a Sure backend server.';
+    return 'Server responded with status $code. Please check if this is a Hisaab backend server.';
   }
 
   @override
@@ -1049,11 +1049,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetsNoBudgetMessage =>
-      'Budgets are created in Sure on the web. Open Budgets there to set one up for this month.';
+      'Budgets are created in Hisaab on the web. Open Budgets there to set one up for this month.';
 
   @override
   String get budgetsNotSetUpMessage =>
-      'No spending limits are set for this month yet. Set them up in Sure on the web.';
+      'No spending limits are set for this month yet. Set them up in Hisaab on the web.';
 
   @override
   String get budgetsNoCategories =>

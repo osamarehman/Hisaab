@@ -9,7 +9,7 @@ class AppLocalizationsSv extends AppLocalizations {
   AppLocalizationsSv([String locale = 'sv']) : super(locale);
 
   @override
-  String get appTitle => 'Sure Finances';
+  String get appTitle => 'Hisaab';
 
   @override
   String get commonCancel => 'Avbryt';
@@ -421,13 +421,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get backendConfigTitle => 'Konfiguration';
 
   @override
-  String get backendConfigSubtitle => 'Uppdatera adressen till din Sure-server';
+  String get backendConfigSubtitle =>
+      'Uppdatera adressen till din Hisaab-server';
 
   @override
   String get backendConfigExampleUrlsLabel => 'Exempeladresser';
 
   @override
-  String get backendConfigUrlLabel => 'Adress till Sure-servern';
+  String get backendConfigUrlLabel => 'Adress till Hisaab-servern';
 
   @override
   String get backendConfigUrlHint => 'https://app.sure.am';
@@ -718,7 +719,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get loginOrDivider => 'eller';
 
   @override
-  String get loginServerUrlHeading => 'Adress till Sure-servern:';
+  String get loginServerUrlHeading => 'Adress till Hisaab-servern:';
 
   @override
   String get loginApiKeyLoginButton => 'Logga in med API-nyckel';
@@ -922,7 +923,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String backendConfigServerError(int code) {
-    return 'Servern svarade med status $code. Kontrollera att det är en Sure-server.';
+    return 'Servern svarade med status $code. Kontrollera att det är en Hisaab-server.';
   }
 
   @override
@@ -1060,11 +1061,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get budgetsNoBudgetMessage =>
-      'Budgetar skapas i Sure på webben. Öppna Budgetar där för att skapa en för den här månaden.';
+      'Budgetar skapas i Hisaab på webben. Öppna Budgetar där för att skapa en för den här månaden.';
 
   @override
   String get budgetsNotSetUpMessage =>
-      'Inga utgiftsgränser är satta för den här månaden än. Ställ in dem i Sure på webben.';
+      'Inga utgiftsgränser är satta för den här månaden än. Ställ in dem i Hisaab på webben.';
 
   @override
   String get budgetsNoCategories =>

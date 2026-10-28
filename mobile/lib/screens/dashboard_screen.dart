@@ -339,7 +339,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Row(
       children: [
         Text(
-          'Sure',
+          l.appTitle,
           style: LedgerText.display(
             size: 26,
             weight: FontWeight.w700,
