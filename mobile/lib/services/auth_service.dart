@@ -84,6 +84,20 @@ class AuthService {
     }
   }
 
+  /// Stores the token payload of a sign-in made outside [login] (passkey).
+  Future<Map<String, dynamic>> saveLoginResponse(
+      Map<String, dynamic> responseData) async {
+    try {
+      final tokens = AuthTokens.fromJson(responseData);
+      final user = _parseResponseUser(responseData, 'passkey_login');
+      await _saveSession(tokens, user);
+      return {'success': true, 'tokens': tokens, 'user': user};
+    } catch (e) {
+      _logAuthException('Passkey login', e);
+      return {'success': false, 'error': 'Invalid response from server'};
+    }
+  }
+
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -338,61 +352,6 @@ class AuthService {
       };
     } catch (e) {
       _logAuthException('RefreshToken', e);
-      return {
-        'success': false,
-        'error': 'An unexpected error occurred',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> loginWithApiKey({
-    required String apiKey,
-  }) async {
-    try {
-      final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/accounts');
-
-      final response = await http.get(
-        url,
-        headers: {
-          ...ApiConfig.customProxyHeaderMap,
-          'X-Api-Key': apiKey,
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 30));
-
-      LogService.instance.debug('AuthService',
-          'API key login response status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        await _saveApiKey(apiKey);
-        return {
-          'success': true,
-        };
-      } else if (response.statusCode == 401) {
-        return {
-          'success': false,
-          'error': 'Invalid API key',
-        };
-      } else {
-        return {
-          'success': false,
-          'error': 'Login failed (status ${response.statusCode})',
-        };
-      }
-    } on SocketException catch (e) {
-      _logAuthException('API key login', e);
-      return {
-        'success': false,
-        'error': 'Network unavailable',
-      };
-    } on TimeoutException catch (e) {
-      _logAuthException('API key login', e);
-      return {
-        'success': false,
-        'error': 'Request timed out',
-      };
-    } catch (e) {
-      _logAuthException('API key login', e);
       return {
         'success': false,
         'error': 'An unexpected error occurred',
@@ -716,11 +675,6 @@ class AuthService {
         '$source user payload type: ${userPayload.runtimeType}',
       );
     }
-  }
-
-  Future<void> _saveApiKey(String apiKey) async {
-    await _storage.write(key: _apiKeyKey, value: apiKey);
-    await _storage.write(key: _authModeKey, value: 'api_key');
   }
 
   Future<String?> getStoredApiKey() async {

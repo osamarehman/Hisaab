@@ -9,11 +9,13 @@ import '../services/auth_service.dart';
 import '../services/device_service.dart';
 import '../services/api_config.dart';
 import '../services/log_service.dart';
+import '../services/passkey_service.dart';
 import '../services/telemetry_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final DeviceService _deviceService = DeviceService();
+  final PasskeyService _passkeyService = PasskeyService();
 
   User? _user;
   AuthTokens? _tokens;
@@ -47,6 +49,7 @@ class AuthProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get mfaRequired => _mfaRequired;
   bool get showMfaInput => _showMfaInput; // Expose MFA input state
+  bool get passkeysSupported => _passkeyService.isSupported;
 
   // SSO onboarding getters
   bool get ssoOnboardingPending => _ssoOnboardingPending;
@@ -218,56 +221,56 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> loginWithApiKey({
-    required String apiKey,
+  /// Signs in with a passkey saved on this device. A passkey stands in for
+  /// both the password and the two-factor code. The messages are shown in the
+  /// login error banner; a dismissed passkey sheet shows nothing.
+  Future<bool> loginWithPasskey({
+    required String notFoundMessage,
+    required String unsupportedMessage,
+    required String failedMessage,
   }) async {
     _errorMessage = null;
+    _mfaRequired = false;
+    _showMfaInput = false;
     _isLoading = true;
     notifyListeners();
 
     try {
-      final result = await _authService.loginWithApiKey(apiKey: apiKey);
-
-      LogService.instance.debug(
-        'AuthProvider',
-        'API key login result received: success=${result['success'] == true}',
-      );
+      final deviceInfo = await _deviceService.getDeviceInfo();
+      final result = await _passkeyService.signIn(deviceInfo: deviceInfo);
 
       if (result['success'] == true) {
-        _apiKey = apiKey;
-        _isApiKeyAuth = true;
-        ApiConfig.setApiKeyAuth(apiKey);
-        _clearTelemetryUser();
-        _addTelemetryBreadcrumb(
-          'auth',
-          'api_key_login_success',
-        );
-        _isLoading = false;
-        notifyListeners();
-        return true;
+        final saved = await _authService
+            .saveLoginResponse(result['body'] as Map<String, dynamic>);
+        if (saved['success'] == true) {
+          _tokens = saved['tokens'] as AuthTokens?;
+          _user = saved['user'] as User?;
+          _updateTelemetryUser(_user);
+          _addTelemetryBreadcrumb('auth', 'passkey_login_success');
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+        _errorMessage = failedMessage;
+      } else if (result['cancelled'] == true) {
+        _errorMessage = null;
+      } else if (result['not_found'] == true) {
+        _errorMessage = notFoundMessage;
+      } else if (result['unsupported'] == true) {
+        _errorMessage = unsupportedMessage;
       } else {
-        _addTelemetryBreadcrumb(
-          'auth',
-          'api_key_login_failed',
-        );
-        _errorMessage = result['error'] as String?;
-        _isLoading = false;
-        notifyListeners();
-        return false;
+        final error = result['error'] as String?;
+        _errorMessage = (error == null || error.isEmpty) ? failedMessage : error;
       }
+      _addTelemetryBreadcrumb('auth', 'passkey_login_failed');
     } catch (e, stackTrace) {
-      _logAuthException('API key login', e);
-      _captureTelemetryException(
-        e,
-        stackTrace,
-        operation: 'auth.api_key_login',
-      );
-      _errorMessage =
-          'Unable to connect. Please check your network and try again.';
-      _isLoading = false;
-      notifyListeners();
-      return false;
+      _logAuthException('Passkey login', e);
+      _captureTelemetryException(e, stackTrace, operation: 'auth.passkey_login');
+      _errorMessage = failedMessage;
     }
+    _isLoading = false;
+    notifyListeners();
+    return false;
   }
 
   Future<bool> signup({

@@ -74,31 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _showApiKeyDialog() async {
-    // The dialog owns its TextEditingController and disposes it in its own
-    // State.dispose(), so the controller's lifecycle is tied to the dialog's
-    // widget tree: no leak on barrier/back dismissal, and it is never disposed
-    // out from under a still-mounted TextField during the exit transition.
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (_) => const ApiKeyLoginDialog(),
-    );
-
-    // result: true = signed in, false = login attempt failed, null = dismissed.
-    if (result == false && mounted) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            authProvider.errorMessage ??
-                AppLocalizations.of(context).loginApiKeyInvalid,
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
-  }
-
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -120,6 +95,15 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!success && hadOtpCode && authProvider.errorMessage != null) {
       _otpController.clear();
     }
+  }
+
+  Future<void> _handlePasskeyLogin() async {
+    final l = AppLocalizations.of(context);
+    await Provider.of<AuthProvider>(context, listen: false).loginWithPasskey(
+      notFoundMessage: l.loginPasskeyNotFound,
+      unsupportedMessage: l.passkeysUnsupported,
+      failedMessage: l.loginPasskeyFailed,
+    );
   }
 
   Widget _fieldLabel(String text, LedgerColors c) => Padding(
@@ -362,14 +346,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: Text(l.loginSignInWithGoogle),
                   ),
                 ),
-                const SizedBox(height: 10),
                 Consumer<AuthProvider>(
-                  builder: (context, authProvider, _) => OutlinedButton.icon(
-                    onPressed:
-                        authProvider.isLoading ? null : _showApiKeyDialog,
-                    icon: const Icon(Icons.vpn_key_outlined, size: 18),
-                    label: Text(l.loginApiKeyLoginButton),
-                  ),
+                  builder: (context, authProvider, _) {
+                    if (!authProvider.passkeysSupported) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: OutlinedButton.icon(
+                        onPressed:
+                            authProvider.isLoading ? null : _handlePasskeyLogin,
+                        icon: const Icon(Icons.fingerprint, size: 18),
+                        label: Text(l.loginSignInWithPasskey),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 32),
 
@@ -410,104 +401,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// API-key login dialog. Owns its [TextEditingController] so it is disposed
-/// with the dialog's State — never leaked (barrier/back dismissal) and never
-/// disposed while the field is still mounted. Pops `true` on a successful
-/// sign-in, `false` on a failed attempt, and `null` when dismissed.
-@visibleForTesting
-class ApiKeyLoginDialog extends StatefulWidget {
-  const ApiKeyLoginDialog({super.key, this.controller});
-
-  /// Test seam: a controller the dialog will adopt and dispose, so a test can
-  /// assert disposal. Production passes none and the dialog creates its own.
-  @visibleForTesting
-  final TextEditingController? controller;
-
-  @override
-  State<ApiKeyLoginDialog> createState() => _ApiKeyLoginDialogState();
-}
-
-class _ApiKeyLoginDialogState extends State<ApiKeyLoginDialog> {
-  late final TextEditingController _apiKeyController =
-      widget.controller ?? TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _apiKeyController.addListener(_onTextChanged);
-  }
-
-  void _onTextChanged() => setState(() {});
-
-  @override
-  void dispose() {
-    _apiKeyController.removeListener(_onTextChanged);
-    _apiKeyController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final apiKey = _apiKeyController.text.trim();
-    if (apiKey.isEmpty) return;
-
-    setState(() => _isLoading = true);
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.loginWithApiKey(apiKey: apiKey);
-
-    if (!mounted) return;
-    Navigator.of(context).pop(success);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(l.loginApiKeyDialogTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            l.loginApiKeyDialogBody,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _apiKeyController,
-            decoration: InputDecoration(
-              labelText: l.loginApiKeyLabel,
-              prefixIcon: const Icon(Icons.vpn_key_outlined),
-            ),
-            obscureText: true,
-            maxLines: 1,
-            enabled: !_isLoading,
-            onSubmitted: (_) => _submit(),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: Text(l.commonCancel),
-        ),
-        ElevatedButton(
-          onPressed: _isLoading || _apiKeyController.text.trim().isEmpty ? null : _submit,
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(l.loginApiKeySignIn),
-        ),
-      ],
     );
   }
 }

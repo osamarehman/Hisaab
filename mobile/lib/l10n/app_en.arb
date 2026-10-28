@@ -52,9 +52,6 @@
   "loginMfaLabel": "Authentication Code",
   "@loginMfaLabel": { "description": "Label for the MFA code input field." },
 
-  "loginApiKeyLabel": "API Key",
-  "@loginApiKeyLabel": { "description": "Label for the API key input field." },
-
   "navHome": "Home",
   "@navHome": { "description": "Bottom navigation label for the Home (dashboard) tab." },
 
@@ -637,18 +634,6 @@
   "loginSignUpOpenError": "Unable to open sign up page",
   "@loginSignUpOpenError": { "description": "Snackbar shown when the sign-up page cannot be opened." },
 
-  "loginApiKeyDialogTitle": "API Key Login",
-  "@loginApiKeyDialogTitle": { "description": "Title for the API key login dialog on the login screen." },
-
-  "loginApiKeyDialogBody": "Enter your API key to sign in.",
-  "@loginApiKeyDialogBody": { "description": "Body text for the API key login dialog." },
-
-  "loginApiKeyInvalid": "Invalid API key",
-  "@loginApiKeyInvalid": { "description": "Fallback error shown when an API key login fails." },
-
-  "loginApiKeySignIn": "Sign In",
-  "@loginApiKeySignIn": { "description": "Sign-in button label in the API key login dialog." },
-
   "loginDemoOrSignUpPrefix": "Demo account or ",
   "@loginDemoOrSignUpPrefix": { "description": "Leading text before the Sign Up link on the login screen." },
 
@@ -669,9 +654,6 @@
 
   "loginServerUrlHeading": "Hisaab server URL:",
   "@loginServerUrlHeading": { "description": "Heading above the displayed server URL on the login screen." },
-
-  "loginApiKeyLoginButton": "API-Key Login",
-  "@loginApiKeyLoginButton": { "description": "Button label to open the API key login dialog." },
 
   "loginBackendSettingsTooltip": "Backend Settings",
   "@loginBackendSettingsTooltip": { "description": "Tooltip for the backend settings button on the login screen." },
@@ -1372,5 +1354,86 @@
   "@settingsDeleteAccountFinalButton": {"description": "Final destructive button of account deletion."},
 
   "settingsDeleteAccountFinalContent": "Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType {word} to confirm.",
-  "@settingsDeleteAccountFinalContent": {"description": "Body of the second delete-account confirmation.", "placeholders": {"word": {"type": "String"}}}
+  "@settingsDeleteAccountFinalContent": {"description": "Body of the second delete-account confirmation.", "placeholders": {"word": {"type": "String"}}},
+
+  "loginSignInWithPasskey": "Sign in with passkey",
+  "@loginSignInWithPasskey": {"description": "Button on the login screen that signs in with a saved passkey."},
+
+  "loginPasskeyNotFound": "No passkey for this server on this phone. Sign in with your password, then add one in Settings.",
+  "@loginPasskeyNotFound": {"description": "Shown when the phone has no passkey for the server."},
+
+  "loginPasskeyFailed": "Could not sign in with a passkey. Please try again.",
+  "@loginPasskeyFailed": {"description": "Fallback error for a failed passkey sign-in."},
+
+  "settingsPasskeysTitle": "Passkeys",
+  "@settingsPasskeysTitle": {"description": "Settings row that opens passkey management."},
+
+  "settingsPasskeysSubtitle": "Sign in with your fingerprint or screen lock",
+  "@settingsPasskeysSubtitle": {"description": "Subtitle of the passkeys settings row."},
+
+  "passkeysIntro": "A passkey lets you sign in with your fingerprint, face or screen lock instead of your password. It is saved in your phone's password manager.",
+  "@passkeysIntro": {"description": "Intro text on the passkeys screen."},
+
+  "passkeysAddHeading": "Add a passkey",
+  "@passkeysAddHeading": {"description": "Heading of the add-passkey form."},
+
+  "passkeysNameLabel": "Name",
+  "@passkeysNameLabel": {"description": "Label for the passkey name field."},
+
+  "passkeysNameHint": "e.g. My Pixel",
+  "@passkeysNameHint": {"description": "Hint for the passkey name field."},
+
+  "passkeysPasswordLabel": "Current password",
+  "@passkeysPasswordLabel": {"description": "Label for the password that confirms adding a passkey."},
+
+  "passkeysCodeLabel": "Authenticator or backup code",
+  "@passkeysCodeLabel": {"description": "Label for the two-factor code that confirms adding a passkey."},
+
+  "passkeysAddButton": "Add passkey",
+  "@passkeysAddButton": {"description": "Button that creates a passkey."},
+
+  "passkeysListHeading": "Your passkeys",
+  "@passkeysListHeading": {"description": "Heading above the list of passkeys."},
+
+  "passkeysEmpty": "No passkeys yet. Add one above.",
+  "@passkeysEmpty": {"description": "Shown when the user has no passkeys."},
+
+  "passkeysAdded": "Added {date}",
+  "@passkeysAdded": {"description": "When a passkey was added.", "placeholders": {"date": {"type": "String"}}},
+
+  "passkeysLastUsed": "Last used {date}",
+  "@passkeysLastUsed": {"description": "When a passkey was last used to sign in.", "placeholders": {"date": {"type": "String"}}},
+
+  "passkeysRemove": "Remove",
+  "@passkeysRemove": {"description": "Button that removes a passkey."},
+
+  "passkeysRemoveTitle": "Remove this passkey?",
+  "@passkeysRemoveTitle": {"description": "Title of the remove-passkey confirmation."},
+
+  "passkeysRemoveBody": "You will no longer be able to sign in with \"{name}\". Also delete it from your phone's password manager.",
+  "@passkeysRemoveBody": {"description": "Body of the remove-passkey confirmation.", "placeholders": {"name": {"type": "String"}}},
+
+  "passkeysAddedToast": "Passkey added.",
+  "@passkeysAddedToast": {"description": "Snackbar after adding a passkey."},
+
+  "passkeysRemovedToast": "Passkey removed.",
+  "@passkeysRemovedToast": {"description": "Snackbar after removing a passkey."},
+
+  "passkeysUnsupported": "This phone cannot use passkeys. They need Android 11 or newer with Google Play services.",
+  "@passkeysUnsupported": {"description": "Shown when the device cannot use passkeys."},
+
+  "passkeysNoStepUp": "Set a password or turn on two-factor authentication on the web before adding a passkey.",
+  "@passkeysNoStepUp": {"description": "Shown when the account has nothing to confirm a new passkey with."},
+
+  "passkeysLoadFailed": "Could not load your passkeys. Pull down to try again.",
+  "@passkeysLoadFailed": {"description": "Error when the passkey list fails to load."},
+
+  "passkeysAddFailed": "Could not add the passkey.",
+  "@passkeysAddFailed": {"description": "Fallback error when adding a passkey fails."},
+
+  "passkeysRemoveFailed": "Could not remove the passkey.",
+  "@passkeysRemoveFailed": {"description": "Error when removing a passkey fails."},
+
+  "passkeysConfirmRequired": "Enter it to confirm it's you.",
+  "@passkeysConfirmRequired": {"description": "Validation error when the confirmation field is empty."}
 }

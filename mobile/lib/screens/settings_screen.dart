@@ -16,6 +16,7 @@ import '../services/preferences_service.dart';
 import '../services/legal_links.dart';
 import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
+import 'passkeys_screen.dart';
 import '../models/custom_proxy_header.dart';
 import '../services/api_config.dart';
 import '../services/custom_proxy_headers_service.dart';
@@ -817,6 +818,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: _biometricEnabled,
               onChanged: _isTogglingBiometric ? null : _toggleBiometric,
             ),
+          ListTile(
+            leading: const Icon(Icons.key_outlined),
+            title: Text(l.settingsPasskeysTitle),
+            subtitle: Text(l.settingsPasskeysSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const PasskeysScreen()),
+            ),
+          ),
 
           const Divider(),
 

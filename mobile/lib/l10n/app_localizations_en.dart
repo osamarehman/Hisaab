@@ -60,9 +60,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginMfaLabel => 'Authentication Code';
 
   @override
-  String get loginApiKeyLabel => 'API Key';
-
-  @override
   String get navHome => 'Home';
 
   @override
@@ -676,18 +673,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSignUpOpenError => 'Unable to open sign up page';
 
   @override
-  String get loginApiKeyDialogTitle => 'API Key Login';
-
-  @override
-  String get loginApiKeyDialogBody => 'Enter your API key to sign in.';
-
-  @override
-  String get loginApiKeyInvalid => 'Invalid API key';
-
-  @override
-  String get loginApiKeySignIn => 'Sign In';
-
-  @override
   String get loginDemoOrSignUpPrefix => 'Demo account or ';
 
   @override
@@ -708,9 +693,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginServerUrlHeading => 'Hisaab server URL:';
-
-  @override
-  String get loginApiKeyLoginButton => 'API-Key Login';
 
   @override
   String get loginBackendSettingsTooltip => 'Backend Settings';
@@ -1470,4 +1452,98 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsDeleteAccountFinalContent(String word) {
     return 'Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType $word to confirm.';
   }
+
+  @override
+  String get loginSignInWithPasskey => 'Sign in with passkey';
+
+  @override
+  String get loginPasskeyNotFound =>
+      'No passkey for this server on this phone. Sign in with your password, then add one in Settings.';
+
+  @override
+  String get loginPasskeyFailed =>
+      'Could not sign in with a passkey. Please try again.';
+
+  @override
+  String get settingsPasskeysTitle => 'Passkeys';
+
+  @override
+  String get settingsPasskeysSubtitle =>
+      'Sign in with your fingerprint or screen lock';
+
+  @override
+  String get passkeysIntro =>
+      'A passkey lets you sign in with your fingerprint, face or screen lock instead of your password. It is saved in your phone\'s password manager.';
+
+  @override
+  String get passkeysAddHeading => 'Add a passkey';
+
+  @override
+  String get passkeysNameLabel => 'Name';
+
+  @override
+  String get passkeysNameHint => 'e.g. My Pixel';
+
+  @override
+  String get passkeysPasswordLabel => 'Current password';
+
+  @override
+  String get passkeysCodeLabel => 'Authenticator or backup code';
+
+  @override
+  String get passkeysAddButton => 'Add passkey';
+
+  @override
+  String get passkeysListHeading => 'Your passkeys';
+
+  @override
+  String get passkeysEmpty => 'No passkeys yet. Add one above.';
+
+  @override
+  String passkeysAdded(String date) {
+    return 'Added $date';
+  }
+
+  @override
+  String passkeysLastUsed(String date) {
+    return 'Last used $date';
+  }
+
+  @override
+  String get passkeysRemove => 'Remove';
+
+  @override
+  String get passkeysRemoveTitle => 'Remove this passkey?';
+
+  @override
+  String passkeysRemoveBody(String name) {
+    return 'You will no longer be able to sign in with \"$name\". Also delete it from your phone\'s password manager.';
+  }
+
+  @override
+  String get passkeysAddedToast => 'Passkey added.';
+
+  @override
+  String get passkeysRemovedToast => 'Passkey removed.';
+
+  @override
+  String get passkeysUnsupported =>
+      'This phone cannot use passkeys. They need Android 11 or newer with Google Play services.';
+
+  @override
+  String get passkeysNoStepUp =>
+      'Set a password or turn on two-factor authentication on the web before adding a passkey.';
+
+  @override
+  String get passkeysLoadFailed =>
+      'Could not load your passkeys. Pull down to try again.';
+
+  @override
+  String get passkeysAddFailed => 'Could not add the passkey.';
+
+  @override
+  String get passkeysRemoveFailed => 'Could not remove the passkey.';
+
+  @override
+  String get passkeysConfirmRequired => 'Enter it to confirm it\'s you.';
 }

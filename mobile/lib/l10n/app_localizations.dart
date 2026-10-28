@@ -200,12 +200,6 @@ abstract class AppLocalizations {
   /// **'Authentication Code'**
   String get loginMfaLabel;
 
-  /// Label for the API key input field.
-  ///
-  /// In en, this message translates to:
-  /// **'API Key'**
-  String get loginApiKeyLabel;
-
   /// Bottom navigation label for the Home (dashboard) tab.
   ///
   /// In en, this message translates to:
@@ -1304,30 +1298,6 @@ abstract class AppLocalizations {
   /// **'Unable to open sign up page'**
   String get loginSignUpOpenError;
 
-  /// Title for the API key login dialog on the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'API Key Login'**
-  String get loginApiKeyDialogTitle;
-
-  /// Body text for the API key login dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your API key to sign in.'**
-  String get loginApiKeyDialogBody;
-
-  /// Fallback error shown when an API key login fails.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid API key'**
-  String get loginApiKeyInvalid;
-
-  /// Sign-in button label in the API key login dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign In'**
-  String get loginApiKeySignIn;
-
   /// Leading text before the Sign Up link on the login screen.
   ///
   /// In en, this message translates to:
@@ -1369,12 +1339,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hisaab server URL:'**
   String get loginServerUrlHeading;
-
-  /// Button label to open the API key login dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'API-Key Login'**
-  String get loginApiKeyLoginButton;
 
   /// Tooltip for the backend settings button on the login screen.
   ///
@@ -2665,6 +2629,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType {word} to confirm.'**
   String settingsDeleteAccountFinalContent(String word);
+
+  /// Button on the login screen that signs in with a saved passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with passkey'**
+  String get loginSignInWithPasskey;
+
+  /// Shown when the phone has no passkey for the server.
+  ///
+  /// In en, this message translates to:
+  /// **'No passkey for this server on this phone. Sign in with your password, then add one in Settings.'**
+  String get loginPasskeyNotFound;
+
+  /// Fallback error for a failed passkey sign-in.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sign in with a passkey. Please try again.'**
+  String get loginPasskeyFailed;
+
+  /// Settings row that opens passkey management.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkeys'**
+  String get settingsPasskeysTitle;
+
+  /// Subtitle of the passkeys settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with your fingerprint or screen lock'**
+  String get settingsPasskeysSubtitle;
+
+  /// Intro text on the passkeys screen.
+  ///
+  /// In en, this message translates to:
+  /// **'A passkey lets you sign in with your fingerprint, face or screen lock instead of your password. It is saved in your phone\'s password manager.'**
+  String get passkeysIntro;
+
+  /// Heading of the add-passkey form.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a passkey'**
+  String get passkeysAddHeading;
+
+  /// Label for the passkey name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get passkeysNameLabel;
+
+  /// Hint for the passkey name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. My Pixel'**
+  String get passkeysNameHint;
+
+  /// Label for the password that confirms adding a passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get passkeysPasswordLabel;
+
+  /// Label for the two-factor code that confirms adding a passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticator or backup code'**
+  String get passkeysCodeLabel;
+
+  /// Button that creates a passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add passkey'**
+  String get passkeysAddButton;
+
+  /// Heading above the list of passkeys.
+  ///
+  /// In en, this message translates to:
+  /// **'Your passkeys'**
+  String get passkeysListHeading;
+
+  /// Shown when the user has no passkeys.
+  ///
+  /// In en, this message translates to:
+  /// **'No passkeys yet. Add one above.'**
+  String get passkeysEmpty;
+
+  /// When a passkey was added.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {date}'**
+  String passkeysAdded(String date);
+
+  /// When a passkey was last used to sign in.
+  ///
+  /// In en, this message translates to:
+  /// **'Last used {date}'**
+  String passkeysLastUsed(String date);
+
+  /// Button that removes a passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get passkeysRemove;
+
+  /// Title of the remove-passkey confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this passkey?'**
+  String get passkeysRemoveTitle;
+
+  /// Body of the remove-passkey confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'You will no longer be able to sign in with \"{name}\". Also delete it from your phone\'s password manager.'**
+  String passkeysRemoveBody(String name);
+
+  /// Snackbar after adding a passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey added.'**
+  String get passkeysAddedToast;
+
+  /// Snackbar after removing a passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey removed.'**
+  String get passkeysRemovedToast;
+
+  /// Shown when the device cannot use passkeys.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone cannot use passkeys. They need Android 11 or newer with Google Play services.'**
+  String get passkeysUnsupported;
+
+  /// Shown when the account has nothing to confirm a new passkey with.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a password or turn on two-factor authentication on the web before adding a passkey.'**
+  String get passkeysNoStepUp;
+
+  /// Error when the passkey list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your passkeys. Pull down to try again.'**
+  String get passkeysLoadFailed;
+
+  /// Fallback error when adding a passkey fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the passkey.'**
+  String get passkeysAddFailed;
+
+  /// Error when removing a passkey fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove the passkey.'**
+  String get passkeysRemoveFailed;
+
+  /// Validation error when the confirmation field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter it to confirm it\'s you.'**
+  String get passkeysConfirmRequired;
 }
 
 class _AppLocalizationsDelegate
