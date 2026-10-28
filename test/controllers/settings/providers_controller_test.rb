@@ -42,7 +42,7 @@ class Settings::ProvidersControllerTest < ActionDispatch::IntegrationTest
     assert_select "details#financekit-connection" do
       assert_select "a[href=?]", account_path(@source.account), text: "Test Wallet"
       assert_select "span", text: "Sync active"
-      assert_select "dt", text: "Last accepted by Sure"
+      assert_select "dt", text: "Last accepted by Hisaab"
       assert_select "dt", text: "Last imported into your family"
       assert_select "time[datetime=?]", @item.last_accepted_at.iso8601
       assert_select "time[datetime=?]", @item.last_imported_at.iso8601
@@ -60,7 +60,7 @@ class Settings::ProvidersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "details#financekit-connection" do
-      assert_select "span", text: "Repair required — open the Sure iOS app"
+      assert_select "span", text: "Repair required — open the Hisaab iOS app"
       assert_select "dd", text: "Not yet", count: 2
       assert_select "a", text: "Test Wallet"
     end

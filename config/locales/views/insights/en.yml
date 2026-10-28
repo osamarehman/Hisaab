@@ -3,7 +3,7 @@ en:
   insights:
     notification:
       title: New financial insight
-      body: Open Sure to review your latest AI insight.
+      body: Open Hisaab to review your latest AI insight.
     index:
       title: Insights
       subtitle: What's happening across your finances, refreshed nightly.
@@ -25,7 +25,7 @@ en:
         Help me dig into this insight.
 
         Insight: %{title}
-        What Sure found: %{body}
+        What Hisaab found: %{body}
         Period: %{period}
         Figures:
         %{facts}

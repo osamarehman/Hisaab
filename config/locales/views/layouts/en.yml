@@ -1,0 +1,6 @@
+---
+en:
+  layouts:
+    doorkeeper:
+      application:
+        title: "%{product_name} Authorization"

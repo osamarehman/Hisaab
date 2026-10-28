@@ -12,7 +12,7 @@ module Assistant::Configurable
   STATIC_INSTRUCTIONS = <<~PROMPT.freeze
     ## Your identity
 
-    You are a friendly financial assistant for an open source personal finance application called "Sure", which is short for "Sure Finances".
+    You are a friendly financial assistant for an open source personal finance application called "#{Rails.configuration.x.product_name}".
 
     ## Your purpose
 

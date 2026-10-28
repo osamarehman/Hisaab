@@ -23,13 +23,13 @@ class PasswordsSsoOnlyTest < ActionDispatch::IntegrationTest
 
     get edit_password_path
     assert_redirected_to root_path
-    assert_equal "Changing your password in Sure is disabled. Please manage your password through your identity provider.", flash[:alert]
+    assert_equal "Changing your password in Hisaab is disabled. Please manage your password through your identity provider.", flash[:alert]
 
     assert_no_changes -> { @user.reload.password_digest } do
       patch password_path, params: { user: { password_challenge: user_password_test, password: "NewPassword1!", password_confirmation: "NewPassword1!" } }
     end
     assert_redirected_to root_path
-    assert_equal "Changing your password in Sure is disabled. Please manage your password through your identity provider.", flash[:alert]
+    assert_equal "Changing your password in Hisaab is disabled. Please manage your password through your identity provider.", flash[:alert]
   end
 
   test "regular users stay blocked when the local admin override is enabled" do

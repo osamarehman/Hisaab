@@ -16,8 +16,8 @@ en:
       trialing: "Your data will be deleted in %{days} days"
       trial_over: "Your trial is over"
     create:
-      welcome: "Welcome to Sure!"
+      welcome: "Welcome to Hisaab!"
       trial_already_used: "You have already started or completed a trial. Please upgrade to continue."
     success:
-      welcome_with_contribution: "Welcome to Sure!  Your contribution is appreciated."
+      welcome_with_contribution: "Welcome to Hisaab!  Your contribution is appreciated."
       contribution_failed: "Something went wrong processing your contribution. Please try again."

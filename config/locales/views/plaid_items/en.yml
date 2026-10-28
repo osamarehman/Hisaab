@@ -36,14 +36,14 @@ en:
         more_accounts: To add more accounts to this connection, close this and choose
           Add accounts on the %{institution} connection.
         others_connected:
-          one: Sure already has this account through %{name}'s connection, so adding
+          one: Hisaab already has this account through %{name}'s connection, so adding
             yours would only create a duplicate.
-          other: Sure already has these accounts through %{name}'s connection, so adding
+          other: Hisaab already has these accounts through %{name}'s connection, so adding
             yours would only create duplicates.
         others_connected_several:
-          one: Sure already has this account through other members' connections, so
+          one: Hisaab already has this account through other members' connections, so
             adding yours would only create a duplicate.
-          other: Sure already has these accounts through other members' connections, so
+          other: Hisaab already has these accounts through other members' connections, so
             adding yours would only create duplicates.
         none_connected: None of the accounts you tried to add are connected yet, so this
           is likely a different login. Adding it only counts as another Plaid connection.
