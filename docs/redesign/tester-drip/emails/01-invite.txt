@@ -1,0 +1,25 @@
+Subject: Can you test my new app, Hisaab?
+
+Hi {name},
+
+You're on my tester list from SureCaller, thanks again for helping with that one.
+
+I've built a second app called Hisaab. It's a simple household expense tracker in rupees. You add what you spend, attach a receipt photo if you want, and import your bank or card statements (PDF or CSV). Each month sits on one page: what came in, what went out, and what's left.
+
+Google needs 12 testers to keep it installed for 14 days before I can publish it. It takes about 2 minutes:
+
+1. On your Android phone, signed in with the Google account for this email, open this link and tap "Become a tester":
+   https://play.google.com/apps/testing/dev.shipdeck.hisaab
+
+2. Install Hisaab from the Play Store:
+   https://play.google.com/store/apps/details?id=dev.shipdeck.hisaab
+
+3. Sign in with Google and keep the app installed for 14 days.
+
+It's available in Pakistan for now. If something breaks or feels confusing, reply to this email and I'll fix it.
+
+Thanks,
+Usama R.
+
+--
+You're getting this because you joined my app tester list. Reply "stop" and I won't email you again.

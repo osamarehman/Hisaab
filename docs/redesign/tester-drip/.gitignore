@@ -1,0 +1,4 @@
+*.csv
+*.json
+*.tmp
+suppress.txt

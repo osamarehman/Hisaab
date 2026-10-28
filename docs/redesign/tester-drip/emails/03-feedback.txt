@@ -1,0 +1,22 @@
+Subject: How's Hisaab working for you?
+
+Hi {name},
+
+If you've been trying Hisaab, thanks. We're close to the 14 days now.
+
+I'd like one or two lines from you on any of these:
+
+- What was confusing
+- What broke or looked wrong
+- What you'd want it to do next
+
+Reply to this email, short is fine.
+
+If you haven't joined yet, it's not too late:
+https://play.google.com/apps/testing/dev.shipdeck.hisaab
+
+Thanks,
+Usama R.
+
+--
+This is the last email in this series. Reply "stop" and I won't email you again.

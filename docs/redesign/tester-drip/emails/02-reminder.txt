@@ -1,0 +1,21 @@
+Subject: Quick reminder about Hisaab testing
+
+Hi {name},
+
+A quick reminder in case my last email got buried. If you've already joined, thanks, you can ignore this one.
+
+Joining takes about 2 minutes:
+
+1. Open this link on your Android phone and tap "Become a tester":
+   https://play.google.com/apps/testing/dev.shipdeck.hisaab
+
+2. Install Hisaab:
+   https://play.google.com/store/apps/details?id=dev.shipdeck.hisaab
+
+The 14 days only count while the app stays installed, so please keep it on your phone even if you don't use it every day.
+
+Thanks,
+Usama R.
+
+--
+Reply "stop" and I won't email you again.
