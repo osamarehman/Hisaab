@@ -195,7 +195,13 @@ class Family < ApplicationRecord
 
   def ai_allowed?
     allowed = self.class.ai_allowed_emails
-    allowed.empty? || users.where(active: true).where("LOWER(email) IN (?)", allowed).exists?
+    return true if allowed.empty?
+
+    # Encrypted emails can only be matched through a hash condition, which
+    # encrypts (and downcases) the values before querying.
+    members = users.where(active: true)
+    members = User.encryption_ready? ? members.where(email: allowed) : members.where("LOWER(email) IN (?)", allowed)
+    members.exists?
   end
 
   # The LLM provider this family's AI features may call, or nil when none is
