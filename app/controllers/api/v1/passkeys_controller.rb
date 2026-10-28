@@ -16,10 +16,9 @@ module Api
       before_action -> { authorize_scope!(:write) }, only: %i[options create destroy]
       before_action :ensure_step_up_available, only: %i[options create]
 
-      # Guessing the step-up through either call alone stays at 10 a minute.
-      rate_limit to: 10, within: 1.minute, by: -> { current_resource_owner.id }, only: :options, name: "passkey-step-up-check",
-        with: -> { render json: { error: I18n.t("webauthn_credentials.rate_limited") }, status: :too_many_requests }
-      rate_limit to: 10, within: 1.minute, by: -> { current_resource_owner.id }, only: :create, name: "passkey-step-up-spend",
+      # One shared counter across both calls: options checks the step-up code
+      # without spending it, so separate limits would double the guess rate.
+      rate_limit to: 5, within: 1.minute, by: -> { current_resource_owner.id }, only: %i[options create], name: "passkey-step-up",
         with: -> { render json: { error: I18n.t("webauthn_credentials.rate_limited") }, status: :too_many_requests }
 
       def index

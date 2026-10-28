@@ -40,8 +40,12 @@ Rails.application.configure do
     "05:5D:5B:82:1A:F1:8D:4B:BB:BA:0B:DB:1D:14:76:2B:1E:7A:09:DF:54:FA:47:53:E2:AA:73:1A:3B:8D:90:21")
     .split(",")
     .map { |fingerprint| fingerprint.strip.upcase }
-    .select { |fingerprint| fingerprint.match?(/\A(?:[0-9A-F]{2}:){31}[0-9A-F]{2}\z/) }
+    .reject(&:empty?)
     .uniq
+  malformed = android_fingerprints.reject { |fingerprint| fingerprint.match?(/\A(?:[0-9A-F]{2}:){31}[0-9A-F]{2}\z/) }
+  if malformed.any?
+    raise ArgumentError, "ANDROID_APP_SHA256_CERT_FINGERPRINTS has malformed entries: #{malformed.join(', ')}"
+  end
 
   android_origins = android_fingerprints.map do |fingerprint|
     digest = [ fingerprint.delete(":") ].pack("H*")
