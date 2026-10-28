@@ -1,4 +1,4 @@
-package am.sure.mobile
+package dev.shipdeck.hisaab
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

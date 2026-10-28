@@ -6,7 +6,7 @@ This repository now includes `.github/workflows/ios-testflight.yml`, which build
 
 - The workflow file itself: `.github/workflows/ios-testflight.yml`
 - Existing app signing identifiers in Xcode:
-  - Bundle ID `am.sure.mobile` (or your custom value in the workflow)
+  - Bundle ID `dev.shipdeck.hisaab` (or your custom value in the workflow)
 - Flutter assets and source already in `mobile/`
 
 ## Trigger paths
@@ -43,7 +43,7 @@ Set these in **Settings → Secrets and variables → Actions**:
 
 - Use an API Key with App Manager or Developer role
 - Create/download an iOS Distribution certificate (`.p12`), convert to base64 for `IOS_DISTRIBUTION_P12_BASE64`
-- Create and distribute an **App Store** provisioning profile for `am.sure.mobile`
+- Create and distribute an **App Store** provisioning profile for `dev.shipdeck.hisaab`
 - Base64-encode the `.mobileprovision` file for `IOS_PROVISIONING_PROFILE_BASE64`
 
 ## Output

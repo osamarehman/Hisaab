@@ -153,7 +153,7 @@ jobs:
         working-directory: mobile
         if: ${{ steps.check_prereqs.outputs.enabled == 'true' }}
         env:
-          APP_BUNDLE_ID: ${{ vars.IOS_APP_BUNDLE_ID || 'am.sure.mobile' }}
+          APP_BUNDLE_ID: ${{ vars.IOS_APP_BUNDLE_ID || 'dev.shipdeck.hisaab' }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
           IOS_DISTRIBUTION_CERT_NAME: ${{ secrets.IOS_DISTRIBUTION_CERT_NAME }}
