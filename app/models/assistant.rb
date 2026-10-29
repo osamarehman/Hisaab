@@ -45,6 +45,37 @@ module Assistant
     Function::DeleteCategory
   ].freeze
 
+  # Tools that only read. In a chat whose writes wait for the user's Save,
+  # these run directly; every other tool is proposed for confirmation (and
+  # refused when it has no card preview). Explicit, so a new write tool is
+  # never run unconfirmed because of its name.
+  READ_FUNCTION_CLASSES = [
+    Function::GetTransactions,
+    Function::GetRecurringTransactions,
+    Function::GetAccounts,
+    Function::GetHoldings,
+    Function::GetBalanceSheet,
+    Function::GetIncomeStatement,
+    Function::GetBudget,
+    Function::SearchFamilyFiles,
+    Function::GetTags,
+    Function::GetCategories,
+    Function::GetMerchants,
+    Function::GetRules,
+    Function::GetRuleOptions,
+    Function::PreviewRule,
+    Function::GetTransferMatchCandidates,
+    Function::ListAccountStatements,
+    Function::GetAccountStatement,
+    Function::GetStatementCoverage,
+    Function::GetValuations,
+    Function::GetInsights,
+    Function::GetBills,
+    Function::GetBillDetails,
+    Function::GetPaycheckPlan,
+    Function::GetBillAudit
+  ].freeze
+
   class << self
     def for_chat(chat)
       implementation_for(chat).for_chat(chat)

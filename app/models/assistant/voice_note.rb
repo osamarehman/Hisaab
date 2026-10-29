@@ -41,7 +41,9 @@ class Assistant::VoiceNote
     format = audio_format
     raise error(:invalid_audio, "invalid_audio") unless format
 
-    bytes = file.read
+    raise error(:audio_too_large, "too_large") if file.size.to_i > MAX_BYTES
+
+    bytes = file.read(MAX_BYTES + 1)
     raise error(:invalid_audio, "invalid_audio") if bytes.blank?
     raise error(:audio_too_large, "too_large") if bytes.bytesize > MAX_BYTES
     raise error(:audio_too_long, "too_long", seconds: MAX_SECONDS) if too_long?(bytes, format)
@@ -75,15 +77,33 @@ class Assistant::VoiceNote
       seconds.to_f > MAX_SECONDS + DURATION_GRACE_SECONDS
     end
 
-    # Length from the WAV header's byte rate, so the limit does not rest on the
-    # client's word. nil when the header is not a plain RIFF/WAVE one.
+    # Length from the WAV file itself (the fmt chunk's byte rate and the data
+    # chunk's size), so the limit does not rest on the client's duration_ms.
+    # nil when the file is not RIFF/WAVE or has no fmt and data chunks.
     def wav_seconds(bytes)
       return unless bytes.byteslice(0, 4) == "RIFF" && bytes.byteslice(8, 4) == "WAVE"
 
-      byte_rate = bytes.byteslice(28, 4)&.unpack1("V").to_i
-      return unless byte_rate.positive?
+      byte_rate = nil
+      offset = 12
+      while offset + 8 <= bytes.bytesize
+        id = bytes.byteslice(offset, 4)
+        size = bytes.byteslice(offset + 4, 4).unpack1("V")
+        body = offset + 8
 
-      (bytes.bytesize - 44).to_f / byte_rate
+        case id
+        when "fmt "
+          byte_rate = bytes.byteslice(body + 8, 4)&.unpack1("V") if size >= 16
+        when "data"
+          return unless byte_rate.to_i.positive?
+
+          # Recorders that stream WAV may leave the data size at 0 or max.
+          data_size = size.zero? || size == 0xFFFFFFFF ? bytes.bytesize - body : [ size, bytes.bytesize - body ].min
+          return data_size.to_f / byte_rate
+        end
+
+        offset = body + size + (size.odd? ? 1 : 0)
+      end
+      nil
     end
 
     def error(code, key, **options)

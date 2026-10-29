@@ -21,3 +21,4 @@ en:
       too_long: "Voice notes can be up to %{seconds} seconds."
       too_large: "That voice note is too large."
       invalid_audio: "That recording format is not supported."
+      rate_limited: "That's a lot of voice notes for now. Please type, or try again in a while."

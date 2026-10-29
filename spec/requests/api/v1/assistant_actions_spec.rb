@@ -119,7 +119,8 @@ RSpec.describe 'API V1 Assistant actions', type: :request do
       tags 'Chat Actions'
       description 'Hands a statement uploaded with POST /api/v1/imports (PdfImport or TransactionImport, with an account) ' \
                   'to the chat. The user message is returned at once; once the import is read the assistant posts a ' \
-                  'message with one statement_entry pending action per line (suggested label, duplicate flag).'
+                  'message with one statement_entry pending action per line (suggested label, duplicate flag). ' \
+                  'An import can be attached to a chat once (422 already_attached).'
       security [ { apiKeyAuth: [] } ]
       consumes 'application/json'
       produces 'application/json'
@@ -161,7 +162,7 @@ RSpec.describe 'API V1 Assistant actions', type: :request do
       tags 'Chat Actions'
       description 'Transcribes the audio on the server (AI_TRANSCRIBE_MODEL over the OpenAI-compatible provider; ' \
                   'Urdu, English and Roman Urdu) and posts the transcript as the user\'s message, which the assistant ' \
-                  'then answers. Up to 5 MB and 120 seconds; WAV 16 kHz mono recommended (mp3, m4a, aac, ogg, flac accepted).'
+                  'then answers. Up to 5 MB and 120 seconds, 20 notes per user per hour (429 rate_limited); WAV 16 kHz mono recommended (mp3, m4a, aac, ogg, flac accepted).'
       security [ { apiKeyAuth: [] } ]
       consumes 'multipart/form-data'
       produces 'application/json'

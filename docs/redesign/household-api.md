@@ -129,11 +129,16 @@ use AI. `Family#ai_allowed?` and `Family#llm_provider` are the single check.
 
 ## Assistant: confirm cards, statements, voice notes
 
-Chats created through `POST /api/v1/chats` have `confirm_writes` on. In them
-the assistant's write tools (every tool not named `get_*`, `list_*`,
-`search_*` or `preview_*`) do not save: the tool call is validated and stored
-as a pending action, and the model is told to ask the user to tap Save. Read
-tools run as before. Web chats keep writing directly.
+Every chat the app touches has `confirm_writes` on: `POST /api/v1/chats`
+creates it that way, and posting a message, retry, voice note or statement
+through the API switches an existing chat on for good. In those chats only
+the read tools in `Assistant::READ_FUNCTION_CLASSES` run directly. A write
+tool with a card preview (`create_transaction`, `update_transaction`,
+`delete_transaction`, `create_category`, `create_account`,
+`update_account_balance`) is validated and stored as a pending action, and
+the model asks the user to tap Save. Any other write tool (rules, budgets,
+bills, goals, transfers, `delete_category`, …) is refused with
+`not_available_in_app`. Chats used only on the web keep writing directly.
 
 - `GET /api/v1/chats/:id` gains `pending_actions` (the chat's newest 300,
   oldest first, independent of message paging): `id`, `message_id` (the
@@ -148,7 +153,9 @@ tools run as before. Web chats keep writing directly.
   applies them by running the proposed tool with the proposed arguments, as
   the user, in a savepoint. Idempotent: applied/cancelled actions come back
   unchanged; one that fails comes back `failed` with `error` and can be
-  confirmed again. After applying, the proposing tool call's stored result is
+  confirmed again. A tool that fails (raises or returns `success: false`)
+  is rolled back, and each action or statement batch succeeds or fails on
+  its own. After applying, the proposing tool call's stored result is
   replaced with the real outcome, so the model sees the created ids in later
   turns (for "change that to 3000" / "delete it").
 - `POST /api/v1/chats/:chat_id/pending_actions/cancel` `{ "ids": [...] }`.
@@ -165,7 +172,10 @@ tools run as before. Web chats keep writing directly.
   `duplicate` with the same lookup the PDF import uses. Confirming lines keeps
   only those rows on the import, sets their labels and publishes it through
   the normal import job; the batch's other open lines become `cancelled`.
-  `422` when the import has no writable account or is already imported.
+  `422` when the import has no writable account or is already imported, and
+  `already_attached` when this chat already has that import (one attachment
+  per chat and import, enforced by a unique index on `messages.import_id`).
+  The import job is enqueued only after the narrowed rows commit.
 - Voice note: `POST /api/v1/chats/:chat_id/voice_notes` multipart `audio`
   (WAV 16 kHz mono recommended; mp3, m4a, aac, ogg, flac accepted) and
   optional `duration_ms`. Max 5 MB and 120 s (read from the WAV header when
@@ -175,7 +185,8 @@ tools run as before. Web chats keep writing directly.
   posts the transcript as the user's message (the assistant then answers).
   `201 { "transcript", "message" }`; `422` `invalid_audio`,
   `audio_too_large`, `audio_too_long`, `transcription_failed`,
-  `empty_transcript` with a user-facing `message`.
+  `empty_transcript` with a user-facing `message`; `429` `rate_limited`
+  after 20 notes per user per hour.
 - All of these sit behind the chat API's AI check (`ai_enabled` and
   `AI_ALLOWED_EMAILS`).
 
@@ -189,7 +200,9 @@ currency; same path as `POST /accounts`) and `update_account_balance`
 
 `POST /mcp` (JSON-RPC `initialize`, `tools/list`, `tools/call`; Bearer
 Doorkeeper token with `read_write`, or `MCP_API_TOKEN` + `MCP_USER_EMAIL`)
-serves the same tool registry. MCP tools apply directly, without pending
+serves the same tool registry. `MCP_API_TOKEN` is a single-user,
+full-access key: anyone holding it acts as `MCP_USER_EMAIL` with every tool,
+writes included, so keep it secret and prefer OAuth tokens. MCP tools apply directly, without pending
 actions: an MCP client asks its own user before running a tool. The endpoint
 returns `403 { "error": "ai_unavailable" }` for a household outside
 `AI_ALLOWED_EMAILS`.

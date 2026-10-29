@@ -116,7 +116,7 @@ class Assistant::Function::DeleteTransaction < Assistant::Function
     response
   end
 
-  def preview(params = {})
+  def confirmation_preview(params = {})
     transaction = find_transaction(params["id"], params["account_id"])
     return error("not_found", "No transaction with id '#{params["id"]}' in an account you can write to.") unless transaction
 

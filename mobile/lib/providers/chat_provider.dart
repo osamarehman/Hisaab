@@ -726,6 +726,10 @@ class ChatProvider with ChangeNotifier {
   /// Polls until an assistant message not in [knownAssistantIds] has text,
   /// then hands over to the normal reply polling. Returns null on success or
   /// `timeout` / `cancelled` / `chat_error`.
+  ///
+  /// Each tick reads only page 1 (it carries the chat error, pending actions
+  /// and the message total); the full history is loaded only once the total
+  /// grows past what was known when the statement was sent.
   Future<String?> _waitForStatementReply(
     String accessToken,
     String chatId,
@@ -734,6 +738,7 @@ class ChatProvider with ChangeNotifier {
     final generation = _statementWaitGeneration;
     bool abandoned() =>
         generation != _statementWaitGeneration || _currentChat?.id != chatId;
+    final knownTotal = _currentChat?.messages.length ?? 0;
     final deadline = DateTime.now().add(_statementWaitTimeout);
 
     while (DateTime.now().isBefore(deadline)) {
@@ -745,22 +750,38 @@ class ChatProvider with ChangeNotifier {
           chatId: chatId,
         );
         if (result['success'] != true) continue;
+        if (abandoned()) return 'cancelled';
+
+        final firstPage = result['chat'] as Chat;
+        if (firstPage.error != null && firstPage.error!.isNotEmpty) {
+          _errorMessage = firstPage.error;
+          notifyListeners();
+          return 'chat_error';
+        }
+
+        final pagination = result['pagination'] as Map<String, dynamic>?;
+        final total = (pagination?['total_count'] as int?) ??
+            firstPage.messages.length;
+        if (total <= knownTotal) {
+          if (_actionsSignature(firstPage) !=
+              _actionsSignature(_currentChat!)) {
+            _currentChat = _currentChat!
+                .copyWith(pendingActions: firstPage.pendingActions);
+            notifyListeners();
+          }
+          continue;
+        }
+
         final loaded = await _loadRemainingPages(
           accessToken: accessToken,
           chatId: chatId,
           firstPage: result,
         );
         if (abandoned()) return 'cancelled';
-
         final chat = loaded.chat;
         _hasIncompleteHistory = !loaded.complete;
         _currentChat = chat;
 
-        if (chat.error != null && chat.error!.isNotEmpty) {
-          _errorMessage = chat.error;
-          notifyListeners();
-          return 'chat_error';
-        }
         final replied = chat.messages.any((m) =>
             m.isAssistant &&
             !knownAssistantIds.contains(m.id) &&

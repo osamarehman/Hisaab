@@ -8,15 +8,14 @@ class Assistant::Function
       raise NotImplementedError, "Subclasses must implement the description class method"
     end
 
-    # Read tools follow a naming convention; everything else may write, so a
+    # Anything outside Assistant::READ_FUNCTION_CLASSES may write, so a
     # confirm-writes chat holds it for the user's Save (PendingAssistantAction).
-    # A new write tool is therefore confirmed by default.
     def requires_confirmation?
-      !name.match?(READ_ONLY_NAME)
+      Assistant::READ_FUNCTION_CLASSES.exclude?(self)
     end
   end
 
-  READ_ONLY_NAME = /\A(get|list|search|preview)_/
+  NOT_IN_APP_MESSAGE = "This change cannot be made from the app's chat. Tell the user to make it in the web app. Do not retry."
 
   MAX_PAGE_SIZE = 100
 
@@ -47,10 +46,11 @@ class Assistant::Function
 
   # What #call would do, for the confirm card, without writing anything:
   # { kind:, summary:, details: }, or the tool's error hash when the call
-  # would fail. Write tools that a household uses often override this with a
-  # validated, readable preview.
-  def preview(_params = {})
-    { kind: "other", summary: name.humanize, details: {} }
+  # would fail. Only the write tools a household needs (entries, balances,
+  # accounts, labels) override this; for the rest a card could not say what
+  # Save would do, so they are not offered in a confirm-writes chat.
+  def confirmation_preview(_params = {})
+    { success: false, error: "not_available_in_app", message: NOT_IN_APP_MESSAGE }
   end
 
   def to_definition

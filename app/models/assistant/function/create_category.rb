@@ -74,7 +74,7 @@ class Assistant::Function::CreateCategory < Assistant::Function
     end
   end
 
-  def preview(params = {})
+  def confirmation_preview(params = {})
     return error("categories_locked", "Categories are locked. Unlock them before creating a new category.") if family.categories_locked?
 
     name = params["name"].to_s.strip

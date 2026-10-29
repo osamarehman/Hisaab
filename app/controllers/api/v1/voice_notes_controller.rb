@@ -7,6 +7,12 @@ class Api::V1::VoiceNotesController < Api::V1::BaseController
   before_action :require_ai_enabled
   before_action -> { authorize_scope!(:write) }
   before_action :set_chat
+  before_action -> { @chat.require_confirmed_writes! }
+
+  # Each note is a paid model call; generous for a household, a ceiling for a
+  # leaked key.
+  rate_limit to: 20, within: 1.hour, by: -> { current_resource_owner.id }, only: :create, name: "assistant-voice-note",
+    with: -> { render json: { error: "rate_limited", message: I18n.t("assistant.voice.rate_limited") }, status: :too_many_requests }
 
   def create
     audio = params[:audio]

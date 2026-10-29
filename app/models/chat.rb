@@ -73,6 +73,13 @@ class Chat < ApplicationRecord
     end
   end
 
+  # Anything reaching a chat through the API (the app) waits for the user's
+  # Save, whatever the chat was created as. One-way: a chat once used from
+  # the app never goes back to writing directly.
+  def require_confirmed_writes!
+    update!(confirm_writes: true) unless confirm_writes?
+  end
+
   def needs_assistant_response?
     conversation_messages.ordered.last.role != "assistant"
   end

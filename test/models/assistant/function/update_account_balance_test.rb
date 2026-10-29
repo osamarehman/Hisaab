@@ -17,7 +17,7 @@ class Assistant::Function::UpdateAccountBalanceTest < ActiveSupport::TestCase
   end
 
   test "preview names the account and the new balance" do
-    preview = @function.preview("account_id" => @account.id, "balance" => 12000)
+    preview = @function.confirmation_preview("account_id" => @account.id, "balance" => 12000)
 
     assert_equal "update_balance", preview[:kind]
     assert_equal @account.name, preview[:details][:account]
@@ -25,7 +25,7 @@ class Assistant::Function::UpdateAccountBalanceTest < ActiveSupport::TestCase
   end
 
   test "rejects an account outside the family and a bad balance" do
-    assert_equal "account_not_found", @function.preview("account_id" => SecureRandom.uuid, "balance" => 1)[:error]
-    assert_equal "invalid_balance", @function.preview("account_id" => @account.id, "balance" => "lots")[:error]
+    assert_equal "account_not_found", @function.confirmation_preview("account_id" => SecureRandom.uuid, "balance" => 1)[:error]
+    assert_equal "invalid_balance", @function.confirmation_preview("account_id" => @account.id, "balance" => "lots")[:error]
   end
 end

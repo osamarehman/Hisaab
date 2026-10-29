@@ -25,6 +25,35 @@ class Api::V1::ChatInputsControllerTest < ActionDispatch::IntegrationTest
     assert_includes message["content"], "march.pdf"
   end
 
+  test "attaching the same statement twice is refused" do
+    2.times { post "/api/v1/chats/#{@chat.id}/statements", params: { import_id: @import.id }, headers: api_headers, as: :json }
+
+    assert_response :unprocessable_entity
+    assert_equal "already_attached", JSON.parse(response.body)["error"]
+  end
+
+  test "anything sent through the API turns on confirm for the chat" do
+    @chat.update!(confirm_writes: false)
+    Assistant::VoiceNote.any_instance.stubs(:transcribe!).returns("hello")
+
+    post "/api/v1/chats/#{@chat.id}/voice_notes", params: { audio: audio_upload }, headers: api_headers
+    assert @chat.reload.confirm_writes?
+
+    @chat.update!(confirm_writes: false)
+    post "/api/v1/chats/#{@chat.id}/messages", params: { content: "aaj 500 ki sabzi" }, headers: api_headers
+    assert_response :created
+    assert @chat.reload.confirm_writes?
+  end
+
+  test "voice notes are rate limited per user" do
+    Api::V1::VoiceNotesController.cache_store.stubs(:increment).returns(21)
+
+    post "/api/v1/chats/#{@chat.id}/voice_notes", params: { audio: audio_upload }, headers: api_headers
+
+    assert_response :too_many_requests
+    assert_equal "rate_limited", JSON.parse(response.body)["error"]
+  end
+
   test "a statement must be an open import in the family" do
     post "/api/v1/chats/#{@chat.id}/statements", params: { import_id: SecureRandom.uuid }, headers: api_headers, as: :json
     assert_response :not_found

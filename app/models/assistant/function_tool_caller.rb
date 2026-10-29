@@ -2,13 +2,16 @@ class Assistant::FunctionToolCaller
   Error = Class.new(StandardError)
   FunctionExecutionError = Class.new(Error)
 
-  attr_reader :functions
+  # Pending actions proposed through this caller, so the turn can attach them
+  # to its message, or cancel them if the turn fails.
+  attr_reader :functions, :proposed_action_ids
 
   # With a confirm_writes_chat, write tools are proposed to the user instead
   # of run (PendingAssistantAction); read tools still run directly.
   def initialize(functions = [], confirm_writes_chat: nil)
     @functions = functions
     @confirm_writes_chat = confirm_writes_chat
+    @proposed_action_ids = []
   end
 
   def fulfill_requests(function_requests)
@@ -40,12 +43,14 @@ class Assistant::FunctionToolCaller
       fn_args = JSON.parse(function_request.function_args.presence || "{}")
 
       if @confirm_writes_chat && fn.class.requires_confirmation?
-        return PendingAssistantAction.propose!(
+        result = PendingAssistantAction.propose!(
           chat: @confirm_writes_chat,
           function: fn,
           arguments: fn_args,
           provider_call_id: function_request.call_id
         )
+        @proposed_action_ids << result[:pending_action_id] if result[:pending_action_id]
+        return result
       end
 
       fn.call(fn_args)

@@ -63,4 +63,31 @@ class Assistant::StatementProposalTest < ActiveSupport::TestCase
     assert_equal 1, @import.reload.rows_count
     assert @import.importing?
   end
+
+  test "the import job is enqueued only after the narrowed rows are committed" do
+    message = @proposal.propose!
+    coffee = @chat.pending_assistant_actions.where(message: message).find { |l| l.details["description"] == "Coffee Shop" }
+    outside = ActiveRecord::Base.connection.open_transactions
+
+    PdfImport.any_instance.expects(:publish_later).with { ActiveRecord::Base.connection.open_transactions == outside }
+
+    PendingAssistantAction.confirm_all!([ PendingAssistantAction.find(coffee.id) ])
+  end
+
+  test "proposing the same import twice in a chat makes one batch" do
+    @proposal.propose!
+
+    assert_no_difference [ "PendingAssistantAction.count", "Message.count" ] do
+      assert_nil Assistant::StatementProposal.new(chat: @chat, import: @import).propose!
+    end
+  end
+
+  test "lines whose import is gone fail cleanly" do
+    lines = @chat.pending_assistant_actions.where(message: @proposal.propose!).to_a
+    lines.each { |l| l.update!(arguments: l.arguments.merge("import_id" => SecureRandom.uuid)) }
+
+    PendingAssistantAction.confirm_all!(lines)
+
+    assert lines.all? { |l| l.reload.failed? }
+  end
 end

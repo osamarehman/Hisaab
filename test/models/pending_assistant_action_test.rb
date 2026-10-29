@@ -97,6 +97,78 @@ class PendingAssistantActionTest < ActiveSupport::TestCase
     assert action.error.present?
   end
 
+  test "a write tool without a card preview is refused, not proposed" do
+    caller = Assistant::FunctionToolCaller.new([ Assistant::Function::CreateRule.new(@user) ], confirm_writes_chat: @chat)
+
+    assert_no_difference [ "PendingAssistantAction.count", "Rule.count" ] do
+      result = caller.fulfill_requests([ function_request("create_rule", { "name" => "x" }) ]).first.function_result
+      assert_equal "not_available_in_app", result["error"]
+    end
+  end
+
+  test "read tools are an explicit list from the registry" do
+    registry = Assistant.function_classes(users(:family_admin).tap { |u| u.stubs(:preview_features_enabled?).returns(true) })
+
+    assert_empty Assistant::READ_FUNCTION_CLASSES - registry
+    assert Assistant::Function::GetAccounts.requires_confirmation? == false
+    assert Assistant::Function::CreateTransaction.requires_confirmation?
+    assert Assistant::Function::ImportBankStatement.requires_confirmation?
+  end
+
+  test "a tool that reports failure after writing leaves nothing behind" do
+    failing = Class.new(Assistant::Function) do
+      def self.name = "create_category"
+      def self.description = "writes, then fails"
+      def call(_params = {})
+        family.categories.create!(name: "Half written")
+        { success: false, error: "boom", message: "boom" }
+      end
+    end
+    action = propose
+    action.update!(function_name: "create_category")
+    Assistant.stubs(:function_classes).returns([ failing ])
+
+    assert_no_difference "Category.count" do
+      action.apply!
+    end
+    assert action.reload.failed?
+  end
+
+  test "one failing action does not stop or undo the others in a confirm" do
+    good = propose
+    bad = propose
+    bad.stubs(:apply!).raises(RuntimeError, "db went away")
+
+    result = PendingAssistantAction.confirm_all!([ good, bad ])
+
+    assert_equal %w[applied failed], result.map(&:status)
+  end
+
+  test "a turn links only the actions it proposed and withdraws them if it fails" do
+    stale = propose
+    builtin = Assistant::Builtin.new(@chat, functions: [ Assistant::Function::CreateTransaction ])
+    builtin.stubs(:get_model_provider).returns(mock("llm"))
+    builtin.send(:function_tool_caller).fulfill_requests([ function_request("create_transaction", @arguments.merge("name" => "Doodh")) ])
+    proposed = PendingAssistantAction.find(builtin.send(:function_tool_caller).proposed_action_ids.first)
+
+    message = AssistantMessage.create!(chat: @chat, content: "Tap Save", ai_model: "gpt-4.1")
+    Assistant::Responder.any_instance.stubs(:respond)
+    builtin.respond_to(UserMessage.new(chat: @chat, content: "doodh 200", ai_model: "gpt-4.1"), assistant_message: message)
+
+    assert_equal message.id, proposed.reload.message_id
+    assert_nil stale.reload.message_id
+
+    failing = Assistant::Builtin.new(@chat, functions: [ Assistant::Function::CreateTransaction ])
+    failing.stubs(:get_model_provider).returns(mock("llm"))
+    failing.send(:function_tool_caller).fulfill_requests([ function_request("create_transaction", @arguments) ])
+    orphan = PendingAssistantAction.find(failing.send(:function_tool_caller).proposed_action_ids.first)
+    Assistant::Responder.any_instance.stubs(:respond).raises(StandardError, "provider down")
+    failing.respond_to(UserMessage.new(chat: @chat, content: "x", ai_model: "gpt-4.1"))
+
+    assert orphan.reload.cancelled?
+    assert stale.reload.pending?
+  end
+
   private
     def propose
       result = PendingAssistantAction.propose!(

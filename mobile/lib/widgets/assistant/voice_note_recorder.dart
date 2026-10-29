@@ -26,13 +26,18 @@ class VoiceNoteClip {
 
 /// Records 16 kHz mono WAV voice notes to a temp file, capped at
 /// [maxDuration]. Finished clips go to [onClip]; clips under [minDuration]
-/// are dropped and reported through [onTooShort].
-class VoiceNoteRecorder extends ChangeNotifier {
+/// are dropped and reported through [onTooShort]. Leaving the app while
+/// recording discards the clip so the mic never stays open in the background.
+class VoiceNoteRecorder extends ChangeNotifier with WidgetsBindingObserver {
   VoiceNoteRecorder({
     required this.onClip,
     required this.onTooShort,
     AudioRecorder? recorder,
-  }) : _recorder = recorder ?? AudioRecorder();
+    Future<Directory> Function()? tempDirectory,
+  })  : _recorder = recorder ?? AudioRecorder(),
+        _tempDirectory = tempDirectory ?? getTemporaryDirectory {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   static const maxDuration = Duration(minutes: 2);
   static const minDuration = Duration(milliseconds: 700);
@@ -46,6 +51,7 @@ class VoiceNoteRecorder extends ChangeNotifier {
   final void Function(VoiceNoteClip clip) onClip;
   final VoidCallback onTooShort;
   final AudioRecorder _recorder;
+  final Future<Directory> Function() _tempDirectory;
 
   VoiceNoteMode? _mode;
   DateTime? _startedAt;
@@ -86,12 +92,15 @@ class VoiceNoteRecorder extends ChangeNotifier {
       }
       if (session != _session) return VoiceNoteStart.started;
 
-      final dir = await getTemporaryDirectory();
+      final dir = await _tempDirectory();
       final path =
           '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.wav';
       await _recorder.start(_config, path: path);
-      if (session != _session) {
-        await _recorder.cancel();
+      // Released, cancelled or backgrounded while the recorder was starting.
+      if (session != _session || _hidden) {
+        if (session == _session) _reset();
+        await _safely(_recorder.cancel);
+        await _deleteFile(path);
         return VoiceNoteStart.started;
       }
 
@@ -131,31 +140,67 @@ class VoiceNoteRecorder extends ChangeNotifier {
         ? Duration.zero
         : DateTime.now().difference(startedAt);
     if (startedAt == null || duration < minDuration) {
-      if (startedAt != null) await _safely(_recorder.cancel);
+      if (startedAt != null) {
+        await _safely(_recorder.cancel);
+        await _deleteFile(path);
+      }
       onTooShort();
       return;
     }
 
+    String? stoppedPath = path;
+    VoiceNoteClip? clip;
     try {
-      final stoppedPath = await _recorder.stop() ?? path;
+      stoppedPath = await _recorder.stop() ?? path;
       if (stoppedPath == null) return;
-      final file = File(stoppedPath);
-      final bytes = await file.readAsBytes();
-      unawaited(file.delete().then((_) {}, onError: (_) {}));
+      final bytes = await File(stoppedPath).readAsBytes();
       final capped = duration > maxDuration ? maxDuration : duration;
-      onClip(VoiceNoteClip(bytes: bytes, durationMs: capped.inMilliseconds));
+      clip = VoiceNoteClip(bytes: bytes, durationMs: capped.inMilliseconds);
     } catch (e) {
       LogService.instance
           .warning('VoiceNoteRecorder', 'stop failed: ${e.runtimeType}');
+    } finally {
+      // The clip is in memory now; the WAV never outlives this call.
+      await _deleteFile(stoppedPath);
+      if (stoppedPath != path) await _deleteFile(path);
     }
+    if (clip != null) onClip(clip);
   }
 
   /// Discards the current recording.
   Future<void> cancel() async {
     if (_mode == null) return;
     final wasRecording = _startedAt != null;
+    final path = _path;
     _reset();
-    if (wasRecording) await _safely(_recorder.cancel);
+    if (!wasRecording) return;
+    try {
+      await _safely(_recorder.cancel);
+    } finally {
+      await _deleteFile(path);
+    }
+  }
+
+  /// The app is fully in the background (not just behind a system dialog).
+  bool _hidden = false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _hidden = state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached;
+    // Only an open mic is cancelled. A start still waiting on the permission
+    // dialog (which makes the app inactive) is left alone; it re-checks
+    // [_hidden] once the recorder is up.
+    if (state != AppLifecycleState.resumed && isRecording) unawaited(cancel());
+  }
+
+  Future<void> _deleteFile(String? path) async {
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+    } catch (_) {}
   }
 
   Future<void> _safely(Future<void> Function() fn) async {
@@ -178,8 +223,12 @@ class VoiceNoteRecorder extends ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
-    if (_startedAt != null) unawaited(_safely(_recorder.cancel));
+    if (_startedAt != null) {
+      final path = _path;
+      unawaited(_safely(_recorder.cancel).then((_) => _deleteFile(path)));
+    }
     unawaited(_recorder.dispose());
     super.dispose();
   }

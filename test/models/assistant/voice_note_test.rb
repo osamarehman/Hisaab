@@ -31,6 +31,25 @@ class Assistant::VoiceNoteTest < ActiveSupport::TestCase
     assert_equal "audio_too_long", error.code
   end
 
+  test "reads the length from the data chunk even after other chunks" do
+    @provider.expects(:transcribe_audio).never
+    wav = wav_bytes(seconds: 130)
+    # Insert a LIST chunk between fmt and data, as some recorders do.
+    with_list = wav.byteslice(0, 36) + [ "LIST", 4, "INFO" ].pack("a4Va4") + wav.byteslice(36..)
+
+    error = assert_raises(Assistant::VoiceNote::Error) { note(with_list).transcribe! }
+    assert_equal "audio_too_long", error.code
+  end
+
+  test "checks the upload size before reading it" do
+    file = Rack::Test::UploadedFile.new(StringIO.new("x"), "audio/wav", true, original_filename: "voice.wav")
+    file.stubs(:size).returns(Assistant::VoiceNote::MAX_BYTES + 1)
+    file.expects(:read).never
+
+    error = assert_raises(Assistant::VoiceNote::Error) { Assistant::VoiceNote.new(family: @family, file: file).transcribe! }
+    assert_equal "audio_too_large", error.code
+  end
+
   test "rejects an unknown format, oversize audio and a failed or empty transcription" do
     assert_equal "invalid_audio", assert_raises(Assistant::VoiceNote::Error) { note("x", content_type: "video/mp4", filename: "a.mp4").transcribe! }.code
     assert_equal "audio_too_large", assert_raises(Assistant::VoiceNote::Error) { note("x" * (Assistant::VoiceNote::MAX_BYTES + 1), content_type: "audio/mpeg", filename: "a.mp3").transcribe! }.code

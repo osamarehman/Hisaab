@@ -49,7 +49,7 @@ class Assistant::Function::CreateAccount < Assistant::Function
     )
   end
 
-  def preview(params = {})
+  def confirmation_preview(params = {})
     attrs = prepare(params)
     return attrs if attrs[:success] == false
 
@@ -91,11 +91,12 @@ class Assistant::Function::CreateAccount < Assistant::Function
 
       balance = params["balance"].blank? ? 0.to_d : BigDecimal(params["balance"].to_s)
       return error("invalid_balance", "balance must be a number.") unless balance.finite?
+      return error("negative_balance", "balance cannot be negative. For a credit card or loan, pass the amount owed as a positive number; otherwise ask the user what the account holds.") if balance.negative?
 
       currency = params["currency"].to_s.strip.upcase.presence || family.currency
       Money::Currency.new(currency)
 
-      { name: name, accountable_type: accountable_type, subtype: subtype, balance: balance.abs, currency: currency }.compact
+      { name: name, accountable_type: accountable_type, subtype: subtype, balance: balance, currency: currency }.compact
     rescue ArgumentError, TypeError
       error("invalid_balance", "balance must be a number.")
     rescue Money::Currency::UnknownCurrencyError

@@ -4,6 +4,7 @@ class Api::V1::MessagesController < Api::V1::BaseController
   before_action :require_ai_enabled
   before_action :ensure_write_scope, only: [ :create, :retry ]
   before_action :set_chat
+  before_action -> { @chat.require_confirmed_writes! }, only: [ :create, :retry ]
 
   def create
     @message = @chat.messages.build(

@@ -20,16 +20,23 @@ class Assistant::Function::CreateAccountTest < ActiveSupport::TestCase
 
   test "preview validates without creating" do
     assert_no_difference "Account.count" do
-      preview = @function.preview("name" => "Committee", "kind" => "savings", "balance" => 10000)
+      preview = @function.confirmation_preview("name" => "Committee", "kind" => "savings", "balance" => 10000)
       assert_equal "create_account", preview[:kind]
       assert_equal "Committee", preview[:details][:name]
     end
   end
 
+  test "rejects a negative balance instead of flipping it" do
+    assert_no_difference "Account.count" do
+      assert_equal "negative_balance", @function.call("name" => "Card", "kind" => "credit_card", "balance" => -3000)[:error]
+    end
+    assert_equal "negative_balance", @function.confirmation_preview("name" => "Card", "kind" => "credit_card", "balance" => -3000)[:error]
+  end
+
   test "rejects an unknown kind, a duplicate name and guests" do
     assert_equal "invalid_kind", @function.call("name" => "X", "kind" => "crypto")[:error]
     existing = @user.family.accounts.visible.first
-    assert_equal "already_exists", @function.preview("name" => existing.name.upcase, "kind" => "cash")[:error]
+    assert_equal "already_exists", @function.confirmation_preview("name" => existing.name.upcase, "kind" => "cash")[:error]
 
     guest = users(:family_admin)
     guest.stubs(:guest?).returns(true)

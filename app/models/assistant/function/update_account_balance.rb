@@ -32,7 +32,7 @@ class Assistant::Function::UpdateAccountBalance < Assistant::Function
     )
   end
 
-  def preview(params = {})
+  def confirmation_preview(params = {})
     prepared = prepare(params)
     return prepared if prepared[:success] == false
 

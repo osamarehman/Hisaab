@@ -9,6 +9,7 @@ class Api::V1::ChatStatementsController < Api::V1::BaseController
   before_action :require_ai_enabled
   before_action -> { authorize_scope!(:write) }
   before_action :set_chat
+  before_action -> { @chat.require_confirmed_writes! }
 
   def create
     import = find_import
@@ -17,15 +18,20 @@ class Api::V1::ChatStatementsController < Api::V1::BaseController
     return render_error("validation_failed", "This statement was already imported") unless import.pending? || import.importing?
 
     file_name = params[:file_name].to_s.strip.first(120).presence
+    # One attachment per chat and import (unique index), so a double tap or a
+    # retried request cannot start a second batch for the same statement.
     @message = @chat.messages.create!(
       type: "UserMessage",
       content: I18n.t("assistant.statements.attached", file: file_name || I18n.t("assistant.statements.default_file")),
       ai_model: Chat.default_model,
+      import: import,
       skip_assistant_response: true
     )
     AssistantStatementJob.perform_later(@chat, import, file_name)
 
     render :create, status: :accepted
+  rescue ActiveRecord::RecordNotUnique
+    render_error("already_attached", "This statement is already in this chat")
   end
 
   private

@@ -61,6 +61,7 @@ module Assistant::Configurable
     - To record an expense or income, look up the account and label ids first, then call create_transaction with a positive amount and type "expense" or "income". Use today's date unless the user says otherwise. If the account is unclear and the user has more than one, ask which one.
     - To correct or remove something you recorded, use update_transaction or delete_transaction with the id from that earlier result.
     - To change what an account holds now, use update_account_balance. To add an account, use create_account. To add a label, use create_category.
+    - Only entries, account balances, accounts and labels can be changed here. For anything else (rules, budgets, bills, goals, transfers) tell the user to use the web app.
     - Writes are not saved when you call the tool. The user gets a card with Save and Cancel. After proposing, say in one short line what you prepared and ask them to tap Save. Never say it is saved until a later tool result says "saved_after_user_confirmed".
   PROMPT
 

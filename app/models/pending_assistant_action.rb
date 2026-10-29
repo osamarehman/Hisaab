@@ -7,7 +7,7 @@
 # applied together through Assistant::StatementProposal instead.
 class PendingAssistantAction < ApplicationRecord
   STATUSES = %w[pending applied cancelled failed].freeze
-  KINDS = %w[create_entry update_entry delete_entry update_balance create_account create_label statement_entry other].freeze
+  KINDS = %w[create_entry update_entry delete_entry update_balance create_account create_label statement_entry].freeze
   STATEMENT_FUNCTION = "statement_entry"
   SHOWN_PER_CHAT = 300
   APPLY_FAILED_MESSAGE = "This could not be saved. Please try again."
@@ -33,7 +33,7 @@ class PendingAssistantAction < ApplicationRecord
     # place of the tool's result. An invalid call is handed back as the tool's
     # own error, so the model can correct it before the user is asked anything.
     def propose!(chat:, function:, arguments:, provider_call_id: nil)
-      preview = function.preview(arguments)
+      preview = function.confirmation_preview(arguments)
       return preview if preview.is_a?(Hash) && preview[:success] == false
 
       action = create!(
@@ -59,15 +59,25 @@ class PendingAssistantAction < ApplicationRecord
 
     # Applies the given open actions, statement lines grouped per import.
     # Already-applied or cancelled actions are left as they are, so a repeated
-    # confirm (double tap, retried request) never writes twice.
+    # confirm (double tap, retried request) never writes twice. Each action
+    # (or statement batch) succeeds or fails on its own: one failure marks
+    # only its own rows failed and never undoes or hides the others.
     def confirm_all!(actions)
       statement_lines, tool_actions = actions.partition { |a| a.kind == "statement_entry" }
-      tool_actions.each(&:apply!)
+      tool_actions.each { |action| isolated([ action ]) { action.apply! } }
       statement_lines.group_by { |a| a.arguments["import_id"] }.each_value do |lines|
-        Assistant::StatementProposal.apply!(lines)
+        isolated(lines) { Assistant::StatementProposal.apply!(lines) }
       end
       actions.each(&:reload)
     end
+
+    private
+      def isolated(actions)
+        yield
+      rescue StandardError => e
+        Rails.logger.error("PendingAssistantAction confirm failed for #{actions.map(&:id).join(", ")}: #{e.class}: #{e.message}")
+        where(id: actions.map(&:id), status: %w[pending failed]).update_all(status: "failed", error: APPLY_FAILED_MESSAGE, updated_at: Time.current)
+      end
   end
 
   def apply!
@@ -110,9 +120,14 @@ class PendingAssistantAction < ApplicationRecord
       function_class = Assistant.function_classes(user).find { |fc| fc.name == function_name }
       return { success: false, error: "unknown_tool", message: APPLY_FAILED_MESSAGE } unless function_class
 
-      # A savepoint, so a tool that raises after writing leaves nothing behind
-      # and a retried Save cannot write twice.
-      self.class.transaction(requires_new: true) { function_class.new(user).call(arguments) }
+      # A savepoint, so a tool that raises or reports failure after writing
+      # leaves nothing behind and a retried Save cannot write twice.
+      outcome = nil
+      self.class.transaction(requires_new: true) do
+        outcome = function_class.new(user).call(arguments)
+        raise ActiveRecord::Rollback if outcome.is_a?(Hash) && outcome[:success] == false
+      end
+      outcome
     rescue => e
       Rails.logger.error("PendingAssistantAction #{id} (#{function_name}) failed: #{e.class}: #{e.message}")
       { success: false, error: "apply_failed", message: APPLY_FAILED_MESSAGE }

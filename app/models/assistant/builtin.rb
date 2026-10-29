@@ -57,6 +57,7 @@ class Assistant::Builtin < Assistant::Base
     responder.respond(previous_response_id: latest_response_id)
     link_pending_actions(assistant_message)
   rescue => e
+    cancel_unlinked_pending_actions
     if assistant_message&.persisted?
       if assistant_message.content.blank?
         assistant_message.destroy
@@ -82,14 +83,20 @@ class Assistant::Builtin < Assistant::Base
     # Ties this turn's proposals to the message the app renders their confirm
     # card under. Tool calls are only saved with the message, hence after.
     def link_pending_actions(assistant_message)
-      return unless chat.confirm_writes? && assistant_message.persisted?
+      ids = function_tool_caller.proposed_action_ids
+      return if ids.empty?
+      return cancel_unlinked_pending_actions unless assistant_message.persisted?
 
-      call_ids = assistant_message.tool_calls.map(&:provider_call_id).compact
-      return if call_ids.empty?
+      chat.pending_assistant_actions.where(id: ids, message_id: nil).update_all(message_id: assistant_message.id)
+    end
 
-      chat.pending_assistant_actions
-          .where(message_id: nil, provider_call_id: call_ids)
-          .update_all(message_id: assistant_message.id)
+    # A failed turn's proposals have no message to sit under and the user was
+    # never told about them, so they are withdrawn rather than left savable.
+    def cancel_unlinked_pending_actions
+      ids = function_tool_caller.proposed_action_ids
+      return if ids.empty?
+
+      chat.pending_assistant_actions.where(id: ids, message_id: nil, status: "pending").update_all(status: "cancelled", updated_at: Time.current)
     end
 
     def build_no_provider_error_message(requested_model)

@@ -1719,11 +1719,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_090000) do
     t.text "content"
     t.datetime "created_at", null: false
     t.boolean "debug", default: false
+    t.uuid "import_id"
     t.string "provider_id"
     t.boolean "reasoning", default: false
     t.string "status", default: "complete", null: false
     t.string "type", null: false
     t.datetime "updated_at", null: false
+    t.index ["chat_id", "import_id"], name: "index_messages_on_chat_id_and_import_id", unique: true, where: "(import_id IS NOT NULL)"
     t.index ["chat_id"], name: "index_messages_on_chat_id"
   end
 
@@ -3100,6 +3102,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_090000) do
   add_foreign_key "mercury_accounts", "mercury_items"
   add_foreign_key "mercury_items", "families"
   add_foreign_key "messages", "chats"
+  add_foreign_key "messages", "imports", on_delete: :nullify
   add_foreign_key "mobile_devices", "users"
   add_foreign_key "monobank_accounts", "monobank_items"
   add_foreign_key "monobank_items", "families"

@@ -26,5 +26,9 @@ class CreatePendingAssistantActions < ActiveRecord::Migration[8.1]
     add_index :pending_assistant_actions, [ :chat_id, :status ]
 
     add_column :chats, :confirm_writes, :boolean, null: false, default: false
+
+    # The statement a user message attached; one attachment per chat and import.
+    add_reference :messages, :import, type: :uuid, foreign_key: { on_delete: :nullify }, index: false
+    add_index :messages, [ :chat_id, :import_id ], unique: true, where: "import_id IS NOT NULL"
   end
 end

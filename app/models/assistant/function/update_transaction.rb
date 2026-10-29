@@ -101,7 +101,7 @@ class Assistant::Function::UpdateTransaction < Assistant::Function
     error("validation_failed", e.record.errors.full_messages.join("; "))
   end
 
-  def preview(params = {})
+  def confirmation_preview(params = {})
     prepared = prepare(params)
     return prepared if error_response?(prepared)
 
