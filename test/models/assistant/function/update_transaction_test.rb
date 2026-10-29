@@ -7,6 +7,20 @@ class Assistant::Function::UpdateTransactionTest < ActiveSupport::TestCase
     @function = Assistant::Function::UpdateTransaction.new(@user)
   end
 
+  test "changes amount and date, and previews the change without writing" do
+    preview = @function.preview("id" => @transaction.id, "amount" => 3000, "type" => "expense", "date" => "2026-10-01")
+    assert_equal "update_entry", preview[:kind]
+    assert_equal "3000.0", preview[:details][:amount]
+    assert_not_equal BigDecimal("3000"), @transaction.entry.reload.amount
+
+    result = @function.call("id" => @transaction.id, "amount" => 3000, "type" => "expense", "date" => "2026-10-01")
+
+    assert_equal true, result[:success]
+    entry = @transaction.entry.reload
+    assert_equal BigDecimal("3000"), entry.amount
+    assert_equal Date.new(2026, 10, 1), entry.date
+  end
+
   test "updates category notes and tags" do
     category = categories(:subcategory)
     tag = tags(:one)

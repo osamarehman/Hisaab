@@ -7,7 +7,16 @@ class Assistant::Function
     def description
       raise NotImplementedError, "Subclasses must implement the description class method"
     end
+
+    # Read tools follow a naming convention; everything else may write, so a
+    # confirm-writes chat holds it for the user's Save (PendingAssistantAction).
+    # A new write tool is therefore confirmed by default.
+    def requires_confirmation?
+      !name.match?(READ_ONLY_NAME)
+    end
   end
+
+  READ_ONLY_NAME = /\A(get|list|search|preview)_/
 
   MAX_PAGE_SIZE = 100
 
@@ -34,6 +43,14 @@ class Assistant::Function
   # (preferred) when in strict mode, the schema needs to include all properties in required array
   def strict_mode?
     true
+  end
+
+  # What #call would do, for the confirm card, without writing anything:
+  # { kind:, summary:, details: }, or the tool's error hash when the call
+  # would fail. Write tools that a household uses often override this with a
+  # validated, readable preview.
+  def preview(_params = {})
+    { kind: "other", summary: name.humanize, details: {} }
   end
 
   def to_definition
@@ -116,6 +133,23 @@ class Assistant::Function
 
     def family
       user.family
+    end
+
+    def format_amount(amount, currency)
+      Money.new(amount, currency).format
+    rescue StandardError
+      "#{amount} #{currency}"
+    end
+
+    # Long form ("October 29, 2026"): the card reads as a sentence.
+    def format_preview_date(date)
+      I18n.l(date.to_date, format: :long)
+    rescue StandardError
+      date.to_s
+    end
+
+    def preview_summary(*parts)
+      parts.compact_blank.join(" · ")
     end
 
     def valid_uuid?(str)

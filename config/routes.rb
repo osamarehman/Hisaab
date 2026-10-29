@@ -829,6 +829,14 @@ Rails.application.routes.draw do
         resources :messages, only: [ :create ] do
           post :retry, on: :collection
         end
+        resources :pending_actions, only: [] do
+          collection do
+            post :confirm
+            post :cancel
+          end
+        end
+        resources :statements, only: [ :create ], controller: :chat_statements
+        resources :voice_notes, only: [ :create ]
       end
 
       get "users/reset/status", to: "users#reset_status"

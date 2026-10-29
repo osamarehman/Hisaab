@@ -14,6 +14,7 @@ class McpController < ApplicationController
   skip_before_action :detect_os
 
   before_action :authenticate_mcp_token!
+  before_action :require_ai_allowed_family!
   after_action :set_mcp_response_headers
 
   def handle
@@ -160,6 +161,15 @@ class McpController < ApplicationController
 
       setup_mcp_session(user)
       true
+    end
+
+    # AI_ALLOWED_EMAILS covers every AI surface, this one included. Tools here
+    # write directly: an external MCP client asks its own user before calling
+    # a tool, so the chat's confirm cards are not repeated here.
+    def require_ai_allowed_family!
+      return if mcp_user.family&.ai_allowed?
+
+      render json: { error: "ai_unavailable" }, status: :forbidden
     end
 
     def setup_mcp_session(user)

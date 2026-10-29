@@ -5,3 +5,19 @@ en:
       model_catalog:
         default_agent_label: "Default agent (%{id})"
         named_agent_label: "%{name} (%{id})"
+    statements:
+      default_file: "your statement"
+      failed: "I could not read that statement: %{error}"
+      no_lines: "I found no new lines to add in %{file}."
+      not_publishable: "This statement can no longer be saved. It may already be imported."
+      proposed:
+        one: "I read 1 line from %{file}. Lines that look already recorded: %{duplicates}. Lines without a label: %{unlabelled}. Remove any you don't want, then tap Save all."
+        other: "I read %{count} lines from %{file}. Lines that look already recorded: %{duplicates}. Lines without a label: %{unlabelled}. Remove any you don't want, then tap Save all."
+      still_reading: "That statement is taking long to read. Check it later under Statements."
+      attached: "Attached statement: %{file}"
+    voice:
+      transcription_failed: "I could not understand that voice note. Please try again or type it."
+      empty_transcript: "I could not hear anything in that voice note."
+      too_long: "Voice notes can be up to %{seconds} seconds."
+      too_large: "That voice note is too large."
+      invalid_audio: "That recording format is not supported."

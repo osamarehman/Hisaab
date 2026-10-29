@@ -116,6 +116,28 @@ class Assistant::Function::DeleteTransaction < Assistant::Function
     response
   end
 
+  def preview(params = {})
+    transaction = find_transaction(params["id"], params["account_id"])
+    return error("not_found", "No transaction with id '#{params["id"]}' in an account you can write to.") unless transaction
+
+    entry = transaction.entry
+    return error("split_child", "Split child transactions cannot be deleted individually. Delete the split parent instead.") if entry.split_child?
+
+    {
+      kind: "delete_entry",
+      summary: preview_summary("Delete #{entry.name}", format_amount(entry.amount.abs, entry.currency), format_preview_date(entry.date), entry.account.name),
+      details: {
+        direction: entry.amount.negative? ? "in" : "out",
+        amount: entry.amount.abs.to_s,
+        amount_formatted: format_amount(entry.amount.abs, entry.currency),
+        date: entry.date.iso8601,
+        description: entry.name,
+        label: transaction.category&.name,
+        account: entry.account.name
+      }
+    }
+  end
+
   private
     # Resolve a Transaction by id, scoped to accounts the user can WRITE to
     # (owner or full_control share) — the same write gate CreateTransaction

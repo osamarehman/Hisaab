@@ -401,6 +401,36 @@ class Provider::Openai < Provider
     end
   end
 
+  TRANSCRIBE_INSTRUCTIONS = <<~PROMPT.freeze
+    Transcribe this voice note word for word. The speaker may mix Urdu and
+    English in one sentence. Write English words in English and Urdu words in
+    Roman Urdu (Latin letters, e.g. "aaj sabzi li 500 ki"). Write amounts as
+    digits. Output only the transcript, with no notes or translation. If there
+    is no speech, output nothing.
+  PROMPT
+
+  # Speech to text through chat completions with `input_audio` content, which
+  # OpenRouter forwards to audio-capable models such as Gemini.
+  def transcribe_audio(audio_base64:, format:, model:)
+    with_provider_response do
+      response = client.chat(parameters: {
+        model: model,
+        temperature: 0,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: TRANSCRIBE_INSTRUCTIONS },
+              { type: "input_audio", input_audio: { data: audio_base64, format: format } }
+            ]
+          }
+        ]
+      })
+
+      response.dig("choices", 0, "message", "content").to_s.strip
+    end
+  end
+
   def chat_response(
     prompt,
     model:,

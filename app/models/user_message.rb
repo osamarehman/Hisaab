@@ -1,7 +1,11 @@
 class UserMessage < Message
   validates :ai_model, presence: true
 
-  after_create_commit :request_response_later
+  # Set for a message that only records something the user did (attaching a
+  # statement), where the reply comes from elsewhere instead of the model.
+  attribute :skip_assistant_response, :boolean, default: false
+
+  after_create_commit :request_response_later, unless: :skip_assistant_response
 
   def role
     "user"

@@ -55,6 +55,7 @@ class Assistant::Builtin < Assistant::Base
     end
 
     responder.respond(previous_response_id: latest_response_id)
+    link_pending_actions(assistant_message)
   rescue => e
     if assistant_message&.persisted?
       if assistant_message.content.blank?
@@ -73,8 +74,22 @@ class Assistant::Builtin < Assistant::Base
 
     def function_tool_caller
       @function_tool_caller ||= Assistant::FunctionToolCaller.new(
-        functions.map { |fn| fn.new(chat.user) }
+        functions.map { |fn| fn.new(chat.user) },
+        confirm_writes_chat: chat.confirm_writes? ? chat : nil
       )
+    end
+
+    # Ties this turn's proposals to the message the app renders their confirm
+    # card under. Tool calls are only saved with the message, hence after.
+    def link_pending_actions(assistant_message)
+      return unless chat.confirm_writes? && assistant_message.persisted?
+
+      call_ids = assistant_message.tool_calls.map(&:provider_call_id).compact
+      return if call_ids.empty?
+
+      chat.pending_assistant_actions
+          .where(message_id: nil, provider_call_id: call_ids)
+          .update_all(message_id: assistant_message.id)
     end
 
     def build_no_provider_error_message(requested_model)

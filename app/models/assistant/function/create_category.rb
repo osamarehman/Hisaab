@@ -74,6 +74,16 @@ class Assistant::Function::CreateCategory < Assistant::Function
     end
   end
 
+  def preview(params = {})
+    return error("categories_locked", "Categories are locked. Unlock them before creating a new category.") if family.categories_locked?
+
+    name = params["name"].to_s.strip
+    return error("name_required", "Please provide a name for the category.") if name.blank?
+    return error("already_exists", "A category named '#{name}' already exists; use it instead.") if family.categories.where("LOWER(name) = ?", name.downcase).exists?
+
+    { kind: "create_label", summary: preview_summary("New label", name), details: { name: name } }
+  end
+
   private
     def serialize(c)
       { id: c.id, name: c.name, name_with_parent: c.name_with_parent, color: c.color, icon: c.lucide_icon, parent_id: c.parent_id }

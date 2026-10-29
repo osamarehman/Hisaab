@@ -23,6 +23,9 @@ json.messages @messages do |message|
   end
 end
 
+json.pending_actions @chat.pending_assistant_actions.ordered.last(PendingAssistantAction::SHOWN_PER_CHAT),
+  partial: "api/v1/pending_actions/pending_action", as: :pending_action
+
 if @pagy
   json.pagination do
     json.page @pagy.page

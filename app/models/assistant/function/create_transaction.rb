@@ -136,43 +136,12 @@ class Assistant::Function::CreateTransaction < Assistant::Function
   # failure, or { success: true, created: false } when an idempotency key
   # matches an existing record.
   def call(params = {})
-    account = resolve_account(params["account_id"])
-    return error("account_not_found", "No account found with that ID that this user can write to.") unless account
+    prepared = prepare(params)
+    return prepared if error_response?(prepared)
 
-    date = parse_date(params["date"])
-    return error("invalid_date", "date must be an ISO 8601 date (YYYY-MM-DD).") unless date
-
-    amount = parse_decimal(params["amount"])
-    return error("invalid_amount", "amount must be a number.") if amount.nil?
-
-    name = params["name"].to_s.strip
-    return error("invalid_name", "name is required.") if name.empty?
-
-    # Default to the account's own currency, then the family's primary currency —
-    # the same fallback the app's create endpoint uses (it falls back to
-    # family.currency; account.currency is the more precise per-account value).
-    currency = (params["currency"].to_s.strip.presence || account.currency.presence || family.primary_currency_code).upcase
-    return error("invalid_currency", "currency must be a valid ISO 4217 code.") unless valid_currency?(currency)
-
-    entryable_attrs = resolve_entryable_attributes(params)
-    return entryable_attrs if error_response?(entryable_attrs)
-
-    signed_amount = signed_amount(amount, params["type"])
-
-    entry_params = {
-      name: name,
-      date: date,
-      amount: signed_amount,
-      currency: currency,
-      notes: params.key?("notes") ? params["notes"] : nil,
-      entryable_type: "Transaction",
-      entryable_attributes: entryable_attrs
-    }
-
-    if params["external_id"].present?
-      entry_params[:external_id] = params["external_id"].to_s
-      entry_params[:source] = params["source"].to_s.strip.presence || "mcp"
-    end
+    account = prepared[:account]
+    entry_params = prepared[:entry_params]
+    date = entry_params[:date]
 
     # Idempotency: a repeat (account, source, external_id) returns the existing
     # entry instead of inserting a duplicate. The partial unique index on
@@ -188,7 +157,7 @@ class Assistant::Function::CreateTransaction < Assistant::Function
     end
 
     entry.lock_saved_attributes!
-    entry.transaction.lock_attr!(:tag_ids) if entry.transaction.tags.any?
+    entry.entryable.lock_attr!(:tag_ids) if entry.entryable.tags.any?
     entry.mark_user_modified! if user_modified?(params)
 
     # Post-commit account sync is best-effort. entry.save has ALREADY committed
@@ -203,12 +172,14 @@ class Assistant::Function::CreateTransaction < Assistant::Function
       sync_warning = "Transaction created, but the post-create account sync could not be enqueued (#{e.class}). The balance will recalculate on the next sync."
     end
 
-    transaction = entry.transaction
+    transaction = entry.entryable
     response = {
       success: true,
       created: true,
-      transaction: serialize(transaction),
-      message: "Created #{transaction.entry.name} (#{format_money(entry)} on #{date.iso8601})."
+      # The entry is passed in: inside an outer DB transaction (a confirmed
+      # pending action) transaction.entry does not find the row just written.
+      transaction: serialize(transaction, entry),
+      message: "Created #{entry.name} (#{format_money(entry)} on #{date.iso8601})."
     }
     response[:warning] = sync_warning if sync_warning
     response
@@ -223,7 +194,76 @@ class Assistant::Function::CreateTransaction < Assistant::Function
     error("validation_failed", e.record.errors.full_messages.join("; "))
   end
 
+  def preview(params = {})
+    prepared = prepare(params)
+    return prepared if error_response?(prepared)
+
+    account = prepared[:account]
+    entry_params = prepared[:entry_params]
+    amount = entry_params[:amount]
+    category = family.categories.find_by(id: entry_params[:entryable_attributes][:category_id])
+    direction = amount.negative? ? "in" : "out"
+    amount_formatted = format_amount(amount.abs, entry_params[:currency])
+
+    {
+      kind: "create_entry",
+      summary: preview_summary(direction == "in" ? "Receive #{amount_formatted}" : "Add #{amount_formatted}", category&.name, format_preview_date(entry_params[:date]), account.name),
+      details: {
+        direction: direction,
+        amount: amount.abs.to_s,
+        amount_formatted: amount_formatted,
+        date: entry_params[:date].iso8601,
+        description: entry_params[:name],
+        label: category&.name,
+        account: account.name,
+        note: entry_params[:notes]
+      }
+    }
+  end
+
   private
+    # Validates the call and builds the entry attributes, writing nothing.
+    # Returns { account:, entry_params: } or an error hash.
+    def prepare(params)
+      account = resolve_account(params["account_id"])
+      return error("account_not_found", "No account found with that ID that this user can write to.") unless account
+
+      date = parse_date(params["date"])
+      return error("invalid_date", "date must be an ISO 8601 date (YYYY-MM-DD).") unless date
+
+      amount = parse_decimal(params["amount"])
+      return error("invalid_amount", "amount must be a number.") if amount.nil?
+
+      name = params["name"].to_s.strip
+      return error("invalid_name", "name is required.") if name.empty?
+
+      # Default to the account's own currency, then the family's primary currency —
+      # the same fallback the app's create endpoint uses (it falls back to
+      # family.currency; account.currency is the more precise per-account value).
+      currency = (params["currency"].to_s.strip.presence || account.currency.presence || family.primary_currency_code).upcase
+      return error("invalid_currency", "currency must be a valid ISO 4217 code.") unless valid_currency?(currency)
+
+      entryable_attrs = resolve_entryable_attributes(params)
+      return entryable_attrs if error_response?(entryable_attrs)
+
+      entry_params = {
+        name: name,
+        date: date,
+        amount: signed_amount(amount, params["type"]),
+        currency: currency,
+        notes: params.key?("notes") ? params["notes"] : nil,
+        entryable_type: "Transaction",
+        entryable_attributes: entryable_attrs
+      }
+
+      if params["external_id"].present?
+        entry_params[:external_id] = params["external_id"].to_s
+        entry_params[:source] = params["source"].to_s.strip.presence || "mcp"
+      end
+
+      { account: account, entry_params: entry_params }
+    end
+
     # Find a writable account by UUID, scoped to accounts the user can write to
     # (owner or full-control share). Returns nil if the id is not a valid UUID
     # or the account is not writable — callers treat that as not_found.
@@ -382,8 +422,7 @@ class Assistant::Function::CreateTransaction < Assistant::Function
     # Shape a Transaction into the result hash returned to the caller (id,
     # name, date, amount, currency, type, notes, and nested category/merchant/
     # tags).
-    def serialize(transaction)
-      entry = transaction.entry
+    def serialize(transaction, entry = transaction.entry)
       {
         id: transaction.id,
         entry_id: entry.id,

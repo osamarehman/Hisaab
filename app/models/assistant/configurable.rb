@@ -52,6 +52,18 @@ module Assistant::Configurable
     - Do not make assumptions about the user's financial situation. Use the functions available to get the data you need.
   PROMPT
 
+  # Appended for chats whose writes wait for the user's Save (the mobile app).
+  CONFIRM_WRITES_INSTRUCTIONS = <<~PROMPT.freeze
+    ## Recording money
+
+    The user may write in English, Urdu or Roman Urdu (e.g. "aaj 2500 ka sabzi liya cash se"). Understand all of them and reply in the language they used. "Label" means category.
+
+    - To record an expense or income, look up the account and label ids first, then call create_transaction with a positive amount and type "expense" or "income". Use today's date unless the user says otherwise. If the account is unclear and the user has more than one, ask which one.
+    - To correct or remove something you recorded, use update_transaction or delete_transaction with the id from that earlier result.
+    - To change what an account holds now, use update_account_balance. To add an account, use create_account. To add a label, use create_category.
+    - Writes are not saved when you call the tool. The user gets a card with Save and Cancel. After proposing, say in one short line what you prepared and ask them to tap Save. Never say it is saved until a later tool result says "saved_after_user_confirmed".
+  PROMPT
+
   class_methods do
     def config_for(chat)
       preferred_currency = Money::Currency.new(chat.user.family.currency)
@@ -64,7 +76,7 @@ module Assistant::Configurable
         }
       else
         {
-          instructions: default_instructions(preferred_currency, preferred_date_format, user: chat.user),
+          instructions: default_instructions(preferred_currency, preferred_date_format, user: chat.user, confirm_writes: chat.confirm_writes?),
           functions: default_functions(chat.user)
         }
       end
@@ -106,8 +118,9 @@ module Assistant::Configurable
         Assistant.function_classes(user)
       end
 
-      def default_instructions(preferred_currency, preferred_date_format, user: nil)
+      def default_instructions(preferred_currency, preferred_date_format, user: nil, confirm_writes: false)
         static = user&.family&.ai_prompt(:chat_system) || Assistant::Configurable::STATIC_INSTRUCTIONS
+        static = "#{static}\n#{Assistant::Configurable::CONFIRM_WRITES_INSTRUCTIONS}" if confirm_writes
 
         "#{static}\n#{session_context(preferred_currency, preferred_date_format, user: user)}"
       end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -435,6 +435,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_090000) do
   end
 
   create_table "chats", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "confirm_writes", default: false, null: false
     t.datetime "created_at", null: false
     t.jsonb "error"
     t.string "instructions"
@@ -1915,6 +1916,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_090000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "pending_assistant_actions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "applied_at"
+    t.jsonb "arguments", default: {}, null: false
+    t.uuid "chat_id", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "details", default: {}, null: false
+    t.string "error"
+    t.uuid "family_id", null: false
+    t.string "function_name", null: false
+    t.string "kind", null: false
+    t.uuid "message_id"
+    t.string "provider_call_id"
+    t.jsonb "result"
+    t.string "status", default: "pending", null: false
+    t.string "summary", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["chat_id", "status"], name: "index_pending_assistant_actions_on_chat_id_and_status"
+    t.index ["chat_id"], name: "index_pending_assistant_actions_on_chat_id"
+    t.index ["family_id"], name: "index_pending_assistant_actions_on_family_id"
+    t.index ["message_id"], name: "index_pending_assistant_actions_on_message_id"
+    t.index ["user_id"], name: "index_pending_assistant_actions_on_user_id"
+  end
+
   create_table "plaid_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "available_balance", precision: 19, scale: 4
     t.datetime "created_at", null: false
@@ -3085,6 +3110,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_090000) do
   add_foreign_key "oidc_identities", "users"
   add_foreign_key "onchain_wallet_accounts", "onchain_wallet_items"
   add_foreign_key "onchain_wallet_items", "families"
+  add_foreign_key "pending_assistant_actions", "chats", on_delete: :cascade
+  add_foreign_key "pending_assistant_actions", "families", on_delete: :cascade
+  add_foreign_key "pending_assistant_actions", "messages", on_delete: :nullify
+  add_foreign_key "pending_assistant_actions", "users", on_delete: :cascade
   add_foreign_key "plaid_accounts", "plaid_items"
   add_foreign_key "plaid_items", "families"
   add_foreign_key "plaid_items", "users", column: "owner_id", on_delete: :nullify

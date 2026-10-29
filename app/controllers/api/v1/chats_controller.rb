@@ -17,7 +17,8 @@ class Api::V1::ChatsController < Api::V1::BaseController
   end
 
   def create
-    @chat = current_resource_owner.chats.build(title: chat_params[:title])
+    # App chats hold every write for the user's Save on a confirm card.
+    @chat = current_resource_owner.chats.build(title: chat_params[:title], confirm_writes: true)
 
     if @chat.save
       if chat_params[:message].present?

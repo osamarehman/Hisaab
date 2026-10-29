@@ -127,6 +127,73 @@ emails as an active member get the assistant (`ai_enabled` stays false in
 auto-labelling and PDF statement reading. Empty means every household may
 use AI. `Family#ai_allowed?` and `Family#llm_provider` are the single check.
 
+## Assistant: confirm cards, statements, voice notes
+
+Chats created through `POST /api/v1/chats` have `confirm_writes` on. In them
+the assistant's write tools (every tool not named `get_*`, `list_*`,
+`search_*` or `preview_*`) do not save: the tool call is validated and stored
+as a pending action, and the model is told to ask the user to tap Save. Read
+tools run as before. Web chats keep writing directly.
+
+- `GET /api/v1/chats/:id` gains `pending_actions` (the chat's newest 300,
+  oldest first, independent of message paging): `id`, `message_id` (the
+  assistant message to show the card under; `null` while the turn runs),
+  `kind` (`create_entry`, `update_entry`, `delete_entry`, `update_balance`,
+  `create_account`, `create_label`, `statement_entry`, `other`), `status`
+  (`pending`, `applied`, `cancelled`, `failed`), `summary` (English line such
+  as "Add Rs 2,500 · Groceries · October 29, 2026 · Cash in hand"), `details`
+  (`direction` in/out, `amount`, `amount_formatted`, `date`, `description`,
+  `label`, `account`, `note`, `name`, `duplicate`) and `error`.
+- `POST /api/v1/chats/:chat_id/pending_actions/confirm` `{ "ids": [...] }`
+  applies them by running the proposed tool with the proposed arguments, as
+  the user, in a savepoint. Idempotent: applied/cancelled actions come back
+  unchanged; one that fails comes back `failed` with `error` and can be
+  confirmed again. After applying, the proposing tool call's stored result is
+  replaced with the real outcome, so the model sees the created ids in later
+  turns (for "change that to 3000" / "delete it").
+- `POST /api/v1/chats/:chat_id/pending_actions/cancel` `{ "ids": [...] }`.
+  Both return `200 { "pending_actions": [...] }`; `404` for an unknown chat or
+  id, `422` for an empty list (max 200).
+- Statement in the chat: upload as before with `POST /api/v1/imports`
+  (with `account_id`), then `POST /api/v1/chats/:chat_id/statements`
+  `{ "import_id": "…", "file_name": "march.pdf" }` → `202 { "message": … }`
+  (the user's "Attached statement" message; it does not call the model).
+  A job waits for the import to be read (PDF via AI, up to 6 minutes), then
+  posts an assistant message with one `statement_entry` action per line.
+  Each line suggests a label (the statement's own label when it names an
+  existing one, else the first auto-label keyword that matches) and flags
+  `duplicate` with the same lookup the PDF import uses. Confirming lines keeps
+  only those rows on the import, sets their labels and publishes it through
+  the normal import job; the batch's other open lines become `cancelled`.
+  `422` when the import has no writable account or is already imported.
+- Voice note: `POST /api/v1/chats/:chat_id/voice_notes` multipart `audio`
+  (WAV 16 kHz mono recommended; mp3, m4a, aac, ogg, flac accepted) and
+  optional `duration_ms`. Max 5 MB and 120 s (read from the WAV header when
+  present). The server sends it to `AI_TRANSCRIBE_MODEL` (default
+  `google/gemini-2.5-flash`) through the OpenAI-compatible provider as
+  `input_audio`, asking for Urdu in Roman Urdu and English as English, and
+  posts the transcript as the user's message (the assistant then answers).
+  `201 { "transcript", "message" }`; `422` `invalid_audio`,
+  `audio_too_large`, `audio_too_long`, `transcription_failed`,
+  `empty_transcript` with a user-facing `message`.
+- All of these sit behind the chat API's AI check (`ai_enabled` and
+  `AI_ALLOWED_EMAILS`).
+
+New assistant tools (chat and MCP): `create_account` (name, kind
+cash/bank/savings/credit_card/loan/other_asset/other_liability, balance,
+currency; same path as `POST /accounts`) and `update_account_balance`
+(account_id, balance; `set_current_balance`, as `PATCH /accounts/:id`).
+`update_transaction` can now also change `amount` (with `type`) and `date`.
+
+### MCP
+
+`POST /mcp` (JSON-RPC `initialize`, `tools/list`, `tools/call`; Bearer
+Doorkeeper token with `read_write`, or `MCP_API_TOKEN` + `MCP_USER_EMAIL`)
+serves the same tool registry. MCP tools apply directly, without pending
+actions: an MCP client asks its own user before running a tool. The endpoint
+returns `403 { "error": "ai_unavailable" }` for a household outside
+`AI_ALLOWED_EMAILS`.
+
 ## Account deletion
 
 - `DELETE /api/v1/users/me` (write scope) deactivates the caller, revokes

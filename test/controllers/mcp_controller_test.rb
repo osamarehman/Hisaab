@@ -299,6 +299,28 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   # -- tools/list --
 
+  test "refuses a household outside AI_ALLOWED_EMAILS" do
+    with_mcp_env do
+      with_env_overrides(AI_ALLOWED_EMAILS: "someone-else@example.com") do
+        post "/mcp", params: jsonrpc_request("tools/list").to_json, headers: mcp_headers(@token)
+      end
+    end
+
+    assert_response :forbidden
+    assert_equal "ai_unavailable", JSON.parse(response.body)["error"]
+  end
+
+  test "tools/list includes the household write tools" do
+    with_mcp_env do
+      post "/mcp", params: jsonrpc_request("tools/list").to_json, headers: mcp_headers(@token)
+
+      names = JSON.parse(response.body)["result"]["tools"].map { |t| t["name"] }
+      assert_includes names, "create_account"
+      assert_includes names, "update_account_balance"
+      assert_includes names, "create_transaction"
+    end
+  end
+
   test "tools/list returns all assistant function tools" do
     with_mcp_env do
       post "/mcp", params: jsonrpc_request("tools/list").to_json,

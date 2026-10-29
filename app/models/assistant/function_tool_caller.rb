@@ -4,8 +4,11 @@ class Assistant::FunctionToolCaller
 
   attr_reader :functions
 
-  def initialize(functions = [])
+  # With a confirm_writes_chat, write tools are proposed to the user instead
+  # of run (PendingAssistantAction); read tools still run directly.
+  def initialize(functions = [], confirm_writes_chat: nil)
     @functions = functions
+    @confirm_writes_chat = confirm_writes_chat
   end
 
   def fulfill_requests(function_requests)
@@ -35,6 +38,16 @@ class Assistant::FunctionToolCaller
       end
 
       fn_args = JSON.parse(function_request.function_args.presence || "{}")
+
+      if @confirm_writes_chat && fn.class.requires_confirmation?
+        return PendingAssistantAction.propose!(
+          chat: @confirm_writes_chat,
+          function: fn,
+          arguments: fn_args,
+          provider_call_id: function_request.call_id
+        )
+      end
+
       fn.call(fn_args)
     rescue JSON::ParserError => e
       Rails.logger.warn("Assistant tool #{function_request.function_name} got invalid JSON arguments: #{e.class}: #{e.message}")

@@ -279,6 +279,11 @@ RSpec.configure do |config|
                     type: :array,
                     items: { '$ref' => '#/components/schemas/Message' }
                   },
+                  pending_actions: {
+                    type: :array,
+                    description: 'Writes the assistant proposed in this chat (newest 300), shown as confirm cards under message_id',
+                    items: { '$ref' => '#/components/schemas/PendingAction' }
+                  },
                   pagination: {
                     '$ref' => '#/components/schemas/Pagination',
                     nullable: true
@@ -286,6 +291,42 @@ RSpec.configure do |config|
                 }
               }
             ]
+          },
+          PendingAction: {
+            type: :object,
+            required: %w[id kind status summary details created_at],
+            properties: {
+              id: { type: :string, format: :uuid },
+              message_id: { type: :string, format: :uuid, nullable: true, description: 'Assistant message that proposed it; null while the turn runs' },
+              kind: { type: :string, enum: %w[create_entry update_entry delete_entry update_balance create_account create_label statement_entry other] },
+              status: { type: :string, enum: %w[pending applied cancelled failed] },
+              summary: { type: :string, example: 'Add Rs 2,500 · Groceries · October 29, 2026 · Cash in hand' },
+              details: {
+                type: :object,
+                description: 'Card fields; any may be null',
+                properties: {
+                  direction: { type: :string, enum: %w[in out], nullable: true },
+                  amount: { type: :string, nullable: true },
+                  amount_formatted: { type: :string, nullable: true },
+                  date: { type: :string, format: :date, nullable: true },
+                  description: { type: :string, nullable: true },
+                  label: { type: :string, nullable: true },
+                  account: { type: :string, nullable: true },
+                  note: { type: :string, nullable: true },
+                  name: { type: :string, nullable: true },
+                  duplicate: { type: :boolean, nullable: true }
+                }
+              },
+              error: { type: :string, nullable: true },
+              created_at: { type: :string, format: :'date-time' }
+            }
+          },
+          PendingActionCollection: {
+            type: :object,
+            required: %w[pending_actions],
+            properties: {
+              pending_actions: { type: :array, items: { '$ref' => '#/components/schemas/PendingAction' } }
+            }
           },
           ChatCollection: {
             type: :object,

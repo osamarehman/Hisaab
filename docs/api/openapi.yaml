@@ -385,9 +385,107 @@ components:
             type: array
             items:
               "$ref": "#/components/schemas/Message"
+          pending_actions:
+            type: array
+            description: Writes the assistant proposed in this chat (newest 300),
+              shown as confirm cards under message_id
+            items:
+              "$ref": "#/components/schemas/PendingAction"
           pagination:
             "$ref": "#/components/schemas/Pagination"
             nullable: true
+    PendingAction:
+      type: object
+      required:
+      - id
+      - kind
+      - status
+      - summary
+      - details
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Assistant message that proposed it; null while the turn runs
+        kind:
+          type: string
+          enum:
+          - create_entry
+          - update_entry
+          - delete_entry
+          - update_balance
+          - create_account
+          - create_label
+          - statement_entry
+          - other
+        status:
+          type: string
+          enum:
+          - pending
+          - applied
+          - cancelled
+          - failed
+        summary:
+          type: string
+          example: Add Rs 2,500 · Groceries · October 29, 2026 · Cash in hand
+        details:
+          type: object
+          description: Card fields; any may be null
+          properties:
+            direction:
+              type: string
+              enum:
+              - in
+              - out
+              nullable: true
+            amount:
+              type: string
+              nullable: true
+            amount_formatted:
+              type: string
+              nullable: true
+            date:
+              type: string
+              format: date
+              nullable: true
+            description:
+              type: string
+              nullable: true
+            label:
+              type: string
+              nullable: true
+            account:
+              type: string
+              nullable: true
+            note:
+              type: string
+              nullable: true
+            name:
+              type: string
+              nullable: true
+            duplicate:
+              type: boolean
+              nullable: true
+        error:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    PendingActionCollection:
+      type: object
+      required:
+      - pending_actions
+      properties:
+        pending_actions:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PendingAction"
     ChatCollection:
       type: object
       required:
@@ -5071,6 +5169,206 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/chats/{chat_id}/pending_actions/confirm":
+    parameters:
+    - name: chat_id
+      in: path
+      required: true
+      description: Chat ID
+      schema:
+        type: string
+    post:
+      summary: Save proposed assistant actions
+      tags:
+      - Chat Actions
+      description: 'Applies the listed pending actions (the confirm card''s Save /
+        Save all). Idempotent: applied or cancelled actions are returned unchanged.
+        A failing action comes back with status failed and an error. Statement lines
+        of one import are published together; its other open lines are cancelled.'
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: actions applied
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PendingActionCollection"
+        '404':
+          description: chat or action not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '422':
+          description: no ids
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  maxItems: 200
+        required: true
+  "/api/v1/chats/{chat_id}/pending_actions/cancel":
+    parameters:
+    - name: chat_id
+      in: path
+      required: true
+      description: Chat ID
+      schema:
+        type: string
+    post:
+      summary: Cancel proposed assistant actions
+      tags:
+      - Chat Actions
+      description: Cancels the listed pending actions (Cancel, or removing one statement
+        line). Nothing is written.
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: actions cancelled
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PendingActionCollection"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  maxItems: 200
+        required: true
+  "/api/v1/chats/{chat_id}/statements":
+    parameters:
+    - name: chat_id
+      in: path
+      required: true
+      description: Chat ID
+      schema:
+        type: string
+    post:
+      summary: Attach a statement to the chat
+      tags:
+      - Chat Actions
+      description: Hands a statement uploaded with POST /api/v1/imports (PdfImport
+        or TransactionImport, with an account) to the chat. The user message is returned
+        at once; once the import is read the assistant posts a message with one statement_entry
+        pending action per line (suggested label, duplicate flag).
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '202':
+          description: statement attached
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                properties:
+                  message:
+                    "$ref": "#/components/schemas/MessageResponse"
+        '404':
+          description: import not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - import_id
+              properties:
+                import_id:
+                  type: string
+                  format: uuid
+                file_name:
+                  type: string
+                  description: Shown in the chat
+        required: true
+  "/api/v1/chats/{chat_id}/voice_notes":
+    parameters:
+    - name: chat_id
+      in: path
+      required: true
+      description: Chat ID
+      schema:
+        type: string
+    post:
+      summary: Send a voice note
+      tags:
+      - Chat Actions
+      description: Transcribes the audio on the server (AI_TRANSCRIBE_MODEL over the
+        OpenAI-compatible provider; Urdu, English and Roman Urdu) and posts the transcript
+        as the user's message, which the assistant then answers. Up to 5 MB and 120
+        seconds; WAV 16 kHz mono recommended (mp3, m4a, aac, ogg, flac accepted).
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: voice note transcribed and sent
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - transcript
+                - message
+                properties:
+                  transcript:
+                    type: string
+                  message:
+                    "$ref": "#/components/schemas/MessageResponse"
+        '422':
+          description: invalid, too long, too large, or not transcribable
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - audio
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                duration_ms:
+                  type: integer
+                  description: Recording length, used when the format has no readable
+                    header
+        required: true
   "/api/v1/auth/signup":
     post:
       summary: Sign up a new user
