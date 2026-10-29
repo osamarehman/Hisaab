@@ -1561,5 +1561,65 @@
   "@pendingActionKindLabel": {"description": "Heading of a proposed new label."},
 
   "pendingActionKindOther": "Proposed change",
-  "@pendingActionKindOther": {"description": "Heading of any other proposed change."}
+  "@pendingActionKindOther": {"description": "Heading of any other proposed change."},
+
+  "reportTitle": "Download report",
+  "@reportTitle": {"description": "Title of the PDF report screen and links to it."},
+
+  "reportHint": "PDF of any period, to keep or share",
+  "@reportHint": {"description": "Short hint next to the report link on Home and Settings."},
+
+  "reportIntro": "Pick a period and the labels to include. Hisaab makes a PDF with the totals and every entry, ready to save or send.",
+  "@reportIntro": {"description": "Intro text on the report screen."},
+
+  "reportPeriod": "Period",
+  "@reportPeriod": {"description": "Section header for the date range choice."},
+
+  "reportThisMonth": "This month",
+  "@reportThisMonth": {"description": "Date range preset."},
+
+  "reportLastMonth": "Last month",
+  "@reportLastMonth": {"description": "Date range preset."},
+
+  "reportLast3Months": "Last 3 months",
+  "@reportLast3Months": {"description": "Date range preset: this month and the two before it."},
+
+  "reportCustom": "Custom",
+  "@reportCustom": {"description": "Date range preset that opens a date range picker."},
+
+  "reportLabels": "Labels",
+  "@reportLabels": {"description": "Section header for the label (category) choice."},
+
+  "reportAllLabels": "All labels",
+  "@reportAllLabels": {"description": "Chip that includes every label and unlabelled entries."},
+
+  "reportUnlabelled": "Unlabelled",
+  "@reportUnlabelled": {"description": "Chip for entries without a label."},
+
+  "reportAccounts": "Accounts",
+  "@reportAccounts": {"description": "Section header for the account choice."},
+
+  "reportAllAccounts": "All accounts",
+  "@reportAllAccounts": {"description": "Chip that includes every account."},
+
+  "reportDownload": "Make PDF and share",
+  "@reportDownload": {"description": "Primary button: downloads the PDF and opens the share sheet."},
+
+  "reportPickLabel": "Pick at least one label.",
+  "@reportPickLabel": {"description": "Validation message when no label is selected."},
+
+  "reportPickAccount": "Pick at least one account.",
+  "@reportPickAccount": {"description": "Validation message when no account is selected."},
+
+  "reportTooLong": "A report can cover at most 24 months.",
+  "@reportTooLong": {"description": "Validation message for a custom range that is too long."},
+
+  "reportFailed": "Could not make the report. Try again.",
+  "@reportFailed": {"description": "Generic error when the report download fails."},
+
+  "reportOffline": "Could not reach the server. Check your connection and try again.",
+  "@reportOffline": {"description": "Error when the report request fails to connect."},
+
+  "reportSaved": "Saved as {filename}",
+  "@reportSaved": {"description": "Confirmation after the PDF is saved on the phone.", "placeholders": {"filename": {"type": "String"}}}
 }

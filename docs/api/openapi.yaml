@@ -9845,6 +9845,74 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/reports/export.pdf":
+    get:
+      summary: Download a household report as PDF
+      description: Page one summarises the period (money in, money out, net and a
+        table by label); the following pages list every entry grouped by month with
+        monthly subtotals. Transfers between own accounts and excluded rows are left
+        out. Amounts stay in each account's currency. The period may cover at most
+        24 months and 5,000 entries.
+      tags:
+      - Reports
+      security:
+      - apiKeyAuth: []
+      parameters:
+      - name: start_date
+        in: query
+        required: true
+        description: First day of the report (YYYY-MM-DD)
+        schema:
+          type: string
+          format: date
+      - name: end_date
+        in: query
+        required: true
+        description: Last day of the report (YYYY-MM-DD)
+        schema:
+          type: string
+          format: date
+      - name: category_ids[]
+        in: query
+        required: false
+        description: Only these labels (categories) and their sublabels. Omit for
+          every label.
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: include_uncategorized
+        in: query
+        required: false
+        description: Include unlabelled rows. Defaults to true when category_ids is
+          omitted, false otherwise.
+        schema:
+          type: boolean
+      - name: account_ids[]
+        in: query
+        required: false
+        description: Only these accounts. Omit for every account the user can see.
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: report generated (application/pdf attachment)
+        '422':
+          description: invalid period, label or account
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
   "/api/v1/rule_runs":
     get:
       summary: List rule runs

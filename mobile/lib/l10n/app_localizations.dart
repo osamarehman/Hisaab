@@ -3043,6 +3043,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Proposed change'**
   String get pendingActionKindOther;
+
+  /// Title of the PDF report screen and links to it.
+  ///
+  /// In en, this message translates to:
+  /// **'Download report'**
+  String get reportTitle;
+
+  /// Short hint next to the report link on Home and Settings.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF of any period, to keep or share'**
+  String get reportHint;
+
+  /// Intro text on the report screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a period and the labels to include. Hisaab makes a PDF with the totals and every entry, ready to save or send.'**
+  String get reportIntro;
+
+  /// Section header for the date range choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get reportPeriod;
+
+  /// Date range preset.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get reportThisMonth;
+
+  /// Date range preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Last month'**
+  String get reportLastMonth;
+
+  /// Date range preset: this month and the two before it.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 months'**
+  String get reportLast3Months;
+
+  /// Date range preset that opens a date range picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get reportCustom;
+
+  /// Section header for the label (category) choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get reportLabels;
+
+  /// Chip that includes every label and unlabelled entries.
+  ///
+  /// In en, this message translates to:
+  /// **'All labels'**
+  String get reportAllLabels;
+
+  /// Chip for entries without a label.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlabelled'**
+  String get reportUnlabelled;
+
+  /// Section header for the account choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get reportAccounts;
+
+  /// Chip that includes every account.
+  ///
+  /// In en, this message translates to:
+  /// **'All accounts'**
+  String get reportAllAccounts;
+
+  /// Primary button: downloads the PDF and opens the share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Make PDF and share'**
+  String get reportDownload;
+
+  /// Validation message when no label is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one label.'**
+  String get reportPickLabel;
+
+  /// Validation message when no account is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one account.'**
+  String get reportPickAccount;
+
+  /// Validation message for a custom range that is too long.
+  ///
+  /// In en, this message translates to:
+  /// **'A report can cover at most 24 months.'**
+  String get reportTooLong;
+
+  /// Generic error when the report download fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not make the report. Try again.'**
+  String get reportFailed;
+
+  /// Error when the report request fails to connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server. Check your connection and try again.'**
+  String get reportOffline;
+
+  /// Confirmation after the PDF is saved on the phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {filename}'**
+  String reportSaved(String filename);
 }
 
 class _AppLocalizationsDelegate

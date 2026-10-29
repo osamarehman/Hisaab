@@ -462,6 +462,7 @@ Rails.application.routes.draw do
   resources :reports, only: %i[index] do
     patch :update_preferences, on: :collection
     get :export_transactions, on: :collection
+    get :household_pdf, on: :collection
     get :google_sheets_instructions, on: :collection
     get :print, on: :collection
     get :picker, on: :collection
@@ -789,6 +790,7 @@ Rails.application.routes.draw do
       resources :securities, only: [ :index, :show ]
       resources :security_prices, only: [ :index, :show ]
       resources :tags, only: [ :index, :show, :create, :update, :destroy ]
+      get "reports/export", to: "reports#export", as: :reports_export
 
       resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
         resource :split, only: [ :show, :create, :update, :destroy ]

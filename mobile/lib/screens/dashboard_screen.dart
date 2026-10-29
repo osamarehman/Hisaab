@@ -18,6 +18,7 @@ import '../widgets/connectivity_banner.dart';
 import '../widgets/ledger/ledger.dart';
 import '../widgets/no_accounts_prompt.dart';
 import 'budgets_screen.dart';
+import 'report_export_screen.dart';
 import 'settings_screen.dart';
 import 'statement_review_screen.dart';
 import 'statements_screen.dart';
@@ -458,6 +459,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 4),
       ],
       _statementsLink(l, c),
+      _reportLink(l, c),
       const SizedBox(height: 28),
 
       // Where it went.
@@ -544,10 +546,39 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _statementsLink(AppLocalizations l, LedgerColors c) {
+  Widget _statementsLink(AppLocalizations l, LedgerColors c) => _linkRow(
+        key: const ValueKey('home-statements'),
+        icon: Icons.description_outlined,
+        title: l.navStatements,
+        hint: l.homeStatementsHint,
+        onTap: _openStatements,
+        c: c,
+      );
+
+  Widget _reportLink(AppLocalizations l, LedgerColors c) => _linkRow(
+        key: const ValueKey('home-report'),
+        icon: Icons.picture_as_pdf_outlined,
+        title: l.reportTitle,
+        hint: l.reportHint,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => ReportExportScreen(month: _month),
+          ),
+        ),
+        c: c,
+      );
+
+  Widget _linkRow({
+    required Key key,
+    required IconData icon,
+    required String title,
+    required String hint,
+    required VoidCallback onTap,
+    required LedgerColors c,
+  }) {
     return InkWell(
-      key: const ValueKey('home-statements'),
-      onTap: _openStatements,
+      key: key,
+      onTap: onTap,
       child: Container(
         constraints: const BoxConstraints(minHeight: 48),
         decoration: BoxDecoration(
@@ -555,14 +586,13 @@ class DashboardScreenState extends State<DashboardScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.description_outlined, size: 18, color: c.muted),
+            Icon(icon, size: 18, color: c.muted),
             const SizedBox(width: 8),
-            Text(l.navStatements,
-                style: LedgerText.body(size: 15, color: c.ink)),
+            Text(title, style: LedgerText.body(size: 15, color: c.ink)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                l.homeStatementsHint,
+                hint,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: LedgerText.body(size: 13, color: c.muted),

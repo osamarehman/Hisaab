@@ -1694,4 +1694,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pendingActionKindOther => 'Proposed change';
+
+  @override
+  String get reportTitle => 'Download report';
+
+  @override
+  String get reportHint => 'PDF of any period, to keep or share';
+
+  @override
+  String get reportIntro =>
+      'Pick a period and the labels to include. Hisaab makes a PDF with the totals and every entry, ready to save or send.';
+
+  @override
+  String get reportPeriod => 'Period';
+
+  @override
+  String get reportThisMonth => 'This month';
+
+  @override
+  String get reportLastMonth => 'Last month';
+
+  @override
+  String get reportLast3Months => 'Last 3 months';
+
+  @override
+  String get reportCustom => 'Custom';
+
+  @override
+  String get reportLabels => 'Labels';
+
+  @override
+  String get reportAllLabels => 'All labels';
+
+  @override
+  String get reportUnlabelled => 'Unlabelled';
+
+  @override
+  String get reportAccounts => 'Accounts';
+
+  @override
+  String get reportAllAccounts => 'All accounts';
+
+  @override
+  String get reportDownload => 'Make PDF and share';
+
+  @override
+  String get reportPickLabel => 'Pick at least one label.';
+
+  @override
+  String get reportPickAccount => 'Pick at least one account.';
+
+  @override
+  String get reportTooLong => 'A report can cover at most 24 months.';
+
+  @override
+  String get reportFailed => 'Could not make the report. Try again.';
+
+  @override
+  String get reportOffline =>
+      'Could not reach the server. Check your connection and try again.';
+
+  @override
+  String reportSaved(String filename) {
+    return 'Saved as $filename';
+  }
 }

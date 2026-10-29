@@ -90,6 +90,7 @@ gem "websocket-driver", "~> 0.8"
 gem "activerecord-import"
 gem "rubyzip", "~> 3.4"
 gem "pdf-reader", "~> 2.12"
+gem "prawn", "~> 2.5" # Household PDF reports (Reports::HouseholdPdf)
 
 # OpenID Connect, OAuth & SAML authentication
 gem "omniauth", "~> 2.1"

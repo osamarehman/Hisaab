@@ -70,6 +70,26 @@ class ReportsController < ApplicationController
     end
   end
 
+  # Household PDF (HouseholdReport) for the selected period, every label and account.
+  def household_pdf
+    report = HouseholdReport.new(
+      family: Current.family,
+      user: Current.user,
+      start_date: parse_date_param(:start_date) || default_start_date,
+      end_date: parse_date_param(:end_date) || default_end_date
+    )
+    unless report.valid?
+      redirect_to reports_path(start_date: report.start_date, end_date: report.end_date),
+        alert: report.errors.full_messages.to_sentence
+      return
+    end
+
+    send_data report.to_pdf,
+      type: "application/pdf",
+      disposition: "attachment",
+      filename: "hisaab-report-#{report.start_date.iso8601}-to-#{report.end_date.iso8601}.pdf"
+  end
+
   def google_sheets_instructions
     # Re-build the params needed for the export URL
     base_params = {
