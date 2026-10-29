@@ -39,7 +39,7 @@ outside git, under `/root/hisaab-drip/` on the server.
 5. Dry run, then one real email to yourself:
 
    ```
-   cd /root/sure-household/docs/redesign/tester-drip
+   cd /root/Hisaab/docs/redesign/tester-drip
    set -a; . /root/hisaab-drip/env; set +a
    python3 drip.py --recipients /root/hisaab-drip/recipients.csv \
      --state /root/hisaab-drip/state.json --suppress /root/hisaab-drip/suppress.txt --dry-run
@@ -51,7 +51,7 @@ outside git, under `/root/hisaab-drip/` on the server.
 6. Cron (every 2 hours, the script skips quiet hours itself):
 
    ```
-   0 */2 * * * cd /root/sure-household/docs/redesign/tester-drip && set -a && . /root/hisaab-drip/env && set +a && python3 drip.py --recipients /root/hisaab-drip/recipients.csv --state /root/hisaab-drip/state.json --suppress /root/hisaab-drip/suppress.txt >> /root/hisaab-drip/drip.log 2>&1
+   0 */2 * * * cd /root/Hisaab/docs/redesign/tester-drip && set -a && . /root/hisaab-drip/env && set +a && python3 drip.py --recipients /root/hisaab-drip/recipients.csv --state /root/hisaab-drip/state.json --suppress /root/hisaab-drip/suppress.txt >> /root/hisaab-drip/drip.log 2>&1
    ```
 
 ## Running it

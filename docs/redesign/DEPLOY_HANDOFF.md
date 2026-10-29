@@ -10,7 +10,7 @@ Pakistani household: PKR default, manual expenses with receipt photos,
 bank-statement import (PDF via AI, CSV) with labelling, no bank sync, an AI
 assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 
-- Repo: `github.com/osamarehman/sure-redesign` (private), branch
+- Repo: `github.com/osamarehman/Hisaab` (private), branch
   `redesign/household-pkr`. `upstream` remote = we-promise/sure.
 - API contract the app uses: `docs/redesign/household-api.md`.
 - AI setup and model choice: `docs/redesign/openrouter.md`.
@@ -32,7 +32,7 @@ assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
    host ports are taken. Pick a free port for `PORT` (default 3010). Sure
    needs about 1.5 GB RAM for web + worker; stop and report if the box is
    short.
-2. **Code:** `git clone -b redesign/household-pkr git@github.com:osamarehman/sure-redesign.git /root/sure-household`
+2. **Code:** `git clone -b redesign/household-pkr git@github.com:osamarehman/Hisaab.git /root/Hisaab`
    (private repo: use a deploy key or `gh auth`; ask the owner if neither works).
 3. **Env:** `cp .env.household.example .env`, set `APP_DOMAIN`, generate
    `SECRET_KEY_BASE` (`openssl rand -hex 64`) and `POSTGRES_PASSWORD`
@@ -63,7 +63,7 @@ assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 ## Updating later
 
 ```bash
-cd /root/sure-household && git pull && docker compose -f compose.household.yml -f compose.server.yml up -d --build
+cd /root/Hisaab && git pull && docker compose -f compose.household.yml -f compose.server.yml up -d --build
 ```
 
 `compose.server.yml` exists only on the server (git-ignored). The web container
@@ -71,7 +71,7 @@ joins Caddy's shared network, where the name `db` resolves to another app's
 Postgres, so the override points Sure at its own database and Redis. Keep it in
 every compose command.
 
-Live deployment: `https://sure.shipdeck.dev`, app in `/root/sure-household`,
+Live deployment: `https://sure.shipdeck.dev`, app in `/root/Hisaab`,
 port 3010, nightly database + storage backups kept for 14 days.
 
 ## Mobile app
