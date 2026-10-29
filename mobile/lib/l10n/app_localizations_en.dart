@@ -1546,4 +1546,152 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passkeysConfirmRequired => 'Enter it to confirm it\'s you.';
+
+  @override
+  String get assistantAttachTooltip => 'Attach a statement';
+
+  @override
+  String get assistantMicTooltip =>
+      'Voice note: tap to start, or hold and talk';
+
+  @override
+  String get assistantMicPermissionDenied =>
+      'Hisaab needs the microphone to record a voice note. You can allow it in your phone\'s settings.';
+
+  @override
+  String get assistantMicFailed =>
+      'Could not start recording. Please try again.';
+
+  @override
+  String get assistantVoiceTooShort =>
+      'That was too short. Hold the mic while you talk, or tap it once to start.';
+
+  @override
+  String get assistantRecordingHold => 'Release to send · slide away to cancel';
+
+  @override
+  String get assistantRecordingReleaseToCancel => 'Release to cancel';
+
+  @override
+  String get assistantRecordingTap => 'Tap the mic again to send';
+
+  @override
+  String get assistantRecordingCancel => 'Cancel recording';
+
+  @override
+  String assistantRecordingLabel(String elapsed, String limit) {
+    return 'Recording $elapsed of $limit';
+  }
+
+  @override
+  String get assistantTranscribing => 'Transcribing…';
+
+  @override
+  String get assistantVoiceNoteTitle => 'Voice note';
+
+  @override
+  String get assistantVoiceNoteFailed =>
+      'Could not send the voice note. Please try again.';
+
+  @override
+  String get assistantReadingStatement => 'Reading your statement…';
+
+  @override
+  String get assistantStatementSlow =>
+      'The statement is taking a while. Tap refresh in a minute to see the reply.';
+
+  @override
+  String get assistantStatementFailed =>
+      'Could not send the statement. Please try again.';
+
+  @override
+  String get assistantFileUnreadable => 'Could not read that file.';
+
+  @override
+  String get assistantFileType => 'Choose a PDF or CSV statement.';
+
+  @override
+  String get assistantChooseAccount => 'Which account is this statement for?';
+
+  @override
+  String get assistantNoAccounts =>
+      'Add a bank account first, then attach its statement.';
+
+  @override
+  String get assistantAccountsFailed =>
+      'Could not load your accounts. Please try again.';
+
+  @override
+  String get pendingActionSave => 'Save';
+
+  @override
+  String get pendingActionCancel => 'Cancel';
+
+  @override
+  String get pendingActionSaved => 'Saved';
+
+  @override
+  String get pendingActionCancelled => 'Cancelled';
+
+  @override
+  String pendingActionSaveAll(int count) {
+    return 'Save all ($count)';
+  }
+
+  @override
+  String get pendingActionCancelAll => 'Cancel all';
+
+  @override
+  String pendingActionBatchTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries to check',
+      one: '1 entry to check',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pendingActionNeedsLabel => 'Needs a label';
+
+  @override
+  String get pendingActionDuplicate => 'Already recorded?';
+
+  @override
+  String get pendingActionRemove => 'Remove this row';
+
+  @override
+  String get pendingActionToday => 'today';
+
+  @override
+  String get pendingActionYesterday => 'yesterday';
+
+  @override
+  String get pendingActionSaveFailed => 'Could not save.';
+
+  @override
+  String get pendingActionRequestFailed =>
+      'Could not update. Please try again.';
+
+  @override
+  String get pendingActionKindAdd => 'Add';
+
+  @override
+  String get pendingActionKindUpdate => 'Change';
+
+  @override
+  String get pendingActionKindDelete => 'Delete';
+
+  @override
+  String get pendingActionKindBalance => 'Set balance';
+
+  @override
+  String get pendingActionKindAccount => 'New account';
+
+  @override
+  String get pendingActionKindLabel => 'New label';
+
+  @override
+  String get pendingActionKindOther => 'Proposed change';
 }

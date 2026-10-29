@@ -2791,6 +2791,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter it to confirm it\'s you.'**
   String get passkeysConfirmRequired;
+
+  /// Tooltip for the composer button that attaches a PDF/CSV statement.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a statement'**
+  String get assistantAttachTooltip;
+
+  /// Tooltip for the composer microphone button.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice note: tap to start, or hold and talk'**
+  String get assistantMicTooltip;
+
+  /// Shown when microphone permission is denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Hisaab needs the microphone to record a voice note. You can allow it in your phone\'s settings.'**
+  String get assistantMicPermissionDenied;
+
+  /// Shown when the recorder fails to start.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start recording. Please try again.'**
+  String get assistantMicFailed;
+
+  /// Shown when a voice note is shorter than the minimum length.
+  ///
+  /// In en, this message translates to:
+  /// **'That was too short. Hold the mic while you talk, or tap it once to start.'**
+  String get assistantVoiceTooShort;
+
+  /// Hint while recording with the mic held down.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to send · slide away to cancel'**
+  String get assistantRecordingHold;
+
+  /// Hint while recording when the finger has slid away from the mic.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to cancel'**
+  String get assistantRecordingReleaseToCancel;
+
+  /// Hint while recording in tap-to-start mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the mic again to send'**
+  String get assistantRecordingTap;
+
+  /// Tooltip of the button that discards the current recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel recording'**
+  String get assistantRecordingCancel;
+
+  /// Accessibility label for the recording timer.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording {elapsed} of {limit}'**
+  String assistantRecordingLabel(String elapsed, String limit);
+
+  /// Shown while a voice note is uploaded and turned into text.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing…'**
+  String get assistantTranscribing;
+
+  /// Title of a new chat started with a voice note.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice note'**
+  String get assistantVoiceNoteTitle;
+
+  /// Fallback error when a voice note upload fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the voice note. Please try again.'**
+  String get assistantVoiceNoteFailed;
+
+  /// Shown while the assistant reads an attached statement.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your statement…'**
+  String get assistantReadingStatement;
+
+  /// Shown when the statement reply did not start within the wait limit.
+  ///
+  /// In en, this message translates to:
+  /// **'The statement is taking a while. Tap refresh in a minute to see the reply.'**
+  String get assistantStatementSlow;
+
+  /// Fallback error when attaching a statement fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the statement. Please try again.'**
+  String get assistantStatementFailed;
+
+  /// Shown when the picked file cannot be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read that file.'**
+  String get assistantFileUnreadable;
+
+  /// Shown when the picked file is not a PDF or CSV.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a PDF or CSV statement.'**
+  String get assistantFileType;
+
+  /// Title of the account picker for an attached statement.
+  ///
+  /// In en, this message translates to:
+  /// **'Which account is this statement for?'**
+  String get assistantChooseAccount;
+
+  /// Shown when there is no account to attach a statement to.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bank account first, then attach its statement.'**
+  String get assistantNoAccounts;
+
+  /// Shown when accounts fail to load for a statement.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your accounts. Please try again.'**
+  String get assistantAccountsFailed;
+
+  /// Button that saves a proposed change.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get pendingActionSave;
+
+  /// Button that discards a proposed change.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get pendingActionCancel;
+
+  /// Status of a proposed change that was saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get pendingActionSaved;
+
+  /// Status of a proposed change that was discarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get pendingActionCancelled;
+
+  /// Button that saves every open row of a statement batch.
+  ///
+  /// In en, this message translates to:
+  /// **'Save all ({count})'**
+  String pendingActionSaveAll(int count);
+
+  /// Button that discards every open row of a statement batch.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel all'**
+  String get pendingActionCancelAll;
+
+  /// Header of a card listing several proposed entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry to check} other{{count} entries to check}}'**
+  String pendingActionBatchTitle(int count);
+
+  /// Shown on a proposed entry that has no label.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs a label'**
+  String get pendingActionNeedsLabel;
+
+  /// Tag on a statement row that looks already recorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Already recorded?'**
+  String get pendingActionDuplicate;
+
+  /// Tooltip of the button that removes one row from a batch.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this row'**
+  String get pendingActionRemove;
+
+  /// Relative date for today on a proposed change.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get pendingActionToday;
+
+  /// Relative date for yesterday on a proposed change.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday'**
+  String get pendingActionYesterday;
+
+  /// Fallback error on a proposed change that failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save.'**
+  String get pendingActionSaveFailed;
+
+  /// Shown when a save/cancel request fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update. Please try again.'**
+  String get pendingActionRequestFailed;
+
+  /// Heading of a proposed new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get pendingActionKindAdd;
+
+  /// Heading of a proposed edit to an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get pendingActionKindUpdate;
+
+  /// Heading of a proposed deletion of an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get pendingActionKindDelete;
+
+  /// Heading of a proposed account balance update.
+  ///
+  /// In en, this message translates to:
+  /// **'Set balance'**
+  String get pendingActionKindBalance;
+
+  /// Heading of a proposed new account.
+  ///
+  /// In en, this message translates to:
+  /// **'New account'**
+  String get pendingActionKindAccount;
+
+  /// Heading of a proposed new label.
+  ///
+  /// In en, this message translates to:
+  /// **'New label'**
+  String get pendingActionKindLabel;
+
+  /// Heading of any other proposed change.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed change'**
+  String get pendingActionKindOther;
 }
 
 class _AppLocalizationsDelegate

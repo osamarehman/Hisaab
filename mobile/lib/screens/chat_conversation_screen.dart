@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -5,10 +8,17 @@ import 'package:provider/provider.dart';
 
 import '../constants/suggested_questions.dart';
 import '../l10n/app_localizations.dart';
+import '../models/account.dart';
 import '../models/chat.dart';
 import '../models/message.dart';
+import '../models/pending_action.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
+import '../services/accounts_service.dart';
+import '../services/imports_service.dart';
+import '../theme/sure_tokens.dart';
+import '../widgets/assistant/pending_actions_card.dart';
+import '../widgets/assistant/voice_note_recorder.dart';
 import '../widgets/ledger/ledger.dart';
 import '../widgets/typing_indicator.dart';
 
@@ -44,6 +54,13 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   bool _listenerAdded = false;
   bool _isSendInFlight = false;
 
+  late final VoiceNoteRecorder _recorder = VoiceNoteRecorder(
+    onClip: _sendVoiceNote,
+    onTooShort: () {
+      if (mounted) _toast(AppLocalizations.of(context).assistantVoiceTooShort);
+    },
+  );
+
   @override
   void initState() {
     super.initState();
@@ -73,15 +90,227 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       _chatProvider = null;
       _listenerAdded = false;
     }
+    _recorder.dispose();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
+  void _toast(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _scrollToBottomSoon() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scrollToBottom();
+    });
+  }
+
+  /// Returns the chat id, creating the chat (no first message) when this is a
+  /// new conversation.
+  Future<String?> _ensureChat(String accessToken, String title) async {
+    if (_chatId != null) return _chatId;
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    final l = AppLocalizations.of(context);
+    final chat = await chatProvider.createChat(
+      accessToken: accessToken,
+      title: Chat.generateTitle(title),
+    );
+    if (!mounted) return null;
+    if (chat == null) {
+      _toast(chatProvider.errorMessage ?? l.chatConversationStartFailed);
+      return null;
+    }
+    setState(() => _chatId = chat.id);
+    return chat.id;
+  }
+
+  Future<void> _sendVoiceNote(VoiceNoteClip clip) async {
+    if (!mounted || _isSendInFlight) return;
+    final l = AppLocalizations.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    setState(() => _isSendInFlight = true);
+    try {
+      final accessToken = await authProvider.getValidAccessToken();
+      if (accessToken == null) {
+        await authProvider.logout();
+        return;
+      }
+      if (!mounted) return;
+      final chatId = await _ensureChat(accessToken, l.assistantVoiceNoteTitle);
+      if (chatId == null) return;
+      _scrollToBottomSoon();
+
+      final result = await chatProvider.sendVoiceNote(
+        accessToken: accessToken,
+        chatId: chatId,
+        audioBytes: clip.bytes,
+        durationMs: clip.durationMs,
+      );
+      if (!mounted) return;
+      if (!result.ok) _toast(result.message ?? l.assistantVoiceNoteFailed);
+      _scrollToBottomSoon();
+    } finally {
+      if (mounted) setState(() => _isSendInFlight = false);
+    }
+  }
+
+  Future<void> _attachStatement() async {
+    if (_isSendInFlight) return;
+    final l = AppLocalizations.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf', 'csv'],
+      withData: true,
+    );
+    final file = picked?.files.singleOrNull;
+    if (file == null || !mounted) return;
+    if (ImportsService.fileKind(file.name) == null) {
+      _toast(l.assistantFileType);
+      return;
+    }
+    final bytes = file.bytes ??
+        (file.path == null ? null : await File(file.path!).readAsBytes());
+    if (!mounted) return;
+    if (bytes == null) {
+      _toast(l.assistantFileUnreadable);
+      return;
+    }
+
+    setState(() => _isSendInFlight = true);
+    try {
+      final accessToken = await authProvider.getValidAccessToken();
+      if (accessToken == null) {
+        await authProvider.logout();
+        return;
+      }
+      if (!mounted) return;
+      final account = await _pickAccount(accessToken);
+      if (account == null || !mounted) return;
+      final chatId = await _ensureChat(accessToken, file.name);
+      if (chatId == null) return;
+      _scrollToBottomSoon();
+
+      final result = await chatProvider.attachStatement(
+        accessToken: accessToken,
+        chatId: chatId,
+        accountId: account.id,
+        fileName: file.name,
+        bytes: bytes,
+      );
+      if (!mounted || result.ok) return;
+      switch (result.error) {
+        case 'cancelled':
+          break;
+        case 'timeout':
+          _toast(l.assistantStatementSlow);
+        case 'chat_error':
+          _toast(chatProvider.errorMessage ?? l.assistantStatementFailed);
+        default:
+          _toast(result.message ?? l.assistantStatementFailed);
+      }
+    } finally {
+      if (mounted) setState(() => _isSendInFlight = false);
+    }
+  }
+
+  /// Bank and card accounts (all accounts when there are none); skips the
+  /// picker when there is only one.
+  Future<Account?> _pickAccount(String accessToken) async {
+    final l = AppLocalizations.of(context);
+    final result = await AccountsService()
+        .getAccounts(accessToken: accessToken, perPage: 100);
+    if (!mounted) return null;
+    if (result['success'] != true) {
+      _toast(l.assistantAccountsFailed);
+      return null;
+    }
+    final all = (result['accounts'] as List).cast<Account>();
+    final statementable = all
+        .where((a) =>
+            a.accountType == 'depository' || a.accountType == 'credit_card')
+        .toList();
+    final accounts = statementable.isEmpty ? all : statementable;
+    if (accounts.isEmpty) {
+      _toast(l.assistantNoAccounts);
+      return null;
+    }
+    if (accounts.length == 1) return accounts.first;
+
+    final c = LedgerColors.of(context);
+    return showModalBottomSheet<Account>(
+      context: context,
+      backgroundColor: c.paper,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(SureTokens.radiusLg)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          children: [
+            LedgerCapsHeader(label: l.assistantChooseAccount),
+            for (final a in accounts)
+              InkWell(
+                onTap: () => Navigator.of(sheetContext).pop(a),
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 52),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: c.hairline)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(a.name,
+                            style: LedgerText.body(color: c.ink)),
+                      ),
+                      Icon(Icons.chevron_right, size: 20, color: c.muted),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _updateActions(List<String> ids, {required bool confirm}) async {
+    final chatId = _chatId;
+    if (chatId == null || ids.isEmpty) return;
+    final l = AppLocalizations.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    final accessToken = await authProvider.getValidAccessToken();
+    if (accessToken == null) {
+      await authProvider.logout();
+      return;
+    }
+    final result = confirm
+        ? await chatProvider.confirmActions(
+            accessToken: accessToken, chatId: chatId, ids: ids)
+        : await chatProvider.cancelActions(
+            accessToken: accessToken, chatId: chatId, ids: ids);
+    if (!mounted || result.ok || result.error == 'busy') return;
+    _toast(result.message ?? l.pendingActionRequestFailed);
+  }
+
   void _onChatChanged() {
     if (!mounted) return;
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    if (chatProvider.isWaitingForResponse || chatProvider.isSendingMessage || chatProvider.isPolling) {
+    if (chatProvider.isWaitingForResponse ||
+        chatProvider.isSendingMessage ||
+        chatProvider.isPolling ||
+        chatProvider.isTranscribing ||
+        chatProvider.isReadingStatement) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _scrollToBottom();
       });
@@ -273,7 +502,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       _isSendInFlight ||
       p.isSendingMessage ||
       p.isWaitingForResponse ||
-      p.isPolling;
+      p.isPolling ||
+      p.isTranscribing ||
+      p.isReadingStatement;
 
   @override
   Widget build(BuildContext context) {
@@ -333,7 +564,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               ),
             ),
           ),
-          if (widget.chatId != null)
+          if (_chatId != null)
             IconButton(
               icon: Icon(Icons.refresh, color: c.ink),
               onPressed: () => _loadChat(forceRefresh: true),
@@ -376,7 +607,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     if (messages.isEmpty &&
         !p.isLoading &&
         !p.isSendingMessage &&
-        !p.isWaitingForResponse) {
+        !p.isWaitingForResponse &&
+        !p.isTranscribing &&
+        !p.isReadingStatement) {
       final firstName = context.watch<AuthProvider>().user?.firstName;
       return _EmptyState(
         firstName: firstName,
@@ -384,27 +617,56 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
       );
     }
 
+    // Cards sit under the assistant message that proposed them; ones not tied
+    // to a message yet go last, once the turn has finished.
+    final allIds = {for (final m in allMessages) m.id};
+    final byMessage = <String, List<PendingAction>>{};
+    final loose = <PendingAction>[];
+    for (final a in p.currentChat?.pendingActions ?? const <PendingAction>[]) {
+      final messageId = a.messageId;
+      if (messageId != null && allIds.contains(messageId)) {
+        byMessage.putIfAbsent(messageId, () => []).add(a);
+      } else {
+        loose.add(a);
+      }
+    }
+    final turnRunning = p.isWaitingForResponse || p.isReadingStatement;
+
+    final items = <Widget>[
+      for (final m in messages) ...[
+        _MessageBlock(message: m, formatTime: _formatTime),
+        if (byMessage[m.id] != null) _actionsCard(p, byMessage[m.id]!),
+      ],
+      if (loose.isNotEmpty && !turnRunning) _actionsCard(p, loose),
+      if (p.isWaitingForResponse)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TypingIndicator(),
+          ),
+        )
+      else if (p.isTranscribing)
+        _StatusLine(label: l.assistantTranscribing)
+      else if (p.isReadingStatement)
+        _StatusLine(label: l.assistantReadingStatement),
+    ];
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      itemCount: messages.length + (p.isWaitingForResponse ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == messages.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TypingIndicator(),
-            ),
-          );
-        }
-        return _MessageBlock(
-          message: messages[index],
-          formatTime: _formatTime,
-        );
-      },
+      itemCount: items.length,
+      itemBuilder: (context, index) => items[index],
     );
   }
+
+  Widget _actionsCard(ChatProvider p, List<PendingAction> actions) =>
+      PendingActionsCard(
+        actions: actions,
+        isBusy: p.isActionBusy,
+        onConfirm: (ids) => _updateActions(ids, confirm: true),
+        onCancel: (ids) => _updateActions(ids, confirm: false),
+      );
 
   Widget _composer(AppLocalizations l, LedgerColors c, ChatProvider p) {
     final busy = _busy(p);
@@ -432,47 +694,106 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               },
             ),
           },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _messageController,
-                  decoration: ledgerInputDecoration(
-                    context,
-                    hint: l.chatConversationMessageHint,
-                  ),
-                  style: LedgerText.body(color: c.ink),
-                  minLines: 1,
-                  maxLines: 5,
-                  textCapitalization: TextCapitalization.sentences,
-                  autofocus: _chatId == null && widget.initialQuestion == null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Semantics(
-                button: true,
-                enabled: !busy,
-                label: l.assistantSend,
-                excludeSemantics: true,
-                child: Material(
-                  color: busy ? c.track : c.ink,
-                  borderRadius: BorderRadius.circular(2),
-                  child: InkWell(
-                    key: const ValueKey('assistant-send'),
-                    onTap: busy ? null : _sendMessage,
-                    child: SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: Icon(Icons.arrow_upward,
-                          color: busy ? c.muted : c.onInk),
+          child: ListenableBuilder(
+            listenable: Listenable.merge([_recorder, _messageController]),
+            builder: (context, _) => Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (!_recorder.isActive)
+                  SizedBox(
+                    width: 40,
+                    height: 48,
+                    child: IconButton(
+                      key: const ValueKey('assistant-attach'),
+                      padding: EdgeInsets.zero,
+                      tooltip: l.assistantAttachTooltip,
+                      onPressed: busy ? null : _attachStatement,
+                      icon: Icon(Icons.attach_file,
+                          color: busy ? c.muted : c.ink),
                     ),
                   ),
+                Expanded(
+                  // The field stays mounted under the recording bar so it keeps
+                  // its text and does not re-autofocus after a recording.
+                  child: Stack(
+                    children: [
+                      TextField(
+                        controller: _messageController,
+                        decoration: ledgerInputDecoration(
+                          context,
+                          hint: l.chatConversationMessageHint,
+                        ),
+                        style: LedgerText.body(color: c.ink),
+                        minLines: 1,
+                        maxLines: 5,
+                        textCapitalization: TextCapitalization.sentences,
+                        autofocus:
+                            _chatId == null && widget.initialQuestion == null,
+                      ),
+                      if (_recorder.isActive)
+                        Positioned.fill(
+                          child: VoiceNoteRecordingBar(recorder: _recorder),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                if (_recorder.isActive ||
+                    _messageController.text.trim().isEmpty)
+                  VoiceNoteMicButton(recorder: _recorder, enabled: !busy)
+                else
+                  Semantics(
+                    button: true,
+                    enabled: !busy,
+                    label: l.assistantSend,
+                    excludeSemantics: true,
+                    child: Material(
+                      color: busy ? c.track : c.ink,
+                      borderRadius: BorderRadius.circular(2),
+                      child: InkWell(
+                        key: const ValueKey('assistant-send'),
+                        onTap: busy ? null : _sendMessage,
+                        child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Icon(Icons.arrow_upward,
+                              color: busy ? c.muted : c.onInk),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Spinner plus a quiet line ("Transcribing…") while an upload is processed.
+class _StatusLine extends StatelessWidget {
+  const _StatusLine({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = LedgerColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: 14,
+            child: CircularProgressIndicator(strokeWidth: 2, color: c.muted),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(label,
+                style: LedgerText.body(size: 14, color: c.muted)),
+          ),
+        ],
       ),
     );
   }

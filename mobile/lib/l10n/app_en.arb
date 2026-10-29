@@ -1435,5 +1435,131 @@
   "@passkeysRemoveFailed": {"description": "Error when removing a passkey fails."},
 
   "passkeysConfirmRequired": "Enter it to confirm it's you.",
-  "@passkeysConfirmRequired": {"description": "Validation error when the confirmation field is empty."}
+  "@passkeysConfirmRequired": {"description": "Validation error when the confirmation field is empty."},
+
+  "assistantAttachTooltip": "Attach a statement",
+  "@assistantAttachTooltip": {"description": "Tooltip for the composer button that attaches a PDF/CSV statement."},
+
+  "assistantMicTooltip": "Voice note: tap to start, or hold and talk",
+  "@assistantMicTooltip": {"description": "Tooltip for the composer microphone button."},
+
+  "assistantMicPermissionDenied": "Hisaab needs the microphone to record a voice note. You can allow it in your phone's settings.",
+  "@assistantMicPermissionDenied": {"description": "Shown when microphone permission is denied."},
+
+  "assistantMicFailed": "Could not start recording. Please try again.",
+  "@assistantMicFailed": {"description": "Shown when the recorder fails to start."},
+
+  "assistantVoiceTooShort": "That was too short. Hold the mic while you talk, or tap it once to start.",
+  "@assistantVoiceTooShort": {"description": "Shown when a voice note is shorter than the minimum length."},
+
+  "assistantRecordingHold": "Release to send · slide away to cancel",
+  "@assistantRecordingHold": {"description": "Hint while recording with the mic held down."},
+
+  "assistantRecordingReleaseToCancel": "Release to cancel",
+  "@assistantRecordingReleaseToCancel": {"description": "Hint while recording when the finger has slid away from the mic."},
+
+  "assistantRecordingTap": "Tap the mic again to send",
+  "@assistantRecordingTap": {"description": "Hint while recording in tap-to-start mode."},
+
+  "assistantRecordingCancel": "Cancel recording",
+  "@assistantRecordingCancel": {"description": "Tooltip of the button that discards the current recording."},
+
+  "assistantRecordingLabel": "Recording {elapsed} of {limit}",
+  "@assistantRecordingLabel": {"description": "Accessibility label for the recording timer.", "placeholders": {"elapsed": {"type": "String"}, "limit": {"type": "String"}}},
+
+  "assistantTranscribing": "Transcribing…",
+  "@assistantTranscribing": {"description": "Shown while a voice note is uploaded and turned into text."},
+
+  "assistantVoiceNoteTitle": "Voice note",
+  "@assistantVoiceNoteTitle": {"description": "Title of a new chat started with a voice note."},
+
+  "assistantVoiceNoteFailed": "Could not send the voice note. Please try again.",
+  "@assistantVoiceNoteFailed": {"description": "Fallback error when a voice note upload fails."},
+
+  "assistantReadingStatement": "Reading your statement…",
+  "@assistantReadingStatement": {"description": "Shown while the assistant reads an attached statement."},
+
+  "assistantStatementSlow": "The statement is taking a while. Tap refresh in a minute to see the reply.",
+  "@assistantStatementSlow": {"description": "Shown when the statement reply did not start within the wait limit."},
+
+  "assistantStatementFailed": "Could not send the statement. Please try again.",
+  "@assistantStatementFailed": {"description": "Fallback error when attaching a statement fails."},
+
+  "assistantFileUnreadable": "Could not read that file.",
+  "@assistantFileUnreadable": {"description": "Shown when the picked file cannot be read."},
+
+  "assistantFileType": "Choose a PDF or CSV statement.",
+  "@assistantFileType": {"description": "Shown when the picked file is not a PDF or CSV."},
+
+  "assistantChooseAccount": "Which account is this statement for?",
+  "@assistantChooseAccount": {"description": "Title of the account picker for an attached statement."},
+
+  "assistantNoAccounts": "Add a bank account first, then attach its statement.",
+  "@assistantNoAccounts": {"description": "Shown when there is no account to attach a statement to."},
+
+  "assistantAccountsFailed": "Could not load your accounts. Please try again.",
+  "@assistantAccountsFailed": {"description": "Shown when accounts fail to load for a statement."},
+
+  "pendingActionSave": "Save",
+  "@pendingActionSave": {"description": "Button that saves a proposed change."},
+
+  "pendingActionCancel": "Cancel",
+  "@pendingActionCancel": {"description": "Button that discards a proposed change."},
+
+  "pendingActionSaved": "Saved",
+  "@pendingActionSaved": {"description": "Status of a proposed change that was saved."},
+
+  "pendingActionCancelled": "Cancelled",
+  "@pendingActionCancelled": {"description": "Status of a proposed change that was discarded."},
+
+  "pendingActionSaveAll": "Save all ({count})",
+  "@pendingActionSaveAll": {"description": "Button that saves every open row of a statement batch.", "placeholders": {"count": {"type": "int"}}},
+
+  "pendingActionCancelAll": "Cancel all",
+  "@pendingActionCancelAll": {"description": "Button that discards every open row of a statement batch."},
+
+  "pendingActionBatchTitle": "{count, plural, =1{1 entry to check} other{{count} entries to check}}",
+  "@pendingActionBatchTitle": {"description": "Header of a card listing several proposed entries.", "placeholders": {"count": {"type": "int"}}},
+
+  "pendingActionNeedsLabel": "Needs a label",
+  "@pendingActionNeedsLabel": {"description": "Shown on a proposed entry that has no label."},
+
+  "pendingActionDuplicate": "Already recorded?",
+  "@pendingActionDuplicate": {"description": "Tag on a statement row that looks already recorded."},
+
+  "pendingActionRemove": "Remove this row",
+  "@pendingActionRemove": {"description": "Tooltip of the button that removes one row from a batch."},
+
+  "pendingActionToday": "today",
+  "@pendingActionToday": {"description": "Relative date for today on a proposed change."},
+
+  "pendingActionYesterday": "yesterday",
+  "@pendingActionYesterday": {"description": "Relative date for yesterday on a proposed change."},
+
+  "pendingActionSaveFailed": "Could not save.",
+  "@pendingActionSaveFailed": {"description": "Fallback error on a proposed change that failed."},
+
+  "pendingActionRequestFailed": "Could not update. Please try again.",
+  "@pendingActionRequestFailed": {"description": "Shown when a save/cancel request fails."},
+
+  "pendingActionKindAdd": "Add",
+  "@pendingActionKindAdd": {"description": "Heading of a proposed new entry."},
+
+  "pendingActionKindUpdate": "Change",
+  "@pendingActionKindUpdate": {"description": "Heading of a proposed edit to an entry."},
+
+  "pendingActionKindDelete": "Delete",
+  "@pendingActionKindDelete": {"description": "Heading of a proposed deletion of an entry."},
+
+  "pendingActionKindBalance": "Set balance",
+  "@pendingActionKindBalance": {"description": "Heading of a proposed account balance update."},
+
+  "pendingActionKindAccount": "New account",
+  "@pendingActionKindAccount": {"description": "Heading of a proposed new account."},
+
+  "pendingActionKindLabel": "New label",
+  "@pendingActionKindLabel": {"description": "Heading of a proposed new label."},
+
+  "pendingActionKindOther": "Proposed change",
+  "@pendingActionKindOther": {"description": "Heading of any other proposed change."}
 }

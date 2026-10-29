@@ -1,16 +1,26 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/chat.dart';
+import '../models/import_job.dart';
 import '../models/message.dart';
+import '../models/pending_action.dart';
 import '../services/chat_service.dart';
+import '../services/imports_service.dart';
 import '../services/log_service.dart';
 
+/// Outcome of a chat upload or pending-action request. [error] is a code
+/// (server code, `timeout`, `cancelled`, ...); [message] is user-facing text
+/// from the server when it sent one.
+typedef ChatRequestResult = ({bool ok, String? error, String? message});
+
 class ChatProvider with ChangeNotifier {
-  ChatProvider({ChatService? chatService})
+  ChatProvider({ChatService? chatService, ImportsService? importsService})
       : _chatService = chatService ?? ChatService(),
+        _importsService = importsService ?? ImportsService(),
         _ownsChatService = chatService == null;
 
   final ChatService _chatService;
+  final ImportsService _importsService;
 
   /// Whether this provider created [_chatService] itself. An injected service
   /// is owned by the caller and must not be closed on dispose.
@@ -29,6 +39,19 @@ class ChatProvider with ChangeNotifier {
 
   static const _pollingTimeout = Duration(seconds: 20);
 
+  // Reading a PDF statement with AI takes minutes, far past the normal reply
+  // timeout, so statement turns wait in their own loop until the reply starts.
+  static const _statementPollEvery = Duration(seconds: 3);
+  static const _statementWaitTimeout = Duration(minutes: 4);
+
+  bool _isTranscribing = false;
+  bool _isReadingStatement = false;
+
+  /// Bumped to abandon an in-progress statement wait.
+  int _statementWaitGeneration = 0;
+
+  final Set<String> _busyActionIds = {};
+
   /// Content length of the last assistant message from the previous poll.
   /// Used to detect when the LLM has finished writing (no growth between polls).
   int? _lastAssistantContentLength;
@@ -45,6 +68,11 @@ class ChatProvider with ChangeNotifier {
   bool get isWaitingForResponse => _isWaitingForResponse;
   bool get isPolling => _pollingTimer != null;
   String? get errorMessage => _errorMessage;
+  bool get isTranscribing => _isTranscribing;
+  bool get isReadingStatement => _isReadingStatement;
+
+  /// True while a confirm/cancel request for this pending action is in flight.
+  bool isActionBusy(String id) => _busyActionIds.contains(id);
 
   /// True when the current chat could not load all of its message pages, so the
   /// rendered history is a partial, older slice. The UI can surface a
@@ -522,6 +550,13 @@ class ChatProvider with ChangeNotifier {
           }
         }
 
+        // A finished turn attaches its proposed changes (message_id, status)
+        // without touching message text.
+        if (!shouldUpdate &&
+            _actionsSignature(updatedChat) != _actionsSignature(_currentChat!)) {
+          shouldUpdate = true;
+        }
+
         if (shouldUpdate) {
           _currentChat = updatedChat;
           notifyListeners();
@@ -582,15 +617,261 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+  String _actionsSignature(Chat chat) => chat.pendingActions
+      .map((a) => '${a.id}:${a.status}:${a.messageId}')
+      .join(',');
+
+  ChatRequestResult _failed(Map<String, dynamic> result) => (
+        ok: false,
+        error: result['error']?.toString(),
+        message: result['message']?.toString(),
+      );
+
+  void _appendMessage(String chatId, Message message) {
+    final chat = _currentChat;
+    if (chat == null || chat.id != chatId) return;
+    _currentChat = chat.copyWith(
+      messages: _dedupeById([...chat.messages, message]),
+    );
+  }
+
+  /// Uploads a recorded voice note. The server transcribes it into the user's
+  /// message, then the reply is polled exactly like a typed message.
+  Future<ChatRequestResult> sendVoiceNote({
+    required String accessToken,
+    required String chatId,
+    required Uint8List audioBytes,
+    required int durationMs,
+  }) async {
+    _isTranscribing = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await _chatService.uploadVoiceNote(
+        accessToken: accessToken,
+        chatId: chatId,
+        audioBytes: audioBytes,
+        durationMs: durationMs,
+      );
+      if (result['success'] != true) return _failed(result);
+
+      _appendMessage(chatId, result['message'] as Message);
+      _startPolling(accessToken, chatId);
+      return (ok: true, error: null, message: null);
+    } catch (e) {
+      _log.warning('ChatProvider', 'sendVoiceNote failed: ${e.runtimeType}');
+      return (ok: false, error: 'unexpected', message: null);
+    } finally {
+      _isTranscribing = false;
+      notifyListeners();
+    }
+  }
+
+  /// Uploads a statement for [accountId], hands it to the assistant and waits
+  /// (up to [_statementWaitTimeout]) for its reply to start.
+  Future<ChatRequestResult> attachStatement({
+    required String accessToken,
+    required String chatId,
+    required String accountId,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    _isReadingStatement = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final knownAssistantIds = {
+      for (final m in _currentChat?.messages ?? const <Message>[])
+        if (m.isAssistant) m.id,
+    };
+
+    try {
+      final upload = await _importsService.uploadStatement(
+        accessToken: accessToken,
+        accountId: accountId,
+        fileName: fileName,
+        bytes: bytes,
+      );
+      if (upload['success'] != true) {
+        return (
+          ok: false,
+          error: 'upload_failed',
+          message: upload['error']?.toString(),
+        );
+      }
+
+      final attach = await _chatService.attachStatement(
+        accessToken: accessToken,
+        chatId: chatId,
+        importId: (upload['import'] as ImportJob).id,
+      );
+      if (attach['success'] != true) return _failed(attach);
+
+      _appendMessage(chatId, attach['message'] as Message);
+      notifyListeners();
+
+      final error =
+          await _waitForStatementReply(accessToken, chatId, knownAssistantIds);
+      return (ok: error == null, error: error, message: null);
+    } catch (e) {
+      _log.warning('ChatProvider', 'attachStatement failed: ${e.runtimeType}');
+      return (ok: false, error: 'unexpected', message: null);
+    } finally {
+      _isReadingStatement = false;
+      notifyListeners();
+    }
+  }
+
+  /// Polls until an assistant message not in [knownAssistantIds] has text,
+  /// then hands over to the normal reply polling. Returns null on success or
+  /// `timeout` / `cancelled` / `chat_error`.
+  Future<String?> _waitForStatementReply(
+    String accessToken,
+    String chatId,
+    Set<String> knownAssistantIds,
+  ) async {
+    final generation = _statementWaitGeneration;
+    bool abandoned() =>
+        generation != _statementWaitGeneration || _currentChat?.id != chatId;
+    final deadline = DateTime.now().add(_statementWaitTimeout);
+
+    while (DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(_statementPollEvery);
+      if (abandoned()) return 'cancelled';
+      try {
+        final result = await _chatService.getChat(
+          accessToken: accessToken,
+          chatId: chatId,
+        );
+        if (result['success'] != true) continue;
+        final loaded = await _loadRemainingPages(
+          accessToken: accessToken,
+          chatId: chatId,
+          firstPage: result,
+        );
+        if (abandoned()) return 'cancelled';
+
+        final chat = loaded.chat;
+        _hasIncompleteHistory = !loaded.complete;
+        _currentChat = chat;
+
+        if (chat.error != null && chat.error!.isNotEmpty) {
+          _errorMessage = chat.error;
+          notifyListeners();
+          return 'chat_error';
+        }
+        final replied = chat.messages.any((m) =>
+            m.isAssistant &&
+            !knownAssistantIds.contains(m.id) &&
+            m.content.isNotEmpty);
+        if (replied) {
+          _startPolling(accessToken, chatId);
+          return null;
+        }
+        notifyListeners();
+      } catch (e) {
+        _log.warning(
+            'ChatProvider', 'Statement polling failed: ${e.runtimeType}');
+      }
+    }
+    return 'timeout';
+  }
+
+  /// Saves the given pending actions.
+  Future<ChatRequestResult> confirmActions({
+    required String accessToken,
+    required String chatId,
+    required List<String> ids,
+  }) =>
+      _updateActions(accessToken, chatId, ids, confirm: true);
+
+  /// Discards the given pending actions.
+  Future<ChatRequestResult> cancelActions({
+    required String accessToken,
+    required String chatId,
+    required List<String> ids,
+  }) =>
+      _updateActions(accessToken, chatId, ids, confirm: false);
+
+  Future<ChatRequestResult> _updateActions(
+    String accessToken,
+    String chatId,
+    List<String> ids, {
+    required bool confirm,
+  }) async {
+    final todo = ids.where((id) => !_busyActionIds.contains(id)).toList();
+    if (todo.isEmpty) return (ok: false, error: 'busy', message: null);
+    _busyActionIds.addAll(todo);
+    notifyListeners();
+
+    try {
+      final result = confirm
+          ? await _chatService.confirmActions(
+              accessToken: accessToken, chatId: chatId, ids: todo)
+          : await _chatService.cancelActions(
+              accessToken: accessToken, chatId: chatId, ids: todo);
+      if (result['success'] != true) return _failed(result);
+
+      _mergeActions(chatId, result['pendingActions'] as List<PendingAction>);
+      unawaited(_refreshQuietly(accessToken, chatId));
+      return (ok: true, error: null, message: null);
+    } catch (e) {
+      _log.warning('ChatProvider', 'updateActions failed: ${e.runtimeType}');
+      return (ok: false, error: 'unexpected', message: null);
+    } finally {
+      _busyActionIds.removeAll(todo);
+      notifyListeners();
+    }
+  }
+
+  void _mergeActions(String chatId, List<PendingAction> updated) {
+    final chat = _currentChat;
+    if (chat == null || chat.id != chatId) return;
+    final byId = {for (final a in updated) a.id: a};
+    _currentChat = chat.copyWith(pendingActions: [
+      for (final a in chat.pendingActions) byId.remove(a.id) ?? a,
+      ...byId.values,
+    ]);
+  }
+
+  /// Re-reads the chat without the loading state, unless a reply is still
+  /// being polled (that poll brings the same data).
+  Future<void> _refreshQuietly(String accessToken, String chatId) async {
+    bool skip() =>
+        isPolling || _isReadingStatement || _currentChat?.id != chatId;
+    if (skip()) return;
+    try {
+      final result = await _chatService.getChat(
+        accessToken: accessToken,
+        chatId: chatId,
+      );
+      if (result['success'] != true) return;
+      final loaded = await _loadRemainingPages(
+        accessToken: accessToken,
+        chatId: chatId,
+        firstPage: result,
+      );
+      if (skip()) return;
+      _currentChat = loaded.chat;
+      _hasIncompleteHistory = !loaded.complete;
+      notifyListeners();
+    } catch (e) {
+      _log.warning('ChatProvider', 'refresh failed: ${e.runtimeType}');
+    }
+  }
+
   /// Clear current chat
   void clearCurrentChat() {
     _currentChat = null;
+    _statementWaitGeneration++;
     _stopPolling();
     notifyListeners();
   }
 
   @override
   void dispose() {
+    _statementWaitGeneration++;
     _stopPolling();
     if (_ownsChatService) _chatService.close();
     super.dispose();

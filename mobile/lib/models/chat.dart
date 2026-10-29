@@ -1,4 +1,5 @@
 import 'message.dart';
+import 'pending_action.dart';
 
 class Chat {
   final String id;
@@ -10,6 +11,9 @@ class Chat {
   final int? messageCount;
   final DateTime? lastMessageAt;
 
+  /// Changes the assistant proposed that wait for the user's confirmation.
+  final List<PendingAction> pendingActions;
+
   Chat({
     required this.id,
     required this.title,
@@ -19,6 +23,7 @@ class Chat {
     this.messages = const [],
     this.messageCount,
     this.lastMessageAt,
+    this.pendingActions = const [],
   });
 
   factory Chat.fromJson(Map<String, dynamic> json) {
@@ -37,6 +42,7 @@ class Chat {
       lastMessageAt: json['last_message_at'] != null
           ? DateTime.parse(json['last_message_at'] as String)
           : null,
+      pendingActions: PendingAction.listFromJson(json['pending_actions']),
     );
   }
 
@@ -73,6 +79,7 @@ class Chat {
     List<Message>? messages,
     int? messageCount,
     DateTime? lastMessageAt,
+    List<PendingAction>? pendingActions,
   }) {
     return Chat(
       id: id ?? this.id,
@@ -83,6 +90,7 @@ class Chat {
       messages: messages ?? this.messages,
       messageCount: messageCount ?? this.messageCount,
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+      pendingActions: pendingActions ?? this.pendingActions,
     );
   }
 }
