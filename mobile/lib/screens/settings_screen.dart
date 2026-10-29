@@ -17,6 +17,7 @@ import '../services/legal_links.dart';
 import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
 import 'passkeys_screen.dart';
+import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
 import '../services/api_config.dart';
 import '../services/custom_proxy_headers_service.dart';
@@ -595,6 +596,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+
+          ListTile(
+            key: const ValueKey('settings-report'),
+            leading: const Icon(Icons.picture_as_pdf_outlined),
+            title: Text(l.reportTitle),
+            subtitle: Text(l.reportHint),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const ReportExportScreen(),
               ),
             ),
           ),
