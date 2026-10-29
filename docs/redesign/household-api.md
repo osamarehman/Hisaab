@@ -83,6 +83,36 @@ and family scoping.
   rows) or `max_row_count_exceeded`; `403` without write access to the
   import's accounts.
 
+## Reports (PDF export)
+
+- New: `GET /api/v1/reports/export.pdf?start_date=2026-09-01&end_date=2026-09-30`
+  returns `application/pdf` (attachment, `hisaab-report-<start>-to-<end>.pdf`,
+  `Cache-Control: private, no-store`). Read scope is enough.
+  - Page one: "Hisaab report", household name, period, labels and accounts
+    included, money in / out / net, and a table by label (in, out, count).
+    Then every entry grouped by month (date, description, label, account,
+    in or out) with a subtotal per month.
+  - `category_ids[]` (optional): only these labels and their sublabels. Omit
+    for every label.
+  - `include_uncategorized` (optional): include unlabelled rows. Defaults to
+    `true` without `category_ids`, `false` with them; send
+    `include_uncategorized=true` alone for unlabelled rows only.
+  - `account_ids[]` (optional): only these accounts; omit for every account
+    the user can see.
+  - Left out, as in the month view: transfers between own accounts
+    (`funds_movement`, `cc_payment`), excluded rows (including split
+    parents) and pending provider rows. Loan payments and investment
+    contributions count as money out.
+  - Amounts stay in each account's currency ("Rs 2,500" for PKR, decimals
+    only when not whole); totals are per currency.
+  - `422` `invalid_period` (missing/invalid dates, start after end, more
+    than 24 months, or more than 5,000 entries), `invalid_category` /
+    `invalid_account` (an id outside the household or not visible to the
+    user).
+- The web Reports page has a matching **PDF** button
+  (`GET /reports/household_pdf?start_date=&end_date=`, every label and
+  account).
+
 ## Family defaults
 
 - New families default to `currency: "PKR"`, `country: "PK"`.

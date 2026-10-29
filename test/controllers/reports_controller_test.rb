@@ -950,6 +950,30 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", settings_api_keys_path, count: 0
   end
 
+  test "household_pdf downloads the household report for the period" do
+    create_transaction(date: Date.new(2020, 3, 2), name: "Groceries", amount: 2500)
+
+    get household_pdf_reports_path(start_date: "2020-03-01", end_date: "2020-03-31")
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+    assert_includes response.headers["Content-Disposition"], "hisaab-report-2020-03-01-to-2020-03-31.pdf"
+    assert_includes PDF::Reader.new(StringIO.new(response.body)).pages.map(&:text).join, "Groceries"
+  end
+
+  test "household_pdf refuses periods over the limit" do
+    get household_pdf_reports_path(start_date: "2020-01-01", end_date: "2023-01-01")
+
+    assert_redirected_to reports_path(start_date: "2020-01-01", end_date: "2023-01-01")
+    assert_match "at most 24 months", flash[:alert]
+  end
+
+  test "transactions breakdown links to the PDF report" do
+    get reports_path
+
+    assert_select "a[href^='#{household_pdf_reports_path}']"
+  end
+
   private
     # Takes every fixture investment account out of the card's scope, so an
     # account the test creates is the family's only one; otherwise the
