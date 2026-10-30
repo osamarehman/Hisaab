@@ -1780,4 +1780,518 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get settingsLanguageUrdu => 'اردو';
+
+  @override
+  String get commonBack => 'Back';
+
+  @override
+  String get commonKeep => 'Keep';
+
+  @override
+  String get commonSignInAgain => 'Please sign in again.';
+
+  @override
+  String commonDeleteNamed(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get accountKindBank => 'Bank account';
+
+  @override
+  String get accountKindBankHint =>
+      'Current account you spend from, e.g. HBL, Meezan';
+
+  @override
+  String get accountKindSavings => 'Savings account';
+
+  @override
+  String get accountKindSavingsHint => 'Money you keep aside in the bank';
+
+  @override
+  String get accountKindCash => 'Cash in hand';
+
+  @override
+  String get accountKindCashHint => 'Money in your purse or at home';
+
+  @override
+  String get accountKindCreditCard => 'Credit card';
+
+  @override
+  String get accountKindCreditCardHint => 'What you owe on the card';
+
+  @override
+  String get accountKindLoan => 'Loan / money owed';
+
+  @override
+  String get accountKindLoanHint =>
+      'Money you owe a bank, a relative or a shop';
+
+  @override
+  String get accountKindAssets => 'Gold & savings certificates';
+
+  @override
+  String get accountKindAssetsHint => 'Gold, prize bonds, national savings';
+
+  @override
+  String get accountFormNameRequired => 'Give the account a name.';
+
+  @override
+  String get accountFormBalanceNegative =>
+      'Enter the amount without a minus sign.';
+
+  @override
+  String get accountFormBalanceInvalid => 'Enter a number, like 25,000.';
+
+  @override
+  String get accountFormKindRequired => 'Choose what kind of account this is.';
+
+  @override
+  String get accountFormSaveFailed => 'Could not save the account.';
+
+  @override
+  String get accountFormDeleteBody =>
+      'Everything recorded in this account is deleted too. This cannot be undone.';
+
+  @override
+  String get accountFormDeleteFailed => 'Could not delete the account.';
+
+  @override
+  String get accountFormEditTitle => 'Edit account';
+
+  @override
+  String get accountFormAddTitle => 'Add account';
+
+  @override
+  String get accountFormKindHeader => 'What kind of account?';
+
+  @override
+  String get accountFormNameHint => 'e.g. Meezan Bank, Cash in hand';
+
+  @override
+  String get accountFormOwedLabel => 'How much is owed?';
+
+  @override
+  String get accountFormBalanceLabel => 'How much is in it now?';
+
+  @override
+  String get accountFormBalanceEditHelp =>
+      'Change this to match your bank or purse today.';
+
+  @override
+  String get accountFormBalanceNewHelp =>
+      'Leave empty if you are not sure. You can change it later.';
+
+  @override
+  String get accountFormDeleteButton => 'Delete account';
+
+  @override
+  String get accountsLoadFailed =>
+      'Could not load your accounts. Pull down to try again.';
+
+  @override
+  String get accountsGroupBank => 'Bank';
+
+  @override
+  String get accountsGroupCards => 'Cards';
+
+  @override
+  String get accountsGroupLoans => 'Loans';
+
+  @override
+  String get accountsGroupOtherOwed => 'Other money owed';
+
+  @override
+  String get accountsGroupProperty => 'Property';
+
+  @override
+  String get accountsGroupSavings => 'Savings & gold';
+
+  @override
+  String get accountsAddStatement => 'Add statement';
+
+  @override
+  String get accountsAdd => '+ Add';
+
+  @override
+  String get accountsNothingOwed => 'Nothing owed.';
+
+  @override
+  String get accountsEmpty => 'No accounts yet.';
+
+  @override
+  String get accountsWhatWeHave => 'What we have';
+
+  @override
+  String get accountsWhatWeOwe => 'What we owe';
+
+  @override
+  String get accountsEdit => 'Edit';
+
+  @override
+  String get labelsTitle => 'Labels';
+
+  @override
+  String get labelsLoadFailed =>
+      'Could not load your labels. Pull down to try again.';
+
+  @override
+  String get labelsNameRequired => 'Give the label a name.';
+
+  @override
+  String get labelsAddFailed => 'Could not add the label.';
+
+  @override
+  String labelsAdded(String name) {
+    return 'Added \"$name\".';
+  }
+
+  @override
+  String labelsAddedKeywordsFailed(String name) {
+    return 'Added \"$name\", but some keywords were not saved.';
+  }
+
+  @override
+  String get labelsNewLabel => 'New label';
+
+  @override
+  String get labelsNameHint => 'e.g. Committee, Doodh wala';
+
+  @override
+  String get labelsKeywordsLabel => 'Auto-label statement lines containing';
+
+  @override
+  String get labelsKeywordsHint => 'e.g. ASLAM, DOODH';
+
+  @override
+  String get labelsAddButton => 'Add label';
+
+  @override
+  String get labelsYourLabels => 'Your labels';
+
+  @override
+  String get labelsUsesThisMonth => 'uses this month';
+
+  @override
+  String get labelsEmpty => 'No labels yet. Add one above.';
+
+  @override
+  String get labelsNoAutoRule => 'No auto rule';
+
+  @override
+  String labelsAutoKeywords(String keywords) {
+    return 'Auto: $keywords';
+  }
+
+  @override
+  String get labelsSaveFailed => 'Could not save the label.';
+
+  @override
+  String labelsKeywordRemoveFailed(String keyword) {
+    return 'Could not remove $keyword.';
+  }
+
+  @override
+  String labelsKeywordAddFailed(String keyword) {
+    return 'Could not add $keyword.';
+  }
+
+  @override
+  String get labelsDeleteBody =>
+      'Lines with this label become unlabelled. Its auto-label keywords stop working.';
+
+  @override
+  String get labelsDeleteFailed => 'Could not delete the label.';
+
+  @override
+  String get labelsEditTitle => 'Edit label';
+
+  @override
+  String get labelsKeywordsEditHint => 'Comma separated, e.g. K-ELECTRIC, SSGC';
+
+  @override
+  String get labelsDeleteButton => 'Delete label';
+
+  @override
+  String get statementsIntro =>
+      'Add a bank statement. Hisaab reads every line, files each one under the right month and suggests a label.';
+
+  @override
+  String get statementsUploadFailed => 'Upload failed.';
+
+  @override
+  String get statementsPublishFailed => 'Could not add the lines.';
+
+  @override
+  String get statementsChooseFile => 'Choose statement file';
+
+  @override
+  String get statementsUploading => 'Uploading…';
+
+  @override
+  String get statementsFileHint => 'PDF or CSV · up to 6 months in one file';
+
+  @override
+  String get statementsAccountFallback => 'Account';
+
+  @override
+  String statementsCoverageTitle(String name) {
+    return '$name · last 6 months';
+  }
+
+  @override
+  String get statementsCheckingMonths => 'Checking months…';
+
+  @override
+  String get statementsLegendAllLabelled => 'All labelled';
+
+  @override
+  String get statementsLegendNeedsLabels => 'Needs labels';
+
+  @override
+  String get statementsLegendNoStatement => 'No statement';
+
+  @override
+  String statementsMonthLeft(int count) {
+    return '$count left';
+  }
+
+  @override
+  String get statementsPdfStatement => 'PDF statement';
+
+  @override
+  String get statementsCsvStatement => 'CSV statement';
+
+  @override
+  String get statementsReadFailed =>
+      'Hisaab could not read this statement. Try another file.';
+
+  @override
+  String get statementsAddingLines => 'Adding the lines to your books…';
+
+  @override
+  String get statementsReading =>
+      'Hisaab is reading every line. This can take a minute.';
+
+  @override
+  String get statementsLinesFound => 'lines found';
+
+  @override
+  String get statementsNeedsColumnMapping =>
+      'This file needs its columns matched on the Hisaab website before the lines can be added.';
+
+  @override
+  String statementsAddLines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add these $count lines',
+      one: 'Add this 1 line',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statementsAutoLabelled => 'auto-labelled';
+
+  @override
+  String get statementsNeedYou => 'need you';
+
+  @override
+  String statementsLabelItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Label the $count items',
+      one: 'Label the 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statementsAllLabelled => 'Everything is labelled.';
+
+  @override
+  String get statementsStatusFailed => 'Failed';
+
+  @override
+  String get statementsStatusAdded => 'Added';
+
+  @override
+  String get statementsStatusAdding => 'Adding…';
+
+  @override
+  String get statementsStatusReading => 'Reading…';
+
+  @override
+  String get statementsStatusRead => 'Read';
+
+  @override
+  String get statementsStatusWaiting => 'Waiting…';
+
+  @override
+  String get statementsRecent => 'Recent statements';
+
+  @override
+  String get statementsStatementFallback => 'Statement';
+
+  @override
+  String statementsAddedOn(String date) {
+    return 'Added $date';
+  }
+
+  @override
+  String statementsLinesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines',
+      one: '1 line',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statementReviewLoadFailed => 'Could not load the statement lines.';
+
+  @override
+  String statementReviewKeywordFailed(String error) {
+    return 'Labelled this one. The keyword was not saved: $error';
+  }
+
+  @override
+  String get statementReviewUnknownError => 'unknown error';
+
+  @override
+  String get statementReviewNothingToLabel =>
+      'Nothing to label. Every line has a label.';
+
+  @override
+  String get statementReviewAllDone => 'All done. Every line has a label.';
+
+  @override
+  String get statementReviewDoneForNow => 'Done for now';
+
+  @override
+  String statementReviewPosition(int position, int total) {
+    return '$position of $total';
+  }
+
+  @override
+  String get statementReviewWhereFrom => 'Where did this come from?';
+
+  @override
+  String get statementReviewWhatWasThis => 'What was this?';
+
+  @override
+  String get statementReviewNotExpense => 'Not an expense';
+
+  @override
+  String get statementReviewNewLabel => '+ Make a new label';
+
+  @override
+  String statementReviewLabelAllSimilar(int count) {
+    return 'Label all $count like this';
+  }
+
+  @override
+  String get statementReviewAutoLabelFuture =>
+      'Auto-label future lines like this';
+
+  @override
+  String get statementReviewLinesContaining => 'Lines containing';
+
+  @override
+  String get statementReviewSkip => 'Skip';
+
+  @override
+  String get statementReviewSaveNext => 'Save & next';
+
+  @override
+  String get budgetsScreenTitle => 'Budget';
+
+  @override
+  String budgetsOverByNote(String amount) {
+    return 'Over by $amount.';
+  }
+
+  @override
+  String budgetsLeftForDays(String amount, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$amount left for the last $_temp0. Blue line is today.';
+  }
+
+  @override
+  String budgetsLeftNote(String amount) {
+    return '$amount left.';
+  }
+
+  @override
+  String budgetsSpentOfPlanned(String amount) {
+    return 'Spent of $amount planned';
+  }
+
+  @override
+  String get budgetsSpent => 'Spent';
+
+  @override
+  String budgetsDayOf(int day, int days) {
+    return 'day $day of $days';
+  }
+
+  @override
+  String get budgetsNoLimitSet => 'No limit set';
+
+  @override
+  String budgetsOverByLine(String amount) {
+    return 'Over by $amount';
+  }
+
+  @override
+  String get noAccountsTitle => 'Add your first account';
+
+  @override
+  String get noAccountsBody =>
+      'Accounts are where money is paid from and into. Start with \"Cash in hand\", then add your bank account.';
+
+  @override
+  String get upgradeTitle => 'Update available';
+
+  @override
+  String upgradeBody(
+      String appName, String storeVersion, String installedVersion) {
+    return '$appName $storeVersion is now available — you have $installedVersion.\n\nWhat\'s new? Check the store for release notes.';
+  }
+
+  @override
+  String get upgradeNow => 'Update now';
+
+  @override
+  String get upgradeLater => 'Later';
+
+  @override
+  String get swatchInk => 'Ink';
+
+  @override
+  String get swatchCobalt => 'Cobalt';
+
+  @override
+  String get swatchAmber => 'Amber';
+
+  @override
+  String get swatchOlive => 'Olive';
+
+  @override
+  String get swatchPlum => 'Plum';
+
+  @override
+  String get swatchSteel => 'Steel';
+
+  @override
+  String get swatchStone => 'Stone';
 }

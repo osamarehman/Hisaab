@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:sure_mobile/l10n/app_localizations.dart';
 import 'package:sure_mobile/models/account.dart';
 import 'package:sure_mobile/screens/account_form_screen.dart';
 import 'package:sure_mobile/services/accounts_service.dart';
@@ -35,6 +36,9 @@ class _Harness {
 
   Widget app({Account? account, AccountKind? kind}) => MaterialApp(
         theme: SureTheme.light,
+        locale: const Locale('en'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         home: Builder(
           builder: (context) => Scaffold(
             body: TextButton(

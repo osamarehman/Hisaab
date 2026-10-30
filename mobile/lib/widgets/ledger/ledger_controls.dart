@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../theme/sure_tokens.dart';
 import 'ledger_style.dart';
 
@@ -134,9 +135,10 @@ class LedgerPanel extends StatelessWidget {
 
 /// "‹ Back" link header for pushed screens.
 class LedgerBackHeader extends StatelessWidget {
-  const LedgerBackHeader({super.key, this.label = 'Back'});
+  const LedgerBackHeader({super.key, this.label});
 
-  final String label;
+  /// Defaults to the localized "Back".
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +159,8 @@ class LedgerBackHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.chevron_left, size: 22, color: c.moneyIn),
-                Text(label, style: LedgerText.body(color: c.moneyIn)),
+                Text(label ?? AppLocalizations.of(context).commonBack,
+                    style: LedgerText.body(color: c.moneyIn)),
               ],
             ),
           ),

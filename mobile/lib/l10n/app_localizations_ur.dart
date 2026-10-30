@@ -1762,4 +1762,520 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get settingsLanguageUrdu => 'اردو';
+
+  @override
+  String get commonBack => 'واپس';
+
+  @override
+  String get commonKeep => 'رہنے دیں';
+
+  @override
+  String get commonSignInAgain => 'براہِ کرم دوبارہ سائن ان کریں۔';
+
+  @override
+  String commonDeleteNamed(String name) {
+    return '\"$name\" حذف کریں؟';
+  }
+
+  @override
+  String get accountKindBank => 'بینک اکاؤنٹ';
+
+  @override
+  String get accountKindBankHint =>
+      'کرنٹ اکاؤنٹ جس سے آپ خرچ کرتے ہیں، مثلاً HBL، Meezan';
+
+  @override
+  String get accountKindSavings => 'سیونگز اکاؤنٹ';
+
+  @override
+  String get accountKindSavingsHint => 'بینک میں الگ رکھی ہوئی رقم';
+
+  @override
+  String get accountKindCash => 'نقد رقم';
+
+  @override
+  String get accountKindCashHint => 'پرس میں یا گھر پر رکھی رقم';
+
+  @override
+  String get accountKindCreditCard => 'کریڈٹ کارڈ';
+
+  @override
+  String get accountKindCreditCardHint => 'کارڈ پر آپ کے ذمے رقم';
+
+  @override
+  String get accountKindLoan => 'قرض / واجب الادا رقم';
+
+  @override
+  String get accountKindLoanHint => 'بینک، کسی رشتے دار یا دکان کا آپ پر قرض';
+
+  @override
+  String get accountKindAssets => 'سونا اور بچت سرٹیفکیٹ';
+
+  @override
+  String get accountKindAssetsHint => 'سونا، پرائز بانڈ، قومی بچت';
+
+  @override
+  String get accountFormNameRequired => 'اکاؤنٹ کا نام لکھیں۔';
+
+  @override
+  String get accountFormBalanceNegative => 'رقم مائنس کے نشان کے بغیر لکھیں۔';
+
+  @override
+  String get accountFormBalanceInvalid => 'کوئی عدد لکھیں، جیسے 25,000۔';
+
+  @override
+  String get accountFormKindRequired => 'منتخب کریں کہ یہ کس قسم کا اکاؤنٹ ہے۔';
+
+  @override
+  String get accountFormSaveFailed => 'اکاؤنٹ محفوظ نہیں ہو سکا۔';
+
+  @override
+  String get accountFormDeleteBody =>
+      'اس اکاؤنٹ میں درج سب کچھ بھی حذف ہو جائے گا۔ یہ عمل واپس نہیں ہو سکتا۔';
+
+  @override
+  String get accountFormDeleteFailed => 'اکاؤنٹ حذف نہیں ہو سکا۔';
+
+  @override
+  String get accountFormEditTitle => 'اکاؤنٹ میں ترمیم کریں';
+
+  @override
+  String get accountFormAddTitle => 'اکاؤنٹ شامل کریں';
+
+  @override
+  String get accountFormKindHeader => 'کس قسم کا اکاؤنٹ؟';
+
+  @override
+  String get accountFormNameHint => 'مثلاً Meezan Bank، نقد رقم';
+
+  @override
+  String get accountFormOwedLabel => 'کتنی رقم واجب الادا ہے؟';
+
+  @override
+  String get accountFormBalanceLabel => 'اس میں ابھی کتنی رقم ہے؟';
+
+  @override
+  String get accountFormBalanceEditHelp =>
+      'اسے اپنے بینک یا پرس میں آج کی رقم کے مطابق کر دیں۔';
+
+  @override
+  String get accountFormBalanceNewHelp =>
+      'اگر یقین نہیں تو خالی چھوڑ دیں۔ آپ اسے بعد میں بدل سکتے ہیں۔';
+
+  @override
+  String get accountFormDeleteButton => 'اکاؤنٹ حذف کریں';
+
+  @override
+  String get accountsLoadFailed =>
+      'آپ کے اکاؤنٹس لوڈ نہیں ہو سکے۔ دوبارہ کوشش کے لیے نیچے کھینچیں۔';
+
+  @override
+  String get accountsGroupBank => 'بینک';
+
+  @override
+  String get accountsGroupCards => 'کارڈز';
+
+  @override
+  String get accountsGroupLoans => 'قرضے';
+
+  @override
+  String get accountsGroupOtherOwed => 'دیگر واجب الادا رقم';
+
+  @override
+  String get accountsGroupProperty => 'جائیداد';
+
+  @override
+  String get accountsGroupSavings => 'بچت اور سونا';
+
+  @override
+  String get accountsAddStatement => 'اسٹیٹمنٹ شامل کریں';
+
+  @override
+  String get accountsAdd => '+ شامل کریں';
+
+  @override
+  String get accountsNothingOwed => 'کوئی رقم واجب الادا نہیں۔';
+
+  @override
+  String get accountsEmpty => 'ابھی کوئی اکاؤنٹ نہیں۔';
+
+  @override
+  String get accountsWhatWeHave => 'ہمارے پاس کیا ہے';
+
+  @override
+  String get accountsWhatWeOwe => 'ہم پر کیا واجب ہے';
+
+  @override
+  String get accountsEdit => 'ترمیم کریں';
+
+  @override
+  String get labelsTitle => 'لیبلز';
+
+  @override
+  String get labelsLoadFailed =>
+      'آپ کے لیبلز لوڈ نہیں ہو سکے۔ دوبارہ کوشش کے لیے نیچے کھینچیں۔';
+
+  @override
+  String get labelsNameRequired => 'لیبل کا نام لکھیں۔';
+
+  @override
+  String get labelsAddFailed => 'لیبل شامل نہیں ہو سکا۔';
+
+  @override
+  String labelsAdded(String name) {
+    return '\"$name\" شامل ہو گیا۔';
+  }
+
+  @override
+  String labelsAddedKeywordsFailed(String name) {
+    return '\"$name\" شامل ہو گیا، لیکن کچھ کی ورڈز محفوظ نہیں ہو سکے۔';
+  }
+
+  @override
+  String get labelsNewLabel => 'نیا لیبل';
+
+  @override
+  String get labelsNameHint => 'مثلاً کمیٹی، دودھ والا';
+
+  @override
+  String get labelsKeywordsLabel =>
+      'اسٹیٹمنٹ کی وہ لائنیں خود لیبل کریں جن میں یہ ہو';
+
+  @override
+  String get labelsKeywordsHint => 'مثلاً ASLAM, DOODH';
+
+  @override
+  String get labelsAddButton => 'لیبل شامل کریں';
+
+  @override
+  String get labelsYourLabels => 'آپ کے لیبلز';
+
+  @override
+  String get labelsUsesThisMonth => 'اس مہینے استعمال';
+
+  @override
+  String get labelsEmpty => 'ابھی کوئی لیبل نہیں۔ اوپر سے شامل کریں۔';
+
+  @override
+  String get labelsNoAutoRule => 'کوئی خودکار اصول نہیں';
+
+  @override
+  String labelsAutoKeywords(String keywords) {
+    return 'خودکار: $keywords';
+  }
+
+  @override
+  String get labelsSaveFailed => 'لیبل محفوظ نہیں ہو سکا۔';
+
+  @override
+  String labelsKeywordRemoveFailed(String keyword) {
+    return '$keyword ہٹایا نہیں جا سکا۔';
+  }
+
+  @override
+  String labelsKeywordAddFailed(String keyword) {
+    return '$keyword شامل نہیں ہو سکا۔';
+  }
+
+  @override
+  String get labelsDeleteBody =>
+      'اس لیبل والی لائنیں بغیر لیبل کے ہو جائیں گی۔ اس کے خودکار کی ورڈز کام کرنا بند کر دیں گے۔';
+
+  @override
+  String get labelsDeleteFailed => 'لیبل حذف نہیں ہو سکا۔';
+
+  @override
+  String get labelsEditTitle => 'لیبل میں ترمیم کریں';
+
+  @override
+  String get labelsKeywordsEditHint =>
+      'کاما سے الگ کریں، مثلاً K-ELECTRIC, SSGC';
+
+  @override
+  String get labelsDeleteButton => 'لیبل حذف کریں';
+
+  @override
+  String get statementsIntro =>
+      'بینک اسٹیٹمنٹ شامل کریں۔ حساب ہر لائن پڑھتا ہے، اسے صحیح مہینے میں درج کرتا ہے اور لیبل تجویز کرتا ہے۔';
+
+  @override
+  String get statementsUploadFailed => 'اپ لوڈ نہیں ہو سکا۔';
+
+  @override
+  String get statementsPublishFailed => 'لائنیں شامل نہیں ہو سکیں۔';
+
+  @override
+  String get statementsChooseFile => 'اسٹیٹمنٹ فائل منتخب کریں';
+
+  @override
+  String get statementsUploading => 'اپ لوڈ ہو رہی ہے…';
+
+  @override
+  String get statementsFileHint =>
+      'PDF یا CSV · ایک فائل میں زیادہ سے زیادہ 6 مہینے';
+
+  @override
+  String get statementsAccountFallback => 'اکاؤنٹ';
+
+  @override
+  String statementsCoverageTitle(String name) {
+    return '$name · پچھلے 6 مہینے';
+  }
+
+  @override
+  String get statementsCheckingMonths => 'مہینے دیکھے جا رہے ہیں…';
+
+  @override
+  String get statementsLegendAllLabelled => 'سب پر لیبل';
+
+  @override
+  String get statementsLegendNeedsLabels => 'لیبل درکار';
+
+  @override
+  String get statementsLegendNoStatement => 'کوئی اسٹیٹمنٹ نہیں';
+
+  @override
+  String statementsMonthLeft(int count) {
+    return '$count باقی';
+  }
+
+  @override
+  String get statementsPdfStatement => 'PDF اسٹیٹمنٹ';
+
+  @override
+  String get statementsCsvStatement => 'CSV اسٹیٹمنٹ';
+
+  @override
+  String get statementsReadFailed =>
+      'حساب یہ اسٹیٹمنٹ نہیں پڑھ سکا۔ کوئی اور فائل آزمائیں۔';
+
+  @override
+  String get statementsAddingLines => 'لائنیں آپ کے حساب میں شامل ہو رہی ہیں…';
+
+  @override
+  String get statementsReading =>
+      'حساب ہر لائن پڑھ رہا ہے۔ اس میں ایک منٹ لگ سکتا ہے۔';
+
+  @override
+  String get statementsLinesFound => 'لائنیں ملیں';
+
+  @override
+  String get statementsNeedsColumnMapping =>
+      'لائنیں شامل کرنے سے پہلے اس فائل کے کالم حساب کی ویب سائٹ پر ملانے ہوں گے۔';
+
+  @override
+  String statementsAddLines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'یہ $count لائنیں شامل کریں',
+      one: 'یہ 1 لائن شامل کریں',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statementsAutoLabelled => 'خود لیبل ہوئیں';
+
+  @override
+  String get statementsNeedYou => 'آپ کی منتظر';
+
+  @override
+  String statementsLabelItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count انٹریز کو لیبل کریں',
+      one: '1 انٹری کو لیبل کریں',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statementsAllLabelled => 'سب پر لیبل لگ چکا ہے۔';
+
+  @override
+  String get statementsStatusFailed => 'ناکام';
+
+  @override
+  String get statementsStatusAdded => 'شامل ہو گئی';
+
+  @override
+  String get statementsStatusAdding => 'شامل ہو رہی ہے…';
+
+  @override
+  String get statementsStatusReading => 'پڑھی جا رہی ہے…';
+
+  @override
+  String get statementsStatusRead => 'پڑھ لی گئی';
+
+  @override
+  String get statementsStatusWaiting => 'انتظار…';
+
+  @override
+  String get statementsRecent => 'حالیہ اسٹیٹمنٹس';
+
+  @override
+  String get statementsStatementFallback => 'اسٹیٹمنٹ';
+
+  @override
+  String statementsAddedOn(String date) {
+    return '$date کو شامل کی گئی';
+  }
+
+  @override
+  String statementsLinesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count لائنیں',
+      one: '1 لائن',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statementReviewLoadFailed =>
+      'اسٹیٹمنٹ کی لائنیں لوڈ نہیں ہو سکیں۔';
+
+  @override
+  String statementReviewKeywordFailed(String error) {
+    return 'یہ لائن لیبل ہو گئی۔ کی ورڈ محفوظ نہیں ہوا: $error';
+  }
+
+  @override
+  String get statementReviewUnknownError => 'نامعلوم خرابی';
+
+  @override
+  String get statementReviewNothingToLabel =>
+      'لیبل کرنے کو کچھ نہیں۔ ہر لائن پر لیبل ہے۔';
+
+  @override
+  String get statementReviewAllDone => 'سب ہو گیا۔ ہر لائن پر لیبل ہے۔';
+
+  @override
+  String get statementReviewDoneForNow => 'ابھی کے لیے بس';
+
+  @override
+  String statementReviewPosition(int position, int total) {
+    return '$total میں سے $position';
+  }
+
+  @override
+  String get statementReviewWhereFrom => 'یہ رقم کہاں سے آئی؟';
+
+  @override
+  String get statementReviewWhatWasThis => 'یہ کس چیز کا تھا؟';
+
+  @override
+  String get statementReviewNotExpense => 'یہ خرچ نہیں';
+
+  @override
+  String get statementReviewNewLabel => '+ نیا لیبل بنائیں';
+
+  @override
+  String statementReviewLabelAllSimilar(int count) {
+    return 'ایسی تمام $count لائنیں لیبل کریں';
+  }
+
+  @override
+  String get statementReviewAutoLabelFuture =>
+      'آئندہ ایسی لائنیں خود لیبل کریں';
+
+  @override
+  String get statementReviewLinesContaining => 'جن لائنوں میں ہو';
+
+  @override
+  String get statementReviewSkip => 'چھوڑیں';
+
+  @override
+  String get statementReviewSaveNext => 'محفوظ کریں، اگلی';
+
+  @override
+  String get budgetsScreenTitle => 'بجٹ';
+
+  @override
+  String budgetsOverByNote(String amount) {
+    return '$amount زیادہ خرچ ہو گیا۔';
+  }
+
+  @override
+  String budgetsLeftForDays(String amount, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'آخری $days دنوں',
+      one: 'آخری 1 دن',
+    );
+    return '$_temp0 کے لیے $amount باقی۔ نیلی لکیر آج کا دن ہے۔';
+  }
+
+  @override
+  String budgetsLeftNote(String amount) {
+    return '$amount باقی۔';
+  }
+
+  @override
+  String budgetsSpentOfPlanned(String amount) {
+    return '$amount کے منصوبے میں سے خرچ';
+  }
+
+  @override
+  String get budgetsSpent => 'خرچ';
+
+  @override
+  String budgetsDayOf(int day, int days) {
+    return '$days میں سے دن $day';
+  }
+
+  @override
+  String get budgetsNoLimitSet => 'کوئی حد مقرر نہیں';
+
+  @override
+  String budgetsOverByLine(String amount) {
+    return '$amount زیادہ';
+  }
+
+  @override
+  String get noAccountsTitle => 'اپنا پہلا اکاؤنٹ شامل کریں';
+
+  @override
+  String get noAccountsBody =>
+      'اکاؤنٹ وہ جگہ ہے جہاں سے رقم دی جاتی ہے اور جہاں آتی ہے۔ پہلے \"نقد رقم\" سے شروع کریں، پھر اپنا بینک اکاؤنٹ شامل کریں۔';
+
+  @override
+  String get upgradeTitle => 'اپ ڈیٹ دستیاب ہے';
+
+  @override
+  String upgradeBody(
+      String appName, String storeVersion, String installedVersion) {
+    return '$appName $storeVersion اب دستیاب ہے — آپ کے پاس $installedVersion ہے۔\n\nنیا کیا ہے؟ ریلیز نوٹس کے لیے اسٹور دیکھیں۔';
+  }
+
+  @override
+  String get upgradeNow => 'ابھی اپ ڈیٹ کریں';
+
+  @override
+  String get upgradeLater => 'بعد میں';
+
+  @override
+  String get swatchInk => 'سیاہ';
+
+  @override
+  String get swatchCobalt => 'گہرا نیلا';
+
+  @override
+  String get swatchAmber => 'عنبری';
+
+  @override
+  String get swatchOlive => 'زیتونی';
+
+  @override
+  String get swatchPlum => 'جامنی';
+
+  @override
+  String get swatchSteel => 'فولادی نیلا';
+
+  @override
+  String get swatchStone => 'سرمئی';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../theme/sure_tokens.dart';
 import 'ledger_style.dart';
 
@@ -13,6 +14,18 @@ const List<(String, String)> labelSwatches = [
   ('Steel', '#3D5A80'),
   ('Stone', '#6B716C'),
 ];
+
+/// Spoken name of a [labelSwatches] entry.
+String swatchName(AppLocalizations l, String name) => switch (name) {
+      'Ink' => l.swatchInk,
+      'Cobalt' => l.swatchCobalt,
+      'Amber' => l.swatchAmber,
+      'Olive' => l.swatchOlive,
+      'Plum' => l.swatchPlum,
+      'Steel' => l.swatchSteel,
+      'Stone' => l.swatchStone,
+      _ => name,
+    };
 
 /// Row of 44px [labelSwatches] acting as a radio group over "#RRGGBB" values.
 class SwatchPicker extends StatelessWidget {
@@ -28,6 +41,7 @@ class SwatchPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -36,7 +50,7 @@ class SwatchPicker extends StatelessWidget {
           Builder(builder: (context) {
             final on = hex.toUpperCase() == selected.toUpperCase();
             return Semantics(
-              label: name,
+              label: swatchName(l, name),
               selected: on,
               button: true,
               child: GestureDetector(

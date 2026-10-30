@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
@@ -16,61 +17,50 @@ import 'transaction_form_screen.dart' show GroupedAmountFormatter;
 /// The kinds of account a household adds, in plain words, mapped to the
 /// server's account types.
 enum AccountKind {
-  bank(
-    label: 'Bank account',
-    hint: 'Current account you spend from, e.g. HBL, Meezan',
-    accountableType: 'Depository',
-    subtype: 'checking',
-  ),
-  savings(
-    label: 'Savings account',
-    hint: 'Money you keep aside in the bank',
-    accountableType: 'Depository',
-    subtype: 'savings',
-  ),
-  cash(
-    label: 'Cash in hand',
-    hint: 'Money in your purse or at home',
-    accountableType: 'Depository',
-    subtype: 'cash',
-    defaultName: 'Cash in hand',
-  ),
+  bank(accountableType: 'Depository', subtype: 'checking'),
+  savings(accountableType: 'Depository', subtype: 'savings'),
+  cash(accountableType: 'Depository', subtype: 'cash'),
   creditCard(
-    label: 'Credit card',
-    hint: 'What you owe on the card',
     accountableType: 'CreditCard',
     subtype: 'credit_card',
     owed: true,
   ),
-  loan(
-    label: 'Loan / money owed',
-    hint: 'Money you owe a bank, a relative or a shop',
-    accountableType: 'OtherLiability',
-    owed: true,
-  ),
-  assets(
-    label: 'Gold & savings certificates',
-    hint: 'Gold, prize bonds, national savings',
-    accountableType: 'OtherAsset',
-  );
+  loan(accountableType: 'OtherLiability', owed: true),
+  assets(accountableType: 'OtherAsset');
 
   const AccountKind({
-    required this.label,
-    required this.hint,
     required this.accountableType,
     this.subtype,
-    this.defaultName,
     this.owed = false,
   });
 
-  final String label;
-  final String hint;
   final String accountableType;
   final String? subtype;
-  final String? defaultName;
 
   /// A liability: the balance is how much is owed.
   final bool owed;
+
+  String label(AppLocalizations l) => switch (this) {
+        bank => l.accountKindBank,
+        savings => l.accountKindSavings,
+        cash => l.accountKindCash,
+        creditCard => l.accountKindCreditCard,
+        loan => l.accountKindLoan,
+        assets => l.accountKindAssets,
+      };
+
+  String hint(AppLocalizations l) => switch (this) {
+        bank => l.accountKindBankHint,
+        savings => l.accountKindSavingsHint,
+        cash => l.accountKindCashHint,
+        creditCard => l.accountKindCreditCardHint,
+        loan => l.accountKindLoanHint,
+        assets => l.accountKindAssetsHint,
+      };
+
+  /// Name prefilled when this kind is picked, if any.
+  String? defaultName(AppLocalizations l) =>
+      this == cash ? l.accountKindCash : null;
 }
 
 /// What the account form pops with.
@@ -153,10 +143,16 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   bool get _owed =>
       _editing ? widget.account!.isLiability : _kind?.owed == true;
 
+  bool _initialKindApplied = false;
+
   @override
-  void initState() {
-    super.initState();
-    if (widget.initialKind != null) _selectKind(widget.initialKind!);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The prefilled name is localized, so wait for localizations.
+    if (!_initialKindApplied) {
+      _initialKindApplied = true;
+      if (widget.initialKind != null) _selectKind(widget.initialKind!);
+    }
   }
 
   @override
@@ -176,28 +172,31 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   }
 
   void _selectKind(AccountKind kind) {
-    final previousDefault = _kind?.defaultName;
+    final l = AppLocalizations.of(context);
+    final previousDefault = _kind?.defaultName(l);
     final name = _name.text.trim();
     // Prefill "Cash in hand" without overwriting a name the user typed.
     if (name.isEmpty || name == previousDefault) {
-      _name.text = kind.defaultName ?? '';
+      _name.text = kind.defaultName(l) ?? '';
     }
     _kind = kind;
     _kindError = null;
   }
 
   String? _validateName(String? value) =>
-      (value ?? '').trim().isEmpty ? 'Give the account a name.' : null;
+      (value ?? '').trim().isEmpty
+          ? AppLocalizations.of(context).accountFormNameRequired
+          : null;
 
   String? _validateBalance(String? value) {
     final text = (value ?? '').trim();
     if (text.isEmpty) return null; // Treated as 0.
     try {
       if (AmountParser.parse(text, locale: 'en_US').value < 0) {
-        return 'Enter the amount without a minus sign.';
+        return AppLocalizations.of(context).accountFormBalanceNegative;
       }
     } on FormatException {
-      return 'Enter a number, like 25,000.';
+      return AppLocalizations.of(context).accountFormBalanceInvalid;
     }
     return null;
   }
@@ -215,7 +214,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   Future<void> _save() async {
     final formOk = _formKey.currentState!.validate();
     if (!_editing && _kind == null) {
-      setState(() => _kindError = 'Choose what kind of account this is.');
+      setState(() =>
+          _kindError = AppLocalizations.of(context).accountFormKindRequired);
       return;
     }
     if (!formOk) return;
@@ -229,7 +229,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     if (token == null) {
       setState(() {
         _busy = false;
-        _error = 'Please sign in again.';
+        _error = AppLocalizations.of(context).commonSignInAgain;
       });
       return;
     }
@@ -264,7 +264,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     } else {
       setState(() {
         _busy = false;
-        _error = result['error']?.toString() ?? 'Could not save the account.';
+        _error = result['error']?.toString() ??
+            AppLocalizations.of(context).accountFormSaveFailed;
       });
     }
   }
@@ -275,24 +276,22 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
 
   Future<void> _delete() async {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final account = widget.account!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: const RoundedRectangleBorder(),
-        title: Text('Delete "${account.name}"?'),
-        content: const Text(
-          'Everything recorded in this account is deleted too. '
-          'This cannot be undone.',
-        ),
+        title: Text(l.commonDeleteNamed(account.name)),
+        content: Text(l.accountFormDeleteBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep'),
+            child: Text(l.commonKeep),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete', style: TextStyle(color: c.danger)),
+            child: Text(l.commonDelete, style: TextStyle(color: c.danger)),
           ),
         ],
       ),
@@ -307,7 +306,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     if (token == null) {
       setState(() {
         _busy = false;
-        _error = 'Please sign in again.';
+        _error = AppLocalizations.of(context).commonSignInAgain;
       });
       return;
     }
@@ -319,7 +318,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     } else {
       setState(() {
         _busy = false;
-        _error = result['error']?.toString() ?? 'Could not delete the account.';
+        _error = result['error']?.toString() ??
+            AppLocalizations.of(context).accountFormDeleteFailed;
       });
     }
   }
@@ -327,6 +327,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final labelStyle =
         LedgerText.body(size: 14, weight: FontWeight.w500, color: c.ink);
     final currency = widget.account?.currency ??
@@ -344,12 +345,16 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                   children: [
-                    Text(_editing ? 'Edit account' : 'Add account',
+                    Text(
+                        _editing
+                            ? l.accountFormEditTitle
+                            : l.accountFormAddTitle,
                         style: LedgerText.title(color: c.ink)),
                     const SizedBox(height: 24),
                     if (!_editing) ...[
-                      const LedgerCapsHeader(label: 'What kind of account?'),
-                      for (final kind in AccountKind.values) _kindRow(c, kind),
+                      LedgerCapsHeader(label: l.accountFormKindHeader),
+                      for (final kind in AccountKind.values)
+                        _kindRow(c, l, kind),
                       if (_kindError != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
@@ -359,7 +364,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                         ),
                       const SizedBox(height: 24),
                     ],
-                    Text('Name', style: labelStyle),
+                    Text(l.transactionEditNameLabel, style: labelStyle),
                     const SizedBox(height: 6),
                     TextFormField(
                       key: const ValueKey('account-name'),
@@ -369,10 +374,13 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                       validator: _validateName,
                       style: LedgerText.body(color: c.ink),
                       decoration: ledgerInputDecoration(context,
-                          hint: 'e.g. Meezan Bank, Cash in hand'),
+                          hint: l.accountFormNameHint),
                     ),
                     const SizedBox(height: 20),
-                    Text(_owed ? 'How much is owed?' : 'How much is in it now?',
+                    Text(
+                        _owed
+                            ? l.accountFormOwedLabel
+                            : l.accountFormBalanceLabel,
                         style: labelStyle),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -399,8 +407,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                     const SizedBox(height: 6),
                     Text(
                       _editing
-                          ? 'Change this to match your bank or purse today.'
-                          : 'Leave empty if you are not sure. You can change it later.',
+                          ? l.accountFormBalanceEditHelp
+                          : l.accountFormBalanceNewHelp,
                       style: LedgerText.body(size: 13, color: c.muted),
                     ),
                     if (_error != null) ...[
@@ -411,7 +419,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                     const SizedBox(height: 24),
                     InkButton(
                       key: const ValueKey('account-save'),
-                      label: _editing ? 'Save' : 'Add account',
+                      label: _editing ? l.commonSave : l.accountFormAddTitle,
                       busy: _busy,
                       onPressed: _save,
                     ),
@@ -421,7 +429,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                         onPressed: _busy ? null : _delete,
                         style: TextButton.styleFrom(
                             minimumSize: const Size(44, 48)),
-                        child: Text('Delete account',
+                        child: Text(l.accountFormDeleteButton,
                             style: LedgerText.body(size: 15, color: c.danger)),
                       ),
                     ],
@@ -435,7 +443,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     );
   }
 
-  Widget _kindRow(LedgerColors c, AccountKind kind) {
+  Widget _kindRow(LedgerColors c, AppLocalizations l, AccountKind kind) {
     final on = _kind == kind;
     return Semantics(
       selected: on,
@@ -457,12 +465,12 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(kind.label,
+                      Text(kind.label(l),
                           style: LedgerText.body(
                               weight: FontWeight.w500,
                               color: on ? c.onInk : c.ink)),
                       const SizedBox(height: 2),
-                      Text(kind.hint,
+                      Text(kind.hint(l),
                           style: LedgerText.body(
                               size: 13, color: on ? c.onInk : c.muted)),
                     ],
