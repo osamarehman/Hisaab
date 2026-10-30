@@ -11125,7 +11125,8 @@ paths:
                       - fee
                       - deposit
                       - withdrawal
-                      description: Trade type (required)
+                      description: Trade type (required). interest is rejected while
+                        the server runs interest-free (INTEREST_FREE, on by default)
                     security_id:
                       type: string
                       format: uuid

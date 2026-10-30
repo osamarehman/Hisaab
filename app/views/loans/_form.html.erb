@@ -12,9 +12,15 @@
 
     <%= render "shared/ruler", classes: "my-4" %>
 
+    <%# Interest-free, the rate, its type, the interest basis and rate changes
+        are not inputs (see InterestFree), so they and their controller are
+        left out. Their stored values are kept untouched. %>
+    <% interest_free = InterestFree.enabled? %>
     <div class="space-y-2"
-         data-controller="loan-rate-changes"
-         data-loan-rate-changes-fixed-type-value="<%= Loan::FIXED_RATE_TYPE %>">
+         <% unless interest_free %>
+           data-controller="loan-rate-changes"
+           data-loan-rate-changes-fixed-type-value="<%= Loan::FIXED_RATE_TYPE %>"
+         <% end %>>
       <div class="flex items-center gap-2">
         <%= loan_form.money_field :initial_balance,
                                  label: t("loans.form.initial_balance"),
@@ -22,6 +28,7 @@
                                  required: true %>
       </div>
 
+      <% unless interest_free %>
       <div class="flex items-center gap-2">
         <%= loan_form.number_field :interest_rate,
                                  label: t("loans.form.interest_rate"),
@@ -37,6 +44,7 @@
                            { data: { loan_rate_changes_target: "rateType",
                                      action: "change->loan-rate-changes#toggle" } } %>
       </div>
+      <% end %>
 
       <div class="flex items-center gap-2">
         <%# What the borrower put in up front. Not part of the amortisation --
@@ -65,6 +73,7 @@
                                  max: Loan::Simulator::MAX_PERIODS %>
       </div>
 
+      <% unless interest_free %>
       <div class="flex items-center gap-2">
         <%# How the lender measures a period against a year. The default charges
             a flat twelfth, which is what every existing loan was built on, so
@@ -74,6 +83,7 @@
                            { label: t("loans.form.day_count_convention") } %>
       </div>
       <p class="text-xs text-secondary"><%= t("loans.form.day_count_convention_hint") %></p>
+      <% end %>
 
       <div class="flex items-center gap-2">
         <%# The premium many lenders quote beside the instalment. Charged
@@ -100,6 +110,7 @@
           rather than cleared. Switching the select to variable enables and
           reveals the retained rows, and the save resubmits them. The rows sit
           in a disclosure that opens closed, as Additional details does. %>
+      <% unless interest_free %>
       <% rate_changes_disabled = !account.loan.variable_rate_type? %>
       <div data-loan-rate-changes-target="section" <%= "hidden" if rate_changes_disabled %>>
         <%= render DS::Disclosure.new(variant: :inline, body_class: "space-y-2 mt-2 pl-4 border-l border-primary") do |disclosure| %>
@@ -141,6 +152,7 @@
                                     disabled: rate_changes_disabled, data: { action: "loan-rate-changes#add" }) %>
         <% end %>
       </div>
+      <% end %>
     </div>
   <% end %>
 <% end %>

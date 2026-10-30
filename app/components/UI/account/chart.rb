@@ -45,7 +45,10 @@ class UI::Account::Chart < ApplicationComponent
     "principal_share" => { token: "--color-info", hatched: false }
   }.freeze
 
+  # None interest-free: every repayment is principal, so there is no split.
   def loan_share_legend
+    return {} if InterestFree.enabled?
+
     loan_chart[:visible].map(&:to_s).include?("scheduled") ? LOAN_SHARE_STYLES : {}
   end
 

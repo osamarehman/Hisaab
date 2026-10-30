@@ -1,6 +1,10 @@
 require "test_helper"
 
 class LoanTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   # Leverage is what the down payment is FOR: 80,000 borrowed against 20,000 put
   # in is 4x, and the same loan against 5,000 is 16x. Bands are read off the
   # ratio rather than stored, so a loan re-read after an edit cannot disagree

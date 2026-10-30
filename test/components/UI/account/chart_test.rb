@@ -1,6 +1,10 @@
 require "test_helper"
 
 class UI::Account::ChartTest < ViewComponent::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   setup do
     @account = accounts(:investment)
     @account.holdings.destroy_all

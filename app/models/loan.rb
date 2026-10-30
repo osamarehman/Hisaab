@@ -64,7 +64,10 @@ class Loan < ApplicationRecord
   # Answering it properly means re-amortising today's balance at today's rate,
   # which needs the projection this engine does not yet carry.
   def monthly_payment
-    return nil if term_months.nil? || interest_rate.nil? || rate_type.nil? || rate_type != FIXED_RATE_TYPE
+    return nil if term_months.nil?
+    # Interest-free, every loan is a level principal repayment whatever its
+    # recorded rate type, so it always has a single monthly payment.
+    return nil if !InterestFree.enabled? && (interest_rate.nil? || rate_type.nil? || rate_type != FIXED_RATE_TYPE)
     # Non-positive, not just zero: `amortizable?` rejects both, so anything that
     # slips past here would fall through to a nil schedule instead of a payment.
     return Money.new(0, account.currency) if original_balance.amount <= 0 || term_months <= 0
@@ -86,9 +89,10 @@ class Loan < ApplicationRecord
     # `rate_type == "fixed"` guard happened to short-circuit before that read;
     # widening the rate types removed the accident, so the requirement is
     # stated rather than relied upon.
+    # Interest-free, the rate and its type are not inputs: the schedule
+    # repays what was borrowed over the term and nothing more.
     account.present? &&
-      rate_type.present? &&
-      interest_rate.present? &&
+      (InterestFree.enabled? || (rate_type.present? && interest_rate.present?)) &&
       term_months.to_i.positive? &&
       term_months.to_i <= Loan::Simulator::MAX_PERIODS &&
       original_balance.amount.positive?
@@ -122,6 +126,13 @@ class Loan < ApplicationRecord
     end
 
     loan_origination_date.present? && rate_changes.any? { |date, _rate| date < loan_origination_date }
+  end
+
+  # The annual rate every schedule, projection and breakdown charges: zero
+  # when interest-free (a qarz repays principal only), the recorded rate
+  # otherwise. The stored column is left as it is.
+  def effective_interest_rate
+    InterestFree.enabled? ? BigDecimal("0") : interest_rate
   end
 
   # Whether this loan's rate can move over its life. The one place the answer

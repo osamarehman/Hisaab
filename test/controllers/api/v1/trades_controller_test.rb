@@ -382,7 +382,26 @@ class Api::V1::TradesControllerTest < ActionDispatch::IntegrationTest
     assert_equal @investment_account.id, transfer.inflow_transaction.entry.account_id, "Inflow should go to investment"
   end
 
+  test "create interest returns 422 when interest-free" do
+    assert_no_difference "Entry.count" do
+      post "/api/v1/trades",
+        params: { trade: {
+          account_id: @investment_account.id,
+          type: "interest",
+          date: Date.current,
+          amount: 25.00,
+          currency: "USD"
+        } },
+        headers: api_headers(read_write_api_key)
+    end
+
+    assert_response :unprocessable_entity
+    assert_no_match(/interest/, JSON.parse(response.body)["errors"].join)
+  end
+
   test "create interest returns 201" do
+       InterestFree.stubs(:enabled?).returns(false)
+
        post "/api/v1/trades",
          params: { trade: {
            account_id: @investment_account.id,
@@ -400,6 +419,8 @@ class Api::V1::TradesControllerTest < ActionDispatch::IntegrationTest
      end
 
   test "create interest with explicit ticker returns 201" do
+    InterestFree.stubs(:enabled?).returns(false)
+
     security = Security.create!(ticker: "INTSEC", name: "Interest Security", country_code: "US")
 
     post "/api/v1/trades",
@@ -420,6 +441,8 @@ class Api::V1::TradesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create interest without amount returns 422" do
+    InterestFree.stubs(:enabled?).returns(false)
+
     post "/api/v1/trades",
       params: { trade: {
         account_id: @investment_account.id,
@@ -906,6 +929,8 @@ class Api::V1::TradesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create interest with non-numeric amount returns 422" do
+    InterestFree.stubs(:enabled?).returns(false)
+
     post "/api/v1/trades",
       params: { trade: {
         account_id: @investment_account.id,
@@ -922,6 +947,8 @@ class Api::V1::TradesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create interest with zero amount returns 422" do
+    InterestFree.stubs(:enabled?).returns(false)
+
     post "/api/v1/trades",
       params: { trade: {
         account_id: @investment_account.id,

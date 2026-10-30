@@ -173,7 +173,7 @@ RSpec.describe 'API V1 Trades', type: :request do
               type: {
                 type: :string,
                 enum: %w[buy sell sweep_in sweep_out dividend reinvestment interest fee deposit withdrawal],
-                description: 'Trade type (required)'
+                description: 'Trade type (required). interest is rejected while the server runs interest-free (INTEREST_FREE, on by default)'
               },
               security_id: { type: :string, format: :uuid, description: 'Security ID (one of security_id, ticker, manual_ticker required)' },
               ticker: { type: :string, description: 'Ticker symbol' },
@@ -455,6 +455,9 @@ RSpec.describe 'API V1 Trades', type: :request do
             }
           }
         end
+
+        # Interest trades exist only with interest-free mode turned off.
+        before { allow(InterestFree).to receive(:enabled?).and_return(false) }
 
         run_test!
       end

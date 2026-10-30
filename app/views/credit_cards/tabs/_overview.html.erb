@@ -58,8 +58,10 @@
       <% end %>
     <% end %>
 
-    <%= summary_card title: t(".apr") do %>
-      <%= card.apr.present? ? number_to_percentage(card.apr, precision: 3) : t(".unknown") %>
+    <% unless InterestFree.enabled? %>
+      <%= summary_card title: t(".apr") do %>
+        <%= card.apr.present? ? number_to_percentage(card.apr, precision: 3) : t(".unknown") %>
+      <% end %>
     <% end %>
   </div>
 

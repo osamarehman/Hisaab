@@ -73,6 +73,10 @@ module Sure
     retention_days = ENV.fetch("DEBUG_LOG_RETENTION_DAYS", "90").to_i
     config.x.debug_log.retention_days = retention_days.positive? ? retention_days : 90
 
+    # Hisaab is interest-free (no riba) unless INTEREST_FREE=false. Read
+    # through InterestFree.enabled?, not here.
+    config.x.interest_free = !ENV.fetch("INTEREST_FREE", "true").to_s.strip.downcase.in?(%w[false 0 no off])
+
     # Handle OmniAuth/OIDC errors gracefully (must be before OmniAuth middleware)
     require_relative "../app/middleware/omniauth_error_handler"
     config.middleware.use OmniauthErrorHandler

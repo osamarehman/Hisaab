@@ -3,7 +3,8 @@ class Loan
   # depend on the Loan model.
   #
   # A fixed loan answers the same rate for every date. A variable loan reads
-  # its recorded rate changes.
+  # its recorded rate changes. Interest-free, every loan answers zero and
+  # recorded changes are ignored.
   #
   # ## Why two questions, not one
   #
@@ -32,7 +33,7 @@ class Loan
     # The rate in force on `date`: the latest change effective on or before it,
     # falling back to the loan's own rate before any change applies.
     def accrual_rate_for(date)
-      return loan.interest_rate unless loan.variable_rate_type?
+      return loan.effective_interest_rate if InterestFree.enabled? || !loan.variable_rate_type?
 
       rate_changes.reverse_each.find { |effective_date, _| effective_date <= date }&.last || loan.interest_rate
     end
@@ -41,7 +42,7 @@ class Loan
     # {date:, rate:} pairs the simulator consumes. Bounds are inclusive at both
     # ends: a change effective on the final payment date still resizes it.
     def re_amortisation_events(from_date, to_date)
-      return [] unless loan.variable_rate_type?
+      return [] if InterestFree.enabled? || !loan.variable_rate_type?
 
       rate_changes.filter_map do |effective_date, rate|
         next unless effective_date >= from_date && effective_date <= to_date
