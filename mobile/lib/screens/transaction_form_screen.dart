@@ -15,6 +15,7 @@ import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
+import '../theme/sure_typography.dart';
 import '../utils/amount_parser.dart';
 import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
@@ -528,7 +529,8 @@ class _TypeToggle extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  fontFamily: 'IBM Plex Sans',
+                  fontFamily: SureFonts.sans,
+                  fontFamilyFallback: SureFonts.fallback,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: on ? c.onInk : c.ink,

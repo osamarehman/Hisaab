@@ -73,6 +73,12 @@ flutter:
     - family: Bricolage Grotesque
       fonts:
         - asset: assets/fonts/BricolageGrotesque.ttf
+    # Arabic-script fallback for Urdu; Latin text keeps the families above.
+    - family: Noto Naskh Arabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf
+        - asset: assets/fonts/NotoNaskhArabic-Bold.ttf
+          weight: 700
 
 flutter_launcher_icons:
   android: true

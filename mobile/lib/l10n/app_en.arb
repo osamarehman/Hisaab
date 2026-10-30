@@ -1621,5 +1621,17 @@
   "@reportOffline": {"description": "Error when the report request fails to connect."},
 
   "reportSaved": "Saved as {filename}",
-  "@reportSaved": {"description": "Confirmation after the PDF is saved on the phone.", "placeholders": {"filename": {"type": "String"}}}
+  "@reportSaved": {"description": "Confirmation after the PDF is saved on the phone.", "placeholders": {"filename": {"type": "String"}}},
+
+  "settingsLanguageLabel": "Language · زبان",
+  "@settingsLanguageLabel": {"description": "Settings row title for the app language picker. Shows both languages so it is findable whichever language is active."},
+
+  "settingsLanguageSystem": "System",
+  "@settingsLanguageSystem": {"description": "Language option that follows the device language."},
+
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {"description": "Language option for English. Always written in English."},
+
+  "settingsLanguageUrdu": "اردو",
+  "@settingsLanguageUrdu": {"description": "Language option for Urdu. Always written in Urdu script."}
 }

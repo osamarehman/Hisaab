@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_sv.dart';
+import 'app_localizations_ur.dart';
 
 // ignore_for_file: type=lint
 
@@ -95,7 +96,8 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('sv')
+    Locale('sv'),
+    Locale('ur')
   ];
 
   /// Application title shown in the OS task switcher.
@@ -3163,6 +3165,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved as {filename}'**
   String reportSaved(String filename);
+
+  /// Settings row title for the app language picker. Shows both languages so it is findable whichever language is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Language · زبان'**
+  String get settingsLanguageLabel;
+
+  /// Language option that follows the device language.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsLanguageSystem;
+
+  /// Language option for English. Always written in English.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// Language option for Urdu. Always written in Urdu script.
+  ///
+  /// In en, this message translates to:
+  /// **'اردو'**
+  String get settingsLanguageUrdu;
 }
 
 class _AppLocalizationsDelegate
@@ -3176,7 +3202,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'sv'].contains(locale.languageCode);
+      <String>['en', 'sv', 'ur'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3189,6 +3215,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'sv':
       return AppLocalizationsSv();
+    case 'ur':
+      return AppLocalizationsUr();
   }
 
   throw FlutterError(

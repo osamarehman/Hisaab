@@ -1758,4 +1758,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String reportSaved(String filename) {
     return 'Saved as $filename';
   }
+
+  @override
+  String get settingsLanguageLabel => 'Language · زبان';
+
+  @override
+  String get settingsLanguageSystem => 'System';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get settingsLanguageUrdu => 'اردو';
 }
