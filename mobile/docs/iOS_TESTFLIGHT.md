@@ -46,6 +46,14 @@ Set these in **Settings → Secrets and variables → Actions**:
 - Create and distribute an **App Store** provisioning profile for `dev.shipdeck.hisaab`
 - Base64-encode the `.mobileprovision` file for `IOS_PROVISIONING_PROFILE_BASE64`
 
+## App ID capabilities
+
+The `dev.shipdeck.hisaab` App ID must have **Associated Domains** (passkeys
+for `hisaab.shipdeck.dev`) and **Sign In with Apple** enabled, and the
+provisioning profile must be regenerated after either changes. The build's
+version is the `version:` in `mobile/pubspec.yaml`; the build number is the
+UTC timestamp of the run.
+
 ## Output
 
 - IPA artifact: `ios-ipa-testflight`

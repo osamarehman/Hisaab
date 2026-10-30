@@ -63,7 +63,7 @@ The project is configured with automated iOS build process, triggered by:
 - Manual trigger (workflow_dispatch)
 
 #### Build Steps
-1. **Environment Setup**: macOS runner + Flutter 3.32.4
+1. **Environment Setup**: macOS runner + Flutter 3.47.9
 2. **Dependency Installation**: `flutter pub get` + `pod install`
 3. **Code Analysis**: `flutter analyze`
 4. **Test Execution**: `flutter test`
@@ -112,7 +112,7 @@ flutter build ipa --release
 - macOS 12.0 or higher
 - Xcode 14.0 or higher
 - CocoaPods 1.11 or higher
-- Flutter 3.32.4 (recommended)
+- Flutter 3.47.9 (recommended)
 
 ### Minimum iOS Version
 - iOS 12.0 (defined in `ios/Podfile`)
