@@ -156,6 +156,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
                     autocorrect: false,
                     autofillHints: const [AutofillHints.email],
                     textInputAction: TextInputAction.next,

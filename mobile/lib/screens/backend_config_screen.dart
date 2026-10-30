@@ -356,6 +356,7 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
                 TextFormField(
                   controller: _urlController,
                   keyboardType: TextInputType.url,
+                  textDirection: TextDirection.ltr,
                   autocorrect: false,
                   textInputAction: TextInputAction.done,
                   decoration: InputDecoration(

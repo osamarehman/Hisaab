@@ -354,6 +354,7 @@ class _AiKeyScreenState extends State<AiKeyScreen> {
               TextField(
                 key: const Key('aiKeyField'),
                 controller: _keyController,
+                textDirection: TextDirection.ltr,
                 obscureText: true,
                 autocorrect: false,
                 enableSuggestions: false,
@@ -371,6 +372,7 @@ class _AiKeyScreenState extends State<AiKeyScreen> {
               TextField(
                 key: const Key('aiModelField'),
                 controller: _modelController,
+                textDirection: TextDirection.ltr,
                 autocorrect: false,
                 style: LedgerText.body(color: c.ink),
                 decoration: ledgerInputDecoration(context),
@@ -381,6 +383,7 @@ class _AiKeyScreenState extends State<AiKeyScreen> {
               TextField(
                 key: const Key('aiBaseUrlField'),
                 controller: _baseUrlController,
+                textDirection: TextDirection.ltr,
                 autocorrect: false,
                 keyboardType: TextInputType.url,
                 style: LedgerText.body(color: c.ink),
