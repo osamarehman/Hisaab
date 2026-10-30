@@ -111,7 +111,7 @@ class Assistant::StatementProposal
     end
 
     def post(content)
-      chat.messages.create!(type: "AssistantMessage", content: content, ai_model: Chat.default_model, status: "complete")
+      chat.messages.create!(type: "AssistantMessage", content: content, ai_model: Chat.default_model(chat.user.family), status: "complete")
     end
 
     def create_line!(line, message)

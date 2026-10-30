@@ -21,17 +21,17 @@ module Family::AiPromptable
     (ENV["OPENAI_URI_BASE"].presence || Setting.openai_uri_base).present?
   end
 
-  # Each key's stock text, lazily. Constructing a provider class with
-  # `family: nil` is exactly what returns the hardcoded default, so no prompt
-  # string is duplicated here.
+  # Each key's stock text, lazily, given whether the custom-endpoint variant
+  # is sent. Constructing a provider class with `family: nil` is exactly what
+  # returns the hardcoded default, so no prompt string is duplicated here.
   DEFAULTS = {
-    chat_system: -> { Assistant::Configurable::STATIC_INSTRUCTIONS },
-    categorizer_openai: -> { Provider::Openai::AutoCategorizer.new(nil, custom_provider: custom_openai_provider?).instructions },
-    categorizer_anthropic: -> { Provider::Anthropic::AutoCategorizer.new(nil, model: "").instructions },
-    merchant_openai: -> { Provider::Openai::AutoMerchantDetector.new(nil, model: "", transactions: [], user_merchants: [], custom_provider: custom_openai_provider?).instructions },
-    merchant_anthropic: -> { Provider::Anthropic::AutoMerchantDetector.new(nil, model: "", transactions: [], user_merchants: []).instructions },
+    chat_system: ->(_custom) { Assistant::Configurable::STATIC_INSTRUCTIONS },
+    categorizer_openai: ->(custom) { Provider::Openai::AutoCategorizer.new(nil, custom_provider: custom).instructions },
+    categorizer_anthropic: ->(_custom) { Provider::Anthropic::AutoCategorizer.new(nil, model: "").instructions },
+    merchant_openai: ->(custom) { Provider::Openai::AutoMerchantDetector.new(nil, model: "", transactions: [], user_merchants: [], custom_provider: custom).instructions },
+    merchant_anthropic: ->(_custom) { Provider::Anthropic::AutoMerchantDetector.new(nil, model: "", transactions: [], user_merchants: []).instructions },
     # The visible first chat message of "Dig in with AI", not instructions.
-    insight_dig_in: -> { I18n.t("insights.dig_in.prompt") }
+    insight_dig_in: ->(_custom) { I18n.t("insights.dig_in.prompt") }
   }.freeze
 
   KEYS = DEFAULTS.keys.freeze
@@ -73,14 +73,19 @@ module Family::AiPromptable
   end
 
   def ai_prompt_default(key)
-    DEFAULTS.fetch(key.to_sym).call
+    DEFAULTS.fetch(key.to_sym).call(custom_openai_provider?)
+  end
+
+  # A family on its own key always sends the custom-endpoint variant.
+  def custom_openai_provider?
+    own_llm_key? || Family::AiPromptable.custom_openai_provider?
   end
 
   # True when this deployment sends a prompt variant carrying a wrapper key and
   # the family's override dropped it. Advisory only, never a validation error.
   def ai_prompt_format_risk?(key)
     wrapper = WRAPPER_KEYS[key.to_sym]
-    return false unless wrapper && Family::AiPromptable.custom_openai_provider?
+    return false unless wrapper && custom_openai_provider?
 
     override = ai_prompt(key)
     override.present? && override.exclude?(wrapper)

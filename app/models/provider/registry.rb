@@ -31,6 +31,17 @@ class Provider::Registry
       nil
     end
 
+    # The LLM provider for a family: its own OpenAI-compatible key when it
+    # has one (never mixed with the server's), otherwise the server's.
+    def preferred_llm_provider_for(family)
+      family&.own_llm_provider || preferred_llm_provider
+    end
+
+    # The OpenAI-compatible provider for a family, preferring its own key.
+    def openai_for(family)
+      family&.own_llm_provider || openai
+    end
+
     def llm_provider_order
       Setting.llm_provider == "anthropic" ? %i[anthropic openai] : %i[openai anthropic]
     end

@@ -8,3 +8,13 @@ en:
         ai_prompt_categorizer_anthropic: "Transaction categorizer prompt (Anthropic)"
         ai_prompt_merchant_openai: "Merchant detector prompt (OpenAI)"
         ai_prompt_merchant_anthropic: "Merchant detector prompt (Anthropic)"
+        llm_api_key: "API key"
+        llm_uri_base: "Base URL"
+        llm_model: "Model"
+    errors:
+      models:
+        family:
+          attributes:
+            llm_uri_base:
+              insecure: "must be an https:// address"
+              not_public: "must be a public internet address"
