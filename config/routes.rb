@@ -268,6 +268,7 @@ Rails.application.routes.draw do
   get ".well-known/oauth-protected-resource", to: "oauth_metadata#protected_resource"
   get ".well-known/oauth-authorization-server", to: "oauth_metadata#authorization_server"
   get ".well-known/assetlinks.json", to: "asset_links#show", format: false, defaults: { format: :json }
+  get ".well-known/apple-app-site-association", to: "apple_app_site_association#show", format: false, defaults: { format: :json }
   post "register", to: "oauth_registration#create"
   use_doorkeeper do |mapping|
     mapping.controllers authorizations: "oauth/authorizations"

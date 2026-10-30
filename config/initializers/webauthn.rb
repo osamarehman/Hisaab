@@ -58,4 +58,20 @@ Rails.application.configure do
   config.x.android_app = ActiveSupport::OrderedOptions.new
   config.x.android_app.package_name = android_package
   config.x.android_app.sha256_cert_fingerprints = android_fingerprints
+
+  # The iOS app uses this RP ID for passkeys once
+  # /.well-known/apple-app-site-association lists its App ID
+  # ("<Team ID>.<bundle ID>") under webcredentials.
+  ios_app_ids = (ENV["IOS_APP_IDS"].presence || "C8WT3YC922.dev.shipdeck.hisaab")
+    .split(",")
+    .map(&:strip)
+    .reject(&:empty?)
+    .uniq
+  malformed_ios = ios_app_ids.reject { |app_id| app_id.match?(/\A[A-Z0-9]{10}\.[A-Za-z0-9.-]+\z/) }
+  if malformed_ios.any?
+    raise ArgumentError, "IOS_APP_IDS has malformed entries: #{malformed_ios.join(', ')}"
+  end
+
+  config.x.ios_app = ActiveSupport::OrderedOptions.new
+  config.x.ios_app.app_ids = ios_app_ids
 end
