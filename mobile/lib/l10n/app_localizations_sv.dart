@@ -1768,4 +1768,116 @@ class AppLocalizationsSv extends AppLocalizations {
   String reportSaved(String filename) {
     return 'Saved as $filename';
   }
+
+  @override
+  String get settingsAiKeyTitle => 'AI assistant key';
+
+  @override
+  String get settingsAiKeySubtitle =>
+      'Use your own free AI key for the assistant';
+
+  @override
+  String get aiKeyTitle => 'AI assistant key';
+
+  @override
+  String get aiKeyIntro =>
+      'Paste a key from a free AI provider to use the assistant, labelling and statement reading with your own account. The key is stored for your whole household and never shown again.';
+
+  @override
+  String get aiKeyLoadFailed =>
+      'Could not load the AI key settings. Try again later.';
+
+  @override
+  String get aiKeyStatusNone =>
+      'No key saved. The assistant uses the server\'s AI, if it has one.';
+
+  @override
+  String aiKeyStatusSaved(String provider, String last4) {
+    return 'Using your $provider key ending in $last4';
+  }
+
+  @override
+  String get aiKeyAdminOnly => 'Only a household admin can change the AI key.';
+
+  @override
+  String get aiKeyProviderLabel => 'Provider';
+
+  @override
+  String get aiKeyCustom => 'Other';
+
+  @override
+  String aiKeyWhereToGet(String site) {
+    return 'Get a free key at $site';
+  }
+
+  @override
+  String get aiKeyKeyLabel => 'API key';
+
+  @override
+  String get aiKeyKeyHint => 'Paste your key';
+
+  @override
+  String get aiKeyKeyKeepHint => 'Leave blank to keep the saved key';
+
+  @override
+  String get aiKeyModelLabel => 'Model';
+
+  @override
+  String get aiKeyBaseUrlLabel => 'Base URL';
+
+  @override
+  String get aiKeyKeyRequired => 'Paste a key first.';
+
+  @override
+  String get aiKeyFieldsRequired => 'Enter a base URL and a model.';
+
+  @override
+  String get aiKeyTest => 'Test key';
+
+  @override
+  String get aiKeyTestOk => 'The key works.';
+
+  @override
+  String aiKeyTestFailed(String reason) {
+    return 'The key did not work: $reason';
+  }
+
+  @override
+  String get aiKeyTestUnknown => 'no reason given';
+
+  @override
+  String get aiKeySave => 'Save key';
+
+  @override
+  String get aiKeySaveFailed => 'Could not save the key. Try again.';
+
+  @override
+  String get aiKeySavedToast => 'AI key saved';
+
+  @override
+  String get aiKeyRemove => 'Remove key';
+
+  @override
+  String get aiKeyRemoveTitle => 'Remove the AI key?';
+
+  @override
+  String get aiKeyRemoveBody =>
+      'The assistant will go back to the server\'s AI, or stop working if the server has none.';
+
+  @override
+  String get aiKeyRemovedToast => 'AI key removed';
+
+  @override
+  String get aiKeyRemoveFailed => 'Could not remove the key. Try again.';
+
+  @override
+  String get aiKeyOffline =>
+      'Could not reach the server. Check your connection and try again.';
+
+  @override
+  String get aiKeyPrivacyNote =>
+      'Your questions and the household data the assistant reads are sent to the provider you choose. Free tiers may use them to improve their models.';
+
+  @override
+  String get assistantUseOwnKey => 'Use your own AI key';
 }
