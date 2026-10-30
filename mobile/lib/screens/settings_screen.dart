@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/merchants_provider.dart';
 import '../providers/tags_provider.dart';
+import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/privacy_provider.dart';
 import '../services/offline_storage_service.dart';
@@ -743,6 +744,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onSelectionChanged: (modes) =>
                       themeProvider.setThemeMode(modes.first),
                   showSelectedIcon: false,
+                ),
+              );
+            },
+          ),
+
+          Consumer<LocaleProvider>(
+            builder: (context, localeProvider, _) {
+              return ListTile(
+                leading: const Icon(Icons.translate),
+                title: Text(l.settingsLanguageLabel),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: SegmentedButton<String>(
+                    key: const ValueKey('settings-language-picker'),
+                    segments: [
+                      ButtonSegment(
+                        value: 'system',
+                        label: Text(l.settingsLanguageSystem),
+                      ),
+                      for (final locale in LocaleProvider.selectableLocales)
+                        ButtonSegment(
+                          value: locale.languageCode,
+                          label: Text(
+                            locale.languageCode == 'ur'
+                                ? l.settingsLanguageUrdu
+                                : l.settingsLanguageEnglish,
+                          ),
+                        ),
+                    ],
+                    selected: {
+                      localeProvider.locale?.languageCode ?? 'system',
+                    },
+                    onSelectionChanged: (codes) => localeProvider.setLocale(
+                      codes.first == 'system' ? null : Locale(codes.first),
+                    ),
+                    showSelectedIcon: false,
+                  ),
                 ),
               );
             },
