@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
@@ -393,6 +393,8 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                   style: LedgerText.body(size: 13, color: c.muted)),
               const SizedBox(height: 10),
               Text.rich(
+                // "+ Rs 1,200" reads left-to-right in every language.
+                textDirection: TextDirection.ltr,
                 TextSpan(children: [
                   TextSpan(
                     text: moneyIn ? '+ Rs ' : 'Rs ',
@@ -454,7 +456,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
           },
         ),
         Align(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           child: TextButton(
             onPressed: _newLabel,
             style: TextButton.styleFrom(

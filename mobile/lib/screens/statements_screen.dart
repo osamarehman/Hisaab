@@ -352,7 +352,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
             children: [
               if (Navigator.of(context).canPop())
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: TextButton.icon(
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.chevron_left),

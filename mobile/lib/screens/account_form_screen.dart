@@ -395,7 +395,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                           ledgerInputDecoration(context, hint: '0').copyWith(
                         // prefixIcon, unlike prefixText, shows while empty.
                         prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 12, right: 8),
+                          padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
                           child: Text(MoneyFormat.symbol(currency),
                               style:
                                   LedgerText.figures(size: 18, color: c.muted)),

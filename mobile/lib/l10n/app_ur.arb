@@ -657,5 +657,7 @@
   "swatchOlive": "زیتونی",
   "swatchPlum": "جامنی",
   "swatchSteel": "فولادی نیلا",
-  "swatchStone": "سرمئی"
+  "swatchStone": "سرمئی",
+  "transactionFormAddFirstAccount": "+ اکاؤنٹ شامل کریں",
+  "transactionFormNewAccountOption": "+ نیا اکاؤنٹ"
 }

@@ -2294,4 +2294,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get swatchStone => 'Stone';
+
+  @override
+  String get transactionFormAddFirstAccount => '+ Add an account';
+
+  @override
+  String get transactionFormNewAccountOption => '+ New account';
 }

@@ -295,7 +295,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                               style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(44, 48)),
-                              child: Text('+ Add an account',
+                              child: Text(l.transactionFormAddFirstAccount,
                                   style: TextStyle(
                                       fontSize: 16, color: c.moneyIn)),
                             ),
@@ -314,7 +314,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                   ),
                                 DropdownMenuItem(
                                   value: _newAccountValue,
-                                  child: Text('+ New account',
+                                  child: Text(l.transactionFormNewAccountOption,
                                       style: TextStyle(color: c.moneyIn)),
                                 ),
                               ],

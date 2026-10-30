@@ -2278,4 +2278,10 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get swatchStone => 'سرمئی';
+
+  @override
+  String get transactionFormAddFirstAccount => '+ اکاؤنٹ شامل کریں';
+
+  @override
+  String get transactionFormNewAccountOption => '+ نیا اکاؤنٹ';
 }

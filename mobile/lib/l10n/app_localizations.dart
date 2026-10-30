@@ -4048,6 +4048,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stone'**
   String get swatchStone;
+
+  /// Button in the transaction form's account row when the user has no accounts yet.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add an account'**
+  String get transactionFormAddFirstAccount;
+
+  /// Last option in the transaction form's account dropdown; opens the add-account form.
+  ///
+  /// In en, this message translates to:
+  /// **'+ New account'**
+  String get transactionFormNewAccountOption;
 }
 
 class _AppLocalizationsDelegate

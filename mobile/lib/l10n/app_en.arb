@@ -2062,5 +2062,11 @@
   "@swatchSteel": {"description": "Accessibility name of the steel blue label color."},
 
   "swatchStone": "Stone",
-  "@swatchStone": {"description": "Accessibility name of the stone grey label color."}
+  "@swatchStone": {"description": "Accessibility name of the stone grey label color."},
+
+  "transactionFormAddFirstAccount": "+ Add an account",
+  "@transactionFormAddFirstAccount": {"description": "Button in the transaction form's account row when the user has no accounts yet."},
+
+  "transactionFormNewAccountOption": "+ New account",
+  "@transactionFormNewAccountOption": {"description": "Last option in the transaction form's account dropdown; opens the add-account form."}
 }

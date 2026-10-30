@@ -438,23 +438,23 @@ class _Summary extends StatelessWidget {
                     planned <= 0 ? 0.0 : (spent / planned).clamp(0.0, 1.0);
                 return Stack(
                   children: [
-                    Positioned(
-                      left: 0,
-                      right: 0,
+                    PositionedDirectional(
+                      start: 0,
+                      end: 0,
                       top: 5,
                       height: 14,
                       child: ColoredBox(color: c.hairline),
                     ),
-                    Positioned(
-                      left: 0,
+                    PositionedDirectional(
+                      start: 0,
                       top: 5,
                       height: 14,
                       width: box.maxWidth * share,
                       child: ColoredBox(color: left < 0 ? c.moneyOut : c.ink),
                     ),
                     if (inPeriod)
-                      Positioned(
-                        left: (box.maxWidth * day / days) - 1,
+                      PositionedDirectional(
+                        start: (box.maxWidth * day / days) - 1,
                         top: 0,
                         bottom: 0,
                         width: 2,
@@ -546,7 +546,7 @@ class _BudgetLine extends StatelessWidget {
                 child: hidden
                     ? null
                     : FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
+                        alignment: AlignmentDirectional.centerStart,
                         widthFactor: line.isBudgeted
                             ? line.spentFraction.clamp(0.0, 1.0)
                             : (spent > 0 ? 1 : 0),
