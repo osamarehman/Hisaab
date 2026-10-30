@@ -7,6 +7,7 @@ class PreferencesService {
   static const _showCategoryFilterKey = 'dashboard_show_category_filter';
   static const _themeModeKey = 'theme_mode';
   static const _moneyHiddenKey = 'privacy_money_hidden';
+  static const _localeKey = 'locale';
 
   static PreferencesService? _instance;
   SharedPreferences? _prefs;
@@ -80,5 +81,17 @@ class PreferencesService {
   Future<void> setThemeMode(String mode) async {
     final prefs = await _preferences;
     await prefs.setString(_themeModeKey, mode);
+  }
+
+  /// Returns the chosen language code ('en', 'ur'), or 'system' (default) to
+  /// follow the device language.
+  Future<String> getLocale() async {
+    final prefs = await _preferences;
+    return prefs.getString(_localeKey) ?? 'system';
+  }
+
+  Future<void> setLocale(String code) async {
+    final prefs = await _preferences;
+    await prefs.setString(_localeKey, code);
   }
 }
