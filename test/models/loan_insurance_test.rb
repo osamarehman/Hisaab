@@ -1,6 +1,10 @@
 require "test_helper"
 
 class LoanInsuranceTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   # 12,000 over 12 months at 0% interest repays 1,000 a month, so every
   # outstanding balance in the schedule is a round number and each premium is
   # hand-computable. 1.2% a year is 0.1% a month.

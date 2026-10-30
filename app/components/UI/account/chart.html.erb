@@ -54,9 +54,11 @@
             <%= I18n.l(loan_projected_payoff_date, format: :long) %>
             <span class="block text-xs text-secondary mt-1"><%= loan_schedule_comparison %></span>
           <% } %>
-          <%= render "accounts/summary_card", title: t("UI.account.chart.loan.interest_saved"), content: capture { %>
-            <%= loan_interest_saved_money.format %>
-          <% } %>
+          <% unless loan_chart[:interest_saved].nil? %>
+            <%= render "accounts/summary_card", title: t("UI.account.chart.loan.interest_saved"), content: capture { %>
+              <%= loan_interest_saved_money.format %>
+            <% } %>
+          <% end %>
           <%# The basis of the comparison, beside the figures it governs: the
               schedule's dates are anniversaries of origination, not the
               lender's posting dates, so a payment posted before its date

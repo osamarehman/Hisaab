@@ -7,17 +7,21 @@
 <% today = as_of %>
 <% schedule = account.loan.amortization_schedule %>
 <% payments = schedule.payments %>
+<%# Interest-free, every payment is principal: no interest card or column. %>
+<% interest_free = InterestFree.enabled? %>
 
 <div class="space-y-4">
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+  <div class="grid grid-cols-2 <%= interest_free ? "md:grid-cols-3" : "md:grid-cols-4" %> gap-2">
     <%# A re-amortising loan has no single monthly payment, so the card says
         which one this is rather than implying the figure holds for the term. %>
     <%= summary_card title: schedule.re_amortising? ? t(".opening_payment") : t(".monthly_payment") do %>
       <%= format_money schedule.periodic_payment %>
     <% end %>
 
-    <%= summary_card title: t(".total_interest") do %>
-      <%= format_money schedule.total_interest %>
+    <% unless interest_free %>
+      <%= summary_card title: t(".total_interest") do %>
+        <%= format_money schedule.total_interest %>
+      <% end %>
     <% end %>
 
     <%= summary_card title: t(".total_cost") do %>
@@ -40,10 +44,10 @@
   </div>
 
   <p class="text-sm text-secondary">
-    <%= t(".description", start_date: l(account.loan.origination_date, format: :long)) %>
+    <%= t(interest_free ? ".description_interest_free" : ".description", start_date: l(account.loan.origination_date, format: :long)) %>
   </p>
 
-  <% if account.loan.variable_rate_type? %>
+  <% if account.loan.variable_rate_type? && !interest_free %>
     <p class="text-sm text-secondary"><%= t(".variable_rate_notice") %></p>
   <% end %>
 
@@ -57,7 +61,9 @@
     <% table.with_column(t(".date")) { |payment| l(payment.date, format: :long) } %>
     <% table.with_column(t(".payment"), numeric: true, class: "privacy-sensitive") { |payment| format_money(payment.payment) } %>
     <% table.with_column(t(".principal"), numeric: true, class: "privacy-sensitive") { |payment| format_money(payment.principal) } %>
-    <% table.with_column(t(".interest"), numeric: true, class: "text-secondary privacy-sensitive") { |payment| format_money(payment.interest) } %>
+    <% unless interest_free %>
+      <% table.with_column(t(".interest"), numeric: true, class: "text-secondary privacy-sensitive") { |payment| format_money(payment.interest) } %>
+    <% end %>
     <% table.with_column(t(".remaining_balance"), numeric: true, class: "privacy-sensitive") { |payment| format_money(payment.ending_balance) } %>
   <% end %>
 </div>

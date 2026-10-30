@@ -1,6 +1,10 @@
 require "test_helper"
 
 class Loan::PayoffChartTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   setup do
     @family = families(:dylan_family)
     @today = Date.new(2027, 1, 15)
