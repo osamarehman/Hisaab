@@ -2630,6 +2630,18 @@ abstract class AppLocalizations {
   /// **'Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType {word} to confirm.'**
   String settingsDeleteAccountFinalContent(String word);
 
+  /// Button on the iOS login screen that signs in with an Apple ID.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get loginSignInWithApple;
+
+  /// Shown when Sign in with Apple fails for a reason other than the user cancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple sign-in didn\'t work. Please try again.'**
+  String get loginAppleFailed;
+
   /// Button on the login screen that signs in with a saved passkey.
   ///
   /// In en, this message translates to:

@@ -1454,6 +1454,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get loginSignInWithApple => 'Sign in with Apple';
+
+  @override
+  String get loginAppleFailed =>
+      'Apple sign-in didn\'t work. Please try again.';
+
+  @override
   String get loginSignInWithPasskey => 'Sign in with passkey';
 
   @override

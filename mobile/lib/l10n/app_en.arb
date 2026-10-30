@@ -1356,6 +1356,12 @@
   "settingsDeleteAccountFinalContent": "Your accounts, transactions, receipt photos, statements and chats will be deleted. If you are the last member of your household, the whole household is deleted.\n\nType {word} to confirm.",
   "@settingsDeleteAccountFinalContent": {"description": "Body of the second delete-account confirmation.", "placeholders": {"word": {"type": "String"}}},
 
+  "loginSignInWithApple": "Sign in with Apple",
+  "@loginSignInWithApple": {"description": "Button on the iOS login screen that signs in with an Apple ID."},
+
+  "loginAppleFailed": "Apple sign-in didn't work. Please try again.",
+  "@loginAppleFailed": {"description": "Shown when Sign in with Apple fails for a reason other than the user cancelling."},
+
   "loginSignInWithPasskey": "Sign in with passkey",
   "@loginSignInWithPasskey": {"description": "Button on the login screen that signs in with a saved passkey."},
 

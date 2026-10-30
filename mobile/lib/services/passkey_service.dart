@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:credential_manager/credential_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 import 'api_config.dart';
@@ -97,6 +98,65 @@ class CredentialManagerPasskeyAuthenticator implements PasskeyAuthenticator {
   }
 }
 
+/// iOS platform passkeys through `PasskeyChannel.swift` (AuthenticationServices).
+class IosPasskeyAuthenticator implements PasskeyAuthenticator {
+  IosPasskeyAuthenticator({MethodChannel? channel})
+      : _channel =
+            channel ?? const MethodChannel('dev.shipdeck.hisaab/passkeys');
+
+  final MethodChannel _channel;
+
+  @override
+  bool get isSupported => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+  @override
+  Future<Map<String, dynamic>> create(Map<String, dynamic> options) =>
+      _invoke('create', options);
+
+  @override
+  Future<Map<String, dynamic>> get(Map<String, dynamic> options) =>
+      _invoke('get', options);
+
+  Future<Map<String, dynamic>> _invoke(
+      String method, Map<String, dynamic> options) async {
+    if (!isSupported) throw PasskeyUnsupportedException();
+    try {
+      final result = await _channel.invokeMapMethod<String, dynamic>(
+          method, _jsonSafe(options));
+      if (result == null) throw PasskeyNotFoundException();
+      return _deepStringKeys(result);
+    } on PlatformException catch (e) {
+      switch (e.code) {
+        case 'cancelled':
+          throw PasskeyCancelledException();
+        case 'not_found':
+          throw PasskeyNotFoundException();
+        case 'unsupported':
+          throw PasskeyUnsupportedException();
+        default:
+          rethrow;
+      }
+    }
+  }
+
+  /// Round-trips through JSON so only plain maps, lists and scalars reach the
+  /// platform channel codec.
+  static Map<String, dynamic> _jsonSafe(Map<String, dynamic> options) =>
+      Map<String, dynamic>.from(jsonDecode(jsonEncode(options)) as Map);
+
+  static Map<String, dynamic> _deepStringKeys(Map<dynamic, dynamic> map) =>
+      map.map((key, value) => MapEntry(
+            key.toString(),
+            value is Map ? _deepStringKeys(value) : value,
+          ));
+}
+
+/// The passkey authenticator for the platform the app is running on.
+PasskeyAuthenticator platformPasskeyAuthenticator() =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+        ? IosPasskeyAuthenticator()
+        : CredentialManagerPasskeyAuthenticator();
+
 /// Drops null fields, which the plugin fills in for parts of the WebAuthn
 /// response a ceremony does not produce.
 Map<String, dynamic> _withoutNulls(Map<String, dynamic> json) {
@@ -138,8 +198,7 @@ enum PasskeyStepUp { code, password, unavailable }
 class PasskeyService {
   PasskeyService({http.Client? client, PasskeyAuthenticator? authenticator})
       : _client = client ?? http.Client(),
-        authenticator =
-            authenticator ?? CredentialManagerPasskeyAuthenticator();
+        authenticator = authenticator ?? platformPasskeyAuthenticator();
 
   final http.Client _client;
   final PasskeyAuthenticator authenticator;
@@ -305,6 +364,7 @@ class PasskeyService {
   String _describe(Object error) {
     if (error is TimeoutException) return 'Request timed out';
     if (error is CredentialException) return error.message;
+    if (error is PlatformException) return error.message ?? error.code;
     return 'Network error';
   }
 }

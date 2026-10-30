@@ -106,6 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleAppleLogin() async {
+    final l = AppLocalizations.of(context);
+    await Provider.of<AuthProvider>(context, listen: false)
+        .loginWithApple(failedMessage: l.loginAppleFailed);
+  }
+
   Widget _fieldLabel(String text, LedgerColors c) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(
@@ -333,6 +339,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, _) {
+                    if (!authProvider.appleSignInSupported) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: OutlinedButton.icon(
+                        onPressed:
+                            authProvider.isLoading ? null : _handleAppleLogin,
+                        icon: const Icon(Icons.apple, size: 20),
+                        label: Text(l.loginSignInWithApple),
+                      ),
+                    );
+                  },
+                ),
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, _) => OutlinedButton.icon(
                     onPressed: authProvider.isLoading
