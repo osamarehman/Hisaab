@@ -352,7 +352,15 @@ class DashboardScreenState extends State<DashboardScreen> {
         MonthSwitcher(month: _month, onChanged: _changeMonth),
         const SizedBox(width: 4),
         IconButton(
+          key: const ValueKey('home-header-report'),
+          tooltip: l.reportTitle,
+          visualDensity: VisualDensity.compact,
+          onPressed: _openReport,
+          icon: Icon(Icons.file_download_outlined, color: c.ink),
+        ),
+        IconButton(
           tooltip: l.homeSettings,
+          visualDensity: VisualDensity.compact,
           onPressed: _openSettings,
           icon: Icon(Icons.settings_outlined, color: c.ink),
         ),
@@ -560,12 +568,14 @@ class DashboardScreenState extends State<DashboardScreen> {
         icon: Icons.picture_as_pdf_outlined,
         title: l.reportTitle,
         hint: l.reportHint,
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => ReportExportScreen(month: _month),
-          ),
-        ),
+        onTap: _openReport,
         c: c,
+      );
+
+  void _openReport() => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ReportExportScreen(month: _month),
+        ),
       );
 
   Widget _linkRow({
