@@ -55,6 +55,10 @@ class AuthConfig
       false
     end
 
+    def apple_sign_in_enabled?
+      Array(Rails.configuration.x.auth.apple_client_ids).any?
+    end
+
     def jit_link_only?
       Rails.configuration.x.auth.jit_mode.to_s == "link_only"
     end

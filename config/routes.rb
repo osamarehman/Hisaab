@@ -774,6 +774,7 @@ Rails.application.routes.draw do
       post "auth/sso_create_account", to: "auth#sso_create_account"
       post "auth/passkey/options", to: "auth#passkey_options"
       post "auth/passkey/login", to: "auth#passkey_login"
+      post "auth/apple", to: "auth#apple_login"
       patch "auth/enable_ai", to: "auth#enable_ai"
       resources :passkeys, only: [ :index, :create, :destroy ] do
         post :options, on: :collection
