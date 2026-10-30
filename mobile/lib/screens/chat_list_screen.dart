@@ -242,8 +242,8 @@ class ChatListScreenState extends State<ChatListScreen> {
           direction: DismissDirection.endToStart,
           background: Container(
             color: c.danger,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 16),
+            alignment: AlignmentDirectional.centerEnd,
+            padding: const EdgeInsetsDirectional.only(end: 16),
             child: Icon(Icons.delete_outline, color: c.onInk),
           ),
           confirmDismiss: (_) => _delete(chat),

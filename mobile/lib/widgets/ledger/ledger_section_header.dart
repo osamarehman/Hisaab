@@ -37,7 +37,7 @@ class LedgerSectionHeader extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
                 child: Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   widthFactor: 1,
                   child: Text(
                     actionLabel!,

@@ -343,7 +343,7 @@ class VoiceNoteRecordingBar extends StatelessWidget {
 
     return Container(
       constraints: const BoxConstraints(minHeight: 48),
-      padding: const EdgeInsets.only(left: 12),
+      padding: const EdgeInsetsDirectional.only(start: 12),
       decoration: BoxDecoration(
         color: c.paper,
         border: Border.all(color: c.danger),

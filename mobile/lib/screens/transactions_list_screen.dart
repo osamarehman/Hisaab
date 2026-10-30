@@ -554,7 +554,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
               const SizedBox(height: 2),
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: value,
               ),
             ],
@@ -712,7 +712,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                       source,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.end,
                       style: TextStyle(
                         fontSize: 13,
                         color: row.pendingCreate ? c.moneyOut : c.muted,

@@ -182,7 +182,7 @@ class _DayCell extends StatelessWidget {
               const Spacer(),
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   summary,
                   maxLines: 1,

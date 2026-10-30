@@ -146,7 +146,7 @@ class LedgerBackHeader extends StatelessWidget {
         border: Border(bottom: BorderSide(color: c.hairline)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: InkWell(
         onTap: () => Navigator.of(context).maybePop(),
         child: ConstrainedBox(
