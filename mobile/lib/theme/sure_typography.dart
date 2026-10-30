@@ -1,3 +1,5 @@
+import 'sure_tokens.dart';
+
 /// Sure type scale.
 ///
 /// Mirrors the Tailwind font-size defaults the web design system uses. Like
@@ -42,4 +44,15 @@ class SureFonts {
 
   /// Tabular amounts.
   static const String mono = 'IBM Plex Mono';
+
+  /// Arabic-script face for Urdu. None of the families above carry Arabic
+  /// glyphs, so this is used as a fallback rather than a primary family.
+  static const String urdu = 'Noto Naskh Arabic';
+
+  /// Fallback chain for every text style: Urdu glyphs first, then the
+  /// platform fallbacks the tokens already declare.
+  static const List<String> fallback = <String>[
+    urdu,
+    ...SureTokens.fontFallback,
+  ];
 }

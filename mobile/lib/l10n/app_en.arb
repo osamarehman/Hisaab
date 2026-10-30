@@ -1627,5 +1627,452 @@
   "@reportOffline": {"description": "Error when the report request fails to connect."},
 
   "reportSaved": "Saved as {filename}",
-  "@reportSaved": {"description": "Confirmation after the PDF is saved on the phone.", "placeholders": {"filename": {"type": "String"}}}
+  "@reportSaved": {"description": "Confirmation after the PDF is saved on the phone.", "placeholders": {"filename": {"type": "String"}}},
+
+  "settingsLanguageLabel": "Language · زبان",
+  "@settingsLanguageLabel": {"description": "Settings row title for the app language picker. Shows both languages so it is findable whichever language is active."},
+
+  "settingsLanguageSystem": "System",
+  "@settingsLanguageSystem": {"description": "Language option that follows the device language."},
+
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {"description": "Language option for English. Always written in English."},
+
+  "settingsLanguageUrdu": "اردو",
+  "@settingsLanguageUrdu": {"description": "Language option for Urdu. Always written in Urdu script."},
+
+  "commonBack": "Back",
+  "@commonBack": {"description": "Generic back button/link label."},
+
+  "commonKeep": "Keep",
+  "@commonKeep": {"description": "Dismiss button in a delete confirmation dialog: keep the item."},
+
+  "commonSignInAgain": "Please sign in again.",
+  "@commonSignInAgain": {"description": "Error shown when the session token is missing or expired."},
+
+  "commonDeleteNamed": "Delete \"{name}\"?",
+  "@commonDeleteNamed": {"description": "Title of a delete confirmation dialog for a named item (account or label).", "placeholders": {"name": {"type": "String"}}},
+
+  "accountKindBank": "Bank account",
+  "@accountKindBank": {"description": "Account kind: current/checking bank account."},
+
+  "accountKindBankHint": "Current account you spend from, e.g. HBL, Meezan",
+  "@accountKindBankHint": {"description": "Explanation under the bank account kind."},
+
+  "accountKindSavings": "Savings account",
+  "@accountKindSavings": {"description": "Account kind: savings bank account."},
+
+  "accountKindSavingsHint": "Money you keep aside in the bank",
+  "@accountKindSavingsHint": {"description": "Explanation under the savings account kind."},
+
+  "accountKindCash": "Cash in hand",
+  "@accountKindCash": {"description": "Account kind: cash; also the default name prefilled for a new cash account."},
+
+  "accountKindCashHint": "Money in your purse or at home",
+  "@accountKindCashHint": {"description": "Explanation under the cash account kind."},
+
+  "accountKindCreditCard": "Credit card",
+  "@accountKindCreditCard": {"description": "Account kind: credit card."},
+
+  "accountKindCreditCardHint": "What you owe on the card",
+  "@accountKindCreditCardHint": {"description": "Explanation under the credit card account kind."},
+
+  "accountKindLoan": "Loan / money owed",
+  "@accountKindLoan": {"description": "Account kind: loan or other money owed."},
+
+  "accountKindLoanHint": "Money you owe a bank, a relative or a shop",
+  "@accountKindLoanHint": {"description": "Explanation under the loan account kind."},
+
+  "accountKindAssets": "Gold & savings certificates",
+  "@accountKindAssets": {"description": "Account kind: other assets such as gold and savings certificates."},
+
+  "accountKindAssetsHint": "Gold, prize bonds, national savings",
+  "@accountKindAssetsHint": {"description": "Explanation under the other-assets account kind."},
+
+  "accountFormNameRequired": "Give the account a name.",
+  "@accountFormNameRequired": {"description": "Validation error when the account name is empty."},
+
+  "accountFormBalanceNegative": "Enter the amount without a minus sign.",
+  "@accountFormBalanceNegative": {"description": "Validation error when the balance is negative."},
+
+  "accountFormBalanceInvalid": "Enter a number, like 25,000.",
+  "@accountFormBalanceInvalid": {"description": "Validation error when the balance is not a number."},
+
+  "accountFormKindRequired": "Choose what kind of account this is.",
+  "@accountFormKindRequired": {"description": "Error when saving a new account without picking a kind."},
+
+  "accountFormSaveFailed": "Could not save the account.",
+  "@accountFormSaveFailed": {"description": "Fallback error when saving an account fails."},
+
+  "accountFormDeleteBody": "Everything recorded in this account is deleted too. This cannot be undone.",
+  "@accountFormDeleteBody": {"description": "Body of the delete-account confirmation dialog."},
+
+  "accountFormDeleteFailed": "Could not delete the account.",
+  "@accountFormDeleteFailed": {"description": "Fallback error when deleting an account fails."},
+
+  "accountFormEditTitle": "Edit account",
+  "@accountFormEditTitle": {"description": "Title of the account form when editing."},
+
+  "accountFormAddTitle": "Add account",
+  "@accountFormAddTitle": {"description": "Title and save button of the account form when adding."},
+
+  "accountFormKindHeader": "What kind of account?",
+  "@accountFormKindHeader": {"description": "Header above the list of account kinds."},
+
+  "accountFormNameHint": "e.g. Meezan Bank, Cash in hand",
+  "@accountFormNameHint": {"description": "Hint in the account name field."},
+
+  "accountFormOwedLabel": "How much is owed?",
+  "@accountFormOwedLabel": {"description": "Balance field label for a liability account."},
+
+  "accountFormBalanceLabel": "How much is in it now?",
+  "@accountFormBalanceLabel": {"description": "Balance field label for an asset account."},
+
+  "accountFormBalanceEditHelp": "Change this to match your bank or purse today.",
+  "@accountFormBalanceEditHelp": {"description": "Help text under the balance field when editing an account."},
+
+  "accountFormBalanceNewHelp": "Leave empty if you are not sure. You can change it later.",
+  "@accountFormBalanceNewHelp": {"description": "Help text under the balance field when adding an account."},
+
+  "accountFormDeleteButton": "Delete account",
+  "@accountFormDeleteButton": {"description": "Button on the account form that deletes the account."},
+
+  "accountsLoadFailed": "Could not load your accounts. Pull down to try again.",
+  "@accountsLoadFailed": {"description": "Error when the accounts list fails to load."},
+
+  "accountsGroupBank": "Bank",
+  "@accountsGroupBank": {"description": "Accounts screen group header: bank accounts."},
+
+  "accountsGroupCards": "Cards",
+  "@accountsGroupCards": {"description": "Accounts screen group header: credit cards."},
+
+  "accountsGroupLoans": "Loans",
+  "@accountsGroupLoans": {"description": "Accounts screen group header: loans."},
+
+  "accountsGroupOtherOwed": "Other money owed",
+  "@accountsGroupOtherOwed": {"description": "Accounts screen group header: other liabilities."},
+
+  "accountsGroupProperty": "Property",
+  "@accountsGroupProperty": {"description": "Accounts screen group header: property and vehicles."},
+
+  "accountsGroupSavings": "Savings & gold",
+  "@accountsGroupSavings": {"description": "Accounts screen group header: other assets."},
+
+  "accountsAddStatement": "Add statement",
+  "@accountsAddStatement": {"description": "Button that opens the statements screen."},
+
+  "accountsAdd": "+ Add",
+  "@accountsAdd": {"description": "Button that opens the add-account form."},
+
+  "accountsNothingOwed": "Nothing owed.",
+  "@accountsNothingOwed": {"description": "Shown on the 'what we owe' side when there are no liabilities."},
+
+  "accountsEmpty": "No accounts yet.",
+  "@accountsEmpty": {"description": "Shown on the 'what we have' side when there are no asset accounts."},
+
+  "accountsWhatWeHave": "What we have",
+  "@accountsWhatWeHave": {"description": "Toggle side showing asset accounts and their total."},
+
+  "accountsWhatWeOwe": "What we owe",
+  "@accountsWhatWeOwe": {"description": "Toggle side showing liability accounts and their total."},
+
+  "accountsEdit": "Edit",
+  "@accountsEdit": {"description": "Hint on an account row that tapping edits it."},
+
+  "labelsTitle": "Labels",
+  "@labelsTitle": {"description": "Title of the labels screen."},
+
+  "labelsLoadFailed": "Could not load your labels. Pull down to try again.",
+  "@labelsLoadFailed": {"description": "Error when labels fail to load."},
+
+  "labelsNameRequired": "Give the label a name.",
+  "@labelsNameRequired": {"description": "Error when adding or saving a label with no name."},
+
+  "labelsAddFailed": "Could not add the label.",
+  "@labelsAddFailed": {"description": "Fallback error when creating a label fails."},
+
+  "labelsAdded": "Added \"{name}\".",
+  "@labelsAdded": {"description": "Snackbar after a label is created.", "placeholders": {"name": {"type": "String"}}},
+
+  "labelsAddedKeywordsFailed": "Added \"{name}\", but some keywords were not saved.",
+  "@labelsAddedKeywordsFailed": {"description": "Snackbar after a label is created but some auto-label keywords failed.", "placeholders": {"name": {"type": "String"}}},
+
+  "labelsNewLabel": "New label",
+  "@labelsNewLabel": {"description": "Heading of the new-label form."},
+
+  "labelsNameHint": "e.g. Committee, Doodh wala",
+  "@labelsNameHint": {"description": "Hint in the new label name field."},
+
+  "labelsKeywordsLabel": "Auto-label statement lines containing",
+  "@labelsKeywordsLabel": {"description": "Label above the auto-label keywords field."},
+
+  "labelsKeywordsHint": "e.g. ASLAM, DOODH",
+  "@labelsKeywordsHint": {"description": "Hint in the auto-label keywords field. Keep the comma as typed by the user."},
+
+  "labelsAddButton": "Add label",
+  "@labelsAddButton": {"description": "Button that creates a label."},
+
+  "labelsYourLabels": "Your labels",
+  "@labelsYourLabels": {"description": "Header above the list of labels."},
+
+  "labelsUsesThisMonth": "uses this month",
+  "@labelsUsesThisMonth": {"description": "Column header for how many times each label was used this month."},
+
+  "labelsEmpty": "No labels yet. Add one above.",
+  "@labelsEmpty": {"description": "Empty state of the labels list."},
+
+  "labelsNoAutoRule": "No auto rule",
+  "@labelsNoAutoRule": {"description": "Shown under a label without auto-label keywords."},
+
+  "labelsAutoKeywords": "Auto: {keywords}",
+  "@labelsAutoKeywords": {"description": "Shown under a label with its auto-label keywords.", "placeholders": {"keywords": {"type": "String"}}},
+
+  "labelsSaveFailed": "Could not save the label.",
+  "@labelsSaveFailed": {"description": "Fallback error when saving a label fails."},
+
+  "labelsKeywordRemoveFailed": "Could not remove {keyword}.",
+  "@labelsKeywordRemoveFailed": {"description": "Error when an auto-label keyword could not be removed.", "placeholders": {"keyword": {"type": "String"}}},
+
+  "labelsKeywordAddFailed": "Could not add {keyword}.",
+  "@labelsKeywordAddFailed": {"description": "Error when an auto-label keyword could not be added.", "placeholders": {"keyword": {"type": "String"}}},
+
+  "labelsDeleteBody": "Lines with this label become unlabelled. Its auto-label keywords stop working.",
+  "@labelsDeleteBody": {"description": "Body of the delete-label confirmation dialog."},
+
+  "labelsDeleteFailed": "Could not delete the label.",
+  "@labelsDeleteFailed": {"description": "Fallback error when deleting a label fails."},
+
+  "labelsEditTitle": "Edit label",
+  "@labelsEditTitle": {"description": "Title of the edit-label sheet."},
+
+  "labelsKeywordsEditHint": "Comma separated, e.g. K-ELECTRIC, SSGC",
+  "@labelsKeywordsEditHint": {"description": "Hint in the keywords field of the edit-label sheet. Keep the comma between the examples."},
+
+  "labelsDeleteButton": "Delete label",
+  "@labelsDeleteButton": {"description": "Button in the edit-label sheet that deletes the label."},
+
+  "statementsIntro": "Add a bank statement. Hisaab reads every line, files each one under the right month and suggests a label.",
+  "@statementsIntro": {"description": "Intro text on the statements screen."},
+
+  "statementsUploadFailed": "Upload failed.",
+  "@statementsUploadFailed": {"description": "Fallback error when uploading a statement fails."},
+
+  "statementsPublishFailed": "Could not add the lines.",
+  "@statementsPublishFailed": {"description": "Fallback error when publishing statement lines fails."},
+
+  "statementsChooseFile": "Choose statement file",
+  "@statementsChooseFile": {"description": "Button to pick a statement file."},
+
+  "statementsUploading": "Uploading…",
+  "@statementsUploading": {"description": "Shown while a statement uploads."},
+
+  "statementsFileHint": "PDF or CSV · up to 6 months in one file",
+  "@statementsFileHint": {"description": "Hint under the choose-file button."},
+
+  "statementsAccountFallback": "Account",
+  "@statementsAccountFallback": {"description": "Fallback account name when none is selected."},
+
+  "statementsCoverageTitle": "{name} · last 6 months",
+  "@statementsCoverageTitle": {"description": "Header of the month coverage strip for an account.", "placeholders": {"name": {"type": "String"}}},
+
+  "statementsCheckingMonths": "Checking months…",
+  "@statementsCheckingMonths": {"description": "Shown while month coverage loads."},
+
+  "statementsLegendAllLabelled": "All labelled",
+  "@statementsLegendAllLabelled": {"description": "Coverage legend: month with every line labelled."},
+
+  "statementsLegendNeedsLabels": "Needs labels",
+  "@statementsLegendNeedsLabels": {"description": "Coverage legend: month with unlabelled lines."},
+
+  "statementsLegendNoStatement": "No statement",
+  "@statementsLegendNoStatement": {"description": "Coverage legend: month with no statement lines."},
+
+  "statementsMonthLeft": "{count} left",
+  "@statementsMonthLeft": {"description": "Coverage cell: unlabelled lines left in a month.", "placeholders": {"count": {"type": "int"}}},
+
+  "statementsPdfStatement": "PDF statement",
+  "@statementsPdfStatement": {"description": "Fallback file name for a PDF statement."},
+
+  "statementsCsvStatement": "CSV statement",
+  "@statementsCsvStatement": {"description": "Fallback file name for a CSV statement."},
+
+  "statementsReadFailed": "Hisaab could not read this statement. Try another file.",
+  "@statementsReadFailed": {"description": "Shown when a statement import failed without a server message."},
+
+  "statementsAddingLines": "Adding the lines to your books…",
+  "@statementsAddingLines": {"description": "Progress text while statement lines are published."},
+
+  "statementsReading": "Hisaab is reading every line. This can take a minute.",
+  "@statementsReading": {"description": "Progress text while a statement is parsed."},
+
+  "statementsLinesFound": "lines found",
+  "@statementsLinesFound": {"description": "Caption under the number of lines found in a statement."},
+
+  "statementsNeedsColumnMapping": "This file needs its columns matched on the Hisaab website before the lines can be added.",
+  "@statementsNeedsColumnMapping": {"description": "Shown when a CSV import needs column mapping on the web."},
+
+  "statementsAddLines": "{count, plural, =1{Add this 1 line} other{Add these {count} lines}}",
+  "@statementsAddLines": {"description": "Button that publishes the parsed statement lines.", "placeholders": {"count": {"type": "int"}}},
+
+  "statementsAutoLabelled": "auto-labelled",
+  "@statementsAutoLabelled": {"description": "Caption under the number of lines labelled automatically."},
+
+  "statementsNeedYou": "need you",
+  "@statementsNeedYou": {"description": "Caption under the number of lines that need the user to label them."},
+
+  "statementsLabelItems": "{count, plural, =1{Label the 1 item} other{Label the {count} items}}",
+  "@statementsLabelItems": {"description": "Button that opens the statement review screen.", "placeholders": {"count": {"type": "int"}}},
+
+  "statementsAllLabelled": "Everything is labelled.",
+  "@statementsAllLabelled": {"description": "Shown when no imported lines need a label."},
+
+  "statementsStatusFailed": "Failed",
+  "@statementsStatusFailed": {"description": "Statement import status: failed."},
+
+  "statementsStatusAdded": "Added",
+  "@statementsStatusAdded": {"description": "Statement import status: lines added."},
+
+  "statementsStatusAdding": "Adding…",
+  "@statementsStatusAdding": {"description": "Statement import status: lines being added."},
+
+  "statementsStatusReading": "Reading…",
+  "@statementsStatusReading": {"description": "Statement import status: being parsed."},
+
+  "statementsStatusRead": "Read",
+  "@statementsStatusRead": {"description": "Statement import status: parsed and ready to add."},
+
+  "statementsStatusWaiting": "Waiting…",
+  "@statementsStatusWaiting": {"description": "Statement import status: queued."},
+
+  "statementsRecent": "Recent statements",
+  "@statementsRecent": {"description": "Header of the recent statements list."},
+
+  "statementsStatementFallback": "Statement",
+  "@statementsStatementFallback": {"description": "Fallback account name in the recent statements list."},
+
+  "statementsAddedOn": "Added {date}",
+  "@statementsAddedOn": {"description": "When a recent statement was uploaded.", "placeholders": {"date": {"type": "String"}}},
+
+  "statementsLinesCount": "{count, plural, =1{1 line} other{{count} lines}}",
+  "@statementsLinesCount": {"description": "Number of lines in a recent statement.", "placeholders": {"count": {"type": "int"}}},
+
+  "statementReviewLoadFailed": "Could not load the statement lines.",
+  "@statementReviewLoadFailed": {"description": "Error when the lines to review fail to load."},
+
+  "statementReviewKeywordFailed": "Labelled this one. The keyword was not saved: {error}",
+  "@statementReviewKeywordFailed": {"description": "Snackbar when a line was labelled but its auto-label rule failed.", "placeholders": {"error": {"type": "String"}}},
+
+  "statementReviewUnknownError": "unknown error",
+  "@statementReviewUnknownError": {"description": "Fallback error detail when the server gives none."},
+
+  "statementReviewNothingToLabel": "Nothing to label. Every line has a label.",
+  "@statementReviewNothingToLabel": {"description": "Shown when there were no unlabelled lines to start with."},
+
+  "statementReviewAllDone": "All done. Every line has a label.",
+  "@statementReviewAllDone": {"description": "Shown after the last line is labelled."},
+
+  "statementReviewDoneForNow": "Done for now",
+  "@statementReviewDoneForNow": {"description": "Button that leaves the review screen."},
+
+  "statementReviewPosition": "{position} of {total}",
+  "@statementReviewPosition": {"description": "Progress counter in the review screen header.", "placeholders": {"position": {"type": "int"}, "total": {"type": "int"}}},
+
+  "statementReviewWhereFrom": "Where did this come from?",
+  "@statementReviewWhereFrom": {"description": "Question above the labels for an incoming line."},
+
+  "statementReviewWhatWasThis": "What was this?",
+  "@statementReviewWhatWasThis": {"description": "Question above the labels for an outgoing line."},
+
+  "statementReviewNotExpense": "Not an expense",
+  "@statementReviewNotExpense": {"description": "Choice that excludes the line instead of labelling it."},
+
+  "statementReviewNewLabel": "+ Make a new label",
+  "@statementReviewNewLabel": {"description": "Link that opens the labels screen."},
+
+  "statementReviewLabelAllSimilar": "Label all {count} like this",
+  "@statementReviewLabelAllSimilar": {"description": "Checkbox to label every similar line; the number is shown in bold.", "placeholders": {"count": {"type": "int"}}},
+
+  "statementReviewAutoLabelFuture": "Auto-label future lines like this",
+  "@statementReviewAutoLabelFuture": {"description": "Checkbox to create an auto-label rule when there are no similar lines yet."},
+
+  "statementReviewLinesContaining": "Lines containing",
+  "@statementReviewLinesContaining": {"description": "Label before the auto-label keyword field."},
+
+  "statementReviewSkip": "Skip",
+  "@statementReviewSkip": {"description": "Button that skips the current line."},
+
+  "statementReviewSaveNext": "Save & next",
+  "@statementReviewSaveNext": {"description": "Button that saves the label and shows the next line."},
+
+  "budgetsScreenTitle": "Budget",
+  "@budgetsScreenTitle": {"description": "Title of the budget screen."},
+
+  "budgetsOverByNote": "Over by {amount}.",
+  "@budgetsOverByNote": {"description": "Budget summary note when spending exceeds the plan.", "placeholders": {"amount": {"type": "String"}}},
+
+  "budgetsLeftForDays": "{amount} left for the last {days, plural, =1{1 day} other{{days} days}}. Blue line is today.",
+  "@budgetsLeftForDays": {"description": "Budget summary note during the month.", "placeholders": {"amount": {"type": "String"}, "days": {"type": "int"}}},
+
+  "budgetsLeftNote": "{amount} left.",
+  "@budgetsLeftNote": {"description": "Budget summary note outside the current month.", "placeholders": {"amount": {"type": "String"}}},
+
+  "budgetsSpentOfPlanned": "Spent of {amount} planned",
+  "@budgetsSpentOfPlanned": {"description": "Caption above the amount spent when a plan exists.", "placeholders": {"amount": {"type": "String"}}},
+
+  "budgetsSpent": "Spent",
+  "@budgetsSpent": {"description": "Caption above the amount spent when no plan exists."},
+
+  "budgetsDayOf": "day {day} of {days}",
+  "@budgetsDayOf": {"description": "Which day of the budget period today is.", "placeholders": {"day": {"type": "int"}, "days": {"type": "int"}}},
+
+  "budgetsNoLimitSet": "No limit set",
+  "@budgetsNoLimitSet": {"description": "Category row note when the category has no budget."},
+
+  "budgetsOverByLine": "Over by {amount}",
+  "@budgetsOverByLine": {"description": "Category row note when spending exceeds its budget.", "placeholders": {"amount": {"type": "String"}}},
+
+  "noAccountsTitle": "Add your first account",
+  "@noAccountsTitle": {"description": "Title and button of the prompt shown when there are no accounts."},
+
+  "noAccountsBody": "Accounts are where money is paid from and into. Start with \"Cash in hand\", then add your bank account.",
+  "@noAccountsBody": {"description": "Explanation in the no-accounts prompt. The quoted name matches accountKindCash."},
+
+  "upgradeTitle": "Update available",
+  "@upgradeTitle": {"description": "Title of the app-update prompt."},
+
+  "upgradeBody": "{appName} {storeVersion} is now available — you have {installedVersion}.\n\nWhat's new? Check the store for release notes.",
+  "@upgradeBody": {"description": "Body of the app-update prompt.", "placeholders": {"appName": {"type": "String"}, "storeVersion": {"type": "String"}, "installedVersion": {"type": "String"}}},
+
+  "upgradeNow": "Update now",
+  "@upgradeNow": {"description": "Button in the app-update prompt."},
+
+  "upgradeLater": "Later",
+  "@upgradeLater": {"description": "Button that dismisses the app-update prompt."},
+
+  "swatchInk": "Ink",
+  "@swatchInk": {"description": "Accessibility name of the black label color."},
+
+  "swatchCobalt": "Cobalt",
+  "@swatchCobalt": {"description": "Accessibility name of the cobalt blue label color."},
+
+  "swatchAmber": "Amber",
+  "@swatchAmber": {"description": "Accessibility name of the amber label color."},
+
+  "swatchOlive": "Olive",
+  "@swatchOlive": {"description": "Accessibility name of the olive label color."},
+
+  "swatchPlum": "Plum",
+  "@swatchPlum": {"description": "Accessibility name of the plum label color."},
+
+  "swatchSteel": "Steel",
+  "@swatchSteel": {"description": "Accessibility name of the steel blue label color."},
+
+  "swatchStone": "Stone",
+  "@swatchStone": {"description": "Accessibility name of the stone grey label color."},
+
+  "transactionFormAddFirstAccount": "+ Add an account",
+  "@transactionFormAddFirstAccount": {"description": "Button in the transaction form's account row when the user has no accounts yet."},
+
+  "transactionFormNewAccountOption": "+ New account",
+  "@transactionFormNewAccountOption": {"description": "Last option in the transaction form's account dropdown; opens the add-account form."}
 }

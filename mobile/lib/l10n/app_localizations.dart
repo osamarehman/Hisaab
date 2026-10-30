@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_sv.dart';
+import 'app_localizations_ur.dart';
 
 // ignore_for_file: type=lint
 
@@ -95,7 +96,8 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('sv')
+    Locale('sv'),
+    Locale('ur')
   ];
 
   /// Application title shown in the OS task switcher.
@@ -3175,6 +3177,901 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved as {filename}'**
   String reportSaved(String filename);
+
+  /// Settings row title for the app language picker. Shows both languages so it is findable whichever language is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Language · زبان'**
+  String get settingsLanguageLabel;
+
+  /// Language option that follows the device language.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsLanguageSystem;
+
+  /// Language option for English. Always written in English.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// Language option for Urdu. Always written in Urdu script.
+  ///
+  /// In en, this message translates to:
+  /// **'اردو'**
+  String get settingsLanguageUrdu;
+
+  /// Generic back button/link label.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get commonBack;
+
+  /// Dismiss button in a delete confirmation dialog: keep the item.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get commonKeep;
+
+  /// Error shown when the session token is missing or expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in again.'**
+  String get commonSignInAgain;
+
+  /// Title of a delete confirmation dialog for a named item (account or label).
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String commonDeleteNamed(String name);
+
+  /// Account kind: current/checking bank account.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account'**
+  String get accountKindBank;
+
+  /// Explanation under the bank account kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Current account you spend from, e.g. HBL, Meezan'**
+  String get accountKindBankHint;
+
+  /// Account kind: savings bank account.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings account'**
+  String get accountKindSavings;
+
+  /// Explanation under the savings account kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Money you keep aside in the bank'**
+  String get accountKindSavingsHint;
+
+  /// Account kind: cash; also the default name prefilled for a new cash account.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash in hand'**
+  String get accountKindCash;
+
+  /// Explanation under the cash account kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Money in your purse or at home'**
+  String get accountKindCashHint;
+
+  /// Account kind: credit card.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit card'**
+  String get accountKindCreditCard;
+
+  /// Explanation under the credit card account kind.
+  ///
+  /// In en, this message translates to:
+  /// **'What you owe on the card'**
+  String get accountKindCreditCardHint;
+
+  /// Account kind: loan or other money owed.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan / money owed'**
+  String get accountKindLoan;
+
+  /// Explanation under the loan account kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Money you owe a bank, a relative or a shop'**
+  String get accountKindLoanHint;
+
+  /// Account kind: other assets such as gold and savings certificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold & savings certificates'**
+  String get accountKindAssets;
+
+  /// Explanation under the other-assets account kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold, prize bonds, national savings'**
+  String get accountKindAssetsHint;
+
+  /// Validation error when the account name is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the account a name.'**
+  String get accountFormNameRequired;
+
+  /// Validation error when the balance is negative.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the amount without a minus sign.'**
+  String get accountFormBalanceNegative;
+
+  /// Validation error when the balance is not a number.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number, like 25,000.'**
+  String get accountFormBalanceInvalid;
+
+  /// Error when saving a new account without picking a kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what kind of account this is.'**
+  String get accountFormKindRequired;
+
+  /// Fallback error when saving an account fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the account.'**
+  String get accountFormSaveFailed;
+
+  /// Body of the delete-account confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything recorded in this account is deleted too. This cannot be undone.'**
+  String get accountFormDeleteBody;
+
+  /// Fallback error when deleting an account fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the account.'**
+  String get accountFormDeleteFailed;
+
+  /// Title of the account form when editing.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit account'**
+  String get accountFormEditTitle;
+
+  /// Title and save button of the account form when adding.
+  ///
+  /// In en, this message translates to:
+  /// **'Add account'**
+  String get accountFormAddTitle;
+
+  /// Header above the list of account kinds.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind of account?'**
+  String get accountFormKindHeader;
+
+  /// Hint in the account name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Meezan Bank, Cash in hand'**
+  String get accountFormNameHint;
+
+  /// Balance field label for a liability account.
+  ///
+  /// In en, this message translates to:
+  /// **'How much is owed?'**
+  String get accountFormOwedLabel;
+
+  /// Balance field label for an asset account.
+  ///
+  /// In en, this message translates to:
+  /// **'How much is in it now?'**
+  String get accountFormBalanceLabel;
+
+  /// Help text under the balance field when editing an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Change this to match your bank or purse today.'**
+  String get accountFormBalanceEditHelp;
+
+  /// Help text under the balance field when adding an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty if you are not sure. You can change it later.'**
+  String get accountFormBalanceNewHelp;
+
+  /// Button on the account form that deletes the account.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountFormDeleteButton;
+
+  /// Error when the accounts list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your accounts. Pull down to try again.'**
+  String get accountsLoadFailed;
+
+  /// Accounts screen group header: bank accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get accountsGroupBank;
+
+  /// Accounts screen group header: credit cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get accountsGroupCards;
+
+  /// Accounts screen group header: loans.
+  ///
+  /// In en, this message translates to:
+  /// **'Loans'**
+  String get accountsGroupLoans;
+
+  /// Accounts screen group header: other liabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Other money owed'**
+  String get accountsGroupOtherOwed;
+
+  /// Accounts screen group header: property and vehicles.
+  ///
+  /// In en, this message translates to:
+  /// **'Property'**
+  String get accountsGroupProperty;
+
+  /// Accounts screen group header: other assets.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings & gold'**
+  String get accountsGroupSavings;
+
+  /// Button that opens the statements screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Add statement'**
+  String get accountsAddStatement;
+
+  /// Button that opens the add-account form.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add'**
+  String get accountsAdd;
+
+  /// Shown on the 'what we owe' side when there are no liabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing owed.'**
+  String get accountsNothingOwed;
+
+  /// Shown on the 'what we have' side when there are no asset accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'No accounts yet.'**
+  String get accountsEmpty;
+
+  /// Toggle side showing asset accounts and their total.
+  ///
+  /// In en, this message translates to:
+  /// **'What we have'**
+  String get accountsWhatWeHave;
+
+  /// Toggle side showing liability accounts and their total.
+  ///
+  /// In en, this message translates to:
+  /// **'What we owe'**
+  String get accountsWhatWeOwe;
+
+  /// Hint on an account row that tapping edits it.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get accountsEdit;
+
+  /// Title of the labels screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get labelsTitle;
+
+  /// Error when labels fail to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your labels. Pull down to try again.'**
+  String get labelsLoadFailed;
+
+  /// Error when adding or saving a label with no name.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the label a name.'**
+  String get labelsNameRequired;
+
+  /// Fallback error when creating a label fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the label.'**
+  String get labelsAddFailed;
+
+  /// Snackbar after a label is created.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{name}\".'**
+  String labelsAdded(String name);
+
+  /// Snackbar after a label is created but some auto-label keywords failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{name}\", but some keywords were not saved.'**
+  String labelsAddedKeywordsFailed(String name);
+
+  /// Heading of the new-label form.
+  ///
+  /// In en, this message translates to:
+  /// **'New label'**
+  String get labelsNewLabel;
+
+  /// Hint in the new label name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Committee, Doodh wala'**
+  String get labelsNameHint;
+
+  /// Label above the auto-label keywords field.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-label statement lines containing'**
+  String get labelsKeywordsLabel;
+
+  /// Hint in the auto-label keywords field. Keep the comma as typed by the user.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. ASLAM, DOODH'**
+  String get labelsKeywordsHint;
+
+  /// Button that creates a label.
+  ///
+  /// In en, this message translates to:
+  /// **'Add label'**
+  String get labelsAddButton;
+
+  /// Header above the list of labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Your labels'**
+  String get labelsYourLabels;
+
+  /// Column header for how many times each label was used this month.
+  ///
+  /// In en, this message translates to:
+  /// **'uses this month'**
+  String get labelsUsesThisMonth;
+
+  /// Empty state of the labels list.
+  ///
+  /// In en, this message translates to:
+  /// **'No labels yet. Add one above.'**
+  String get labelsEmpty;
+
+  /// Shown under a label without auto-label keywords.
+  ///
+  /// In en, this message translates to:
+  /// **'No auto rule'**
+  String get labelsNoAutoRule;
+
+  /// Shown under a label with its auto-label keywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto: {keywords}'**
+  String labelsAutoKeywords(String keywords);
+
+  /// Fallback error when saving a label fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the label.'**
+  String get labelsSaveFailed;
+
+  /// Error when an auto-label keyword could not be removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove {keyword}.'**
+  String labelsKeywordRemoveFailed(String keyword);
+
+  /// Error when an auto-label keyword could not be added.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add {keyword}.'**
+  String labelsKeywordAddFailed(String keyword);
+
+  /// Body of the delete-label confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines with this label become unlabelled. Its auto-label keywords stop working.'**
+  String get labelsDeleteBody;
+
+  /// Fallback error when deleting a label fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the label.'**
+  String get labelsDeleteFailed;
+
+  /// Title of the edit-label sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit label'**
+  String get labelsEditTitle;
+
+  /// Hint in the keywords field of the edit-label sheet. Keep the comma between the examples.
+  ///
+  /// In en, this message translates to:
+  /// **'Comma separated, e.g. K-ELECTRIC, SSGC'**
+  String get labelsKeywordsEditHint;
+
+  /// Button in the edit-label sheet that deletes the label.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete label'**
+  String get labelsDeleteButton;
+
+  /// Intro text on the statements screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bank statement. Hisaab reads every line, files each one under the right month and suggests a label.'**
+  String get statementsIntro;
+
+  /// Fallback error when uploading a statement fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed.'**
+  String get statementsUploadFailed;
+
+  /// Fallback error when publishing statement lines fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the lines.'**
+  String get statementsPublishFailed;
+
+  /// Button to pick a statement file.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose statement file'**
+  String get statementsChooseFile;
+
+  /// Shown while a statement uploads.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get statementsUploading;
+
+  /// Hint under the choose-file button.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF or CSV · up to 6 months in one file'**
+  String get statementsFileHint;
+
+  /// Fallback account name when none is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get statementsAccountFallback;
+
+  /// Header of the month coverage strip for an account.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · last 6 months'**
+  String statementsCoverageTitle(String name);
+
+  /// Shown while month coverage loads.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking months…'**
+  String get statementsCheckingMonths;
+
+  /// Coverage legend: month with every line labelled.
+  ///
+  /// In en, this message translates to:
+  /// **'All labelled'**
+  String get statementsLegendAllLabelled;
+
+  /// Coverage legend: month with unlabelled lines.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs labels'**
+  String get statementsLegendNeedsLabels;
+
+  /// Coverage legend: month with no statement lines.
+  ///
+  /// In en, this message translates to:
+  /// **'No statement'**
+  String get statementsLegendNoStatement;
+
+  /// Coverage cell: unlabelled lines left in a month.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left'**
+  String statementsMonthLeft(int count);
+
+  /// Fallback file name for a PDF statement.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF statement'**
+  String get statementsPdfStatement;
+
+  /// Fallback file name for a CSV statement.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV statement'**
+  String get statementsCsvStatement;
+
+  /// Shown when a statement import failed without a server message.
+  ///
+  /// In en, this message translates to:
+  /// **'Hisaab could not read this statement. Try another file.'**
+  String get statementsReadFailed;
+
+  /// Progress text while statement lines are published.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding the lines to your books…'**
+  String get statementsAddingLines;
+
+  /// Progress text while a statement is parsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Hisaab is reading every line. This can take a minute.'**
+  String get statementsReading;
+
+  /// Caption under the number of lines found in a statement.
+  ///
+  /// In en, this message translates to:
+  /// **'lines found'**
+  String get statementsLinesFound;
+
+  /// Shown when a CSV import needs column mapping on the web.
+  ///
+  /// In en, this message translates to:
+  /// **'This file needs its columns matched on the Hisaab website before the lines can be added.'**
+  String get statementsNeedsColumnMapping;
+
+  /// Button that publishes the parsed statement lines.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add this 1 line} other{Add these {count} lines}}'**
+  String statementsAddLines(int count);
+
+  /// Caption under the number of lines labelled automatically.
+  ///
+  /// In en, this message translates to:
+  /// **'auto-labelled'**
+  String get statementsAutoLabelled;
+
+  /// Caption under the number of lines that need the user to label them.
+  ///
+  /// In en, this message translates to:
+  /// **'need you'**
+  String get statementsNeedYou;
+
+  /// Button that opens the statement review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Label the 1 item} other{Label the {count} items}}'**
+  String statementsLabelItems(int count);
+
+  /// Shown when no imported lines need a label.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is labelled.'**
+  String get statementsAllLabelled;
+
+  /// Statement import status: failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get statementsStatusFailed;
+
+  /// Statement import status: lines added.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get statementsStatusAdded;
+
+  /// Statement import status: lines being added.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding…'**
+  String get statementsStatusAdding;
+
+  /// Statement import status: being parsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading…'**
+  String get statementsStatusReading;
+
+  /// Statement import status: parsed and ready to add.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get statementsStatusRead;
+
+  /// Statement import status: queued.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting…'**
+  String get statementsStatusWaiting;
+
+  /// Header of the recent statements list.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent statements'**
+  String get statementsRecent;
+
+  /// Fallback account name in the recent statements list.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement'**
+  String get statementsStatementFallback;
+
+  /// When a recent statement was uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {date}'**
+  String statementsAddedOn(String date);
+
+  /// Number of lines in a recent statement.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line} other{{count} lines}}'**
+  String statementsLinesCount(int count);
+
+  /// Error when the lines to review fail to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the statement lines.'**
+  String get statementReviewLoadFailed;
+
+  /// Snackbar when a line was labelled but its auto-label rule failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Labelled this one. The keyword was not saved: {error}'**
+  String statementReviewKeywordFailed(String error);
+
+  /// Fallback error detail when the server gives none.
+  ///
+  /// In en, this message translates to:
+  /// **'unknown error'**
+  String get statementReviewUnknownError;
+
+  /// Shown when there were no unlabelled lines to start with.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to label. Every line has a label.'**
+  String get statementReviewNothingToLabel;
+
+  /// Shown after the last line is labelled.
+  ///
+  /// In en, this message translates to:
+  /// **'All done. Every line has a label.'**
+  String get statementReviewAllDone;
+
+  /// Button that leaves the review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Done for now'**
+  String get statementReviewDoneForNow;
+
+  /// Progress counter in the review screen header.
+  ///
+  /// In en, this message translates to:
+  /// **'{position} of {total}'**
+  String statementReviewPosition(int position, int total);
+
+  /// Question above the labels for an incoming line.
+  ///
+  /// In en, this message translates to:
+  /// **'Where did this come from?'**
+  String get statementReviewWhereFrom;
+
+  /// Question above the labels for an outgoing line.
+  ///
+  /// In en, this message translates to:
+  /// **'What was this?'**
+  String get statementReviewWhatWasThis;
+
+  /// Choice that excludes the line instead of labelling it.
+  ///
+  /// In en, this message translates to:
+  /// **'Not an expense'**
+  String get statementReviewNotExpense;
+
+  /// Link that opens the labels screen.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Make a new label'**
+  String get statementReviewNewLabel;
+
+  /// Checkbox to label every similar line; the number is shown in bold.
+  ///
+  /// In en, this message translates to:
+  /// **'Label all {count} like this'**
+  String statementReviewLabelAllSimilar(int count);
+
+  /// Checkbox to create an auto-label rule when there are no similar lines yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-label future lines like this'**
+  String get statementReviewAutoLabelFuture;
+
+  /// Label before the auto-label keyword field.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines containing'**
+  String get statementReviewLinesContaining;
+
+  /// Button that skips the current line.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get statementReviewSkip;
+
+  /// Button that saves the label and shows the next line.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & next'**
+  String get statementReviewSaveNext;
+
+  /// Title of the budget screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get budgetsScreenTitle;
+
+  /// Budget summary note when spending exceeds the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Over by {amount}.'**
+  String budgetsOverByNote(String amount);
+
+  /// Budget summary note during the month.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left for the last {days, plural, =1{1 day} other{{days} days}}. Blue line is today.'**
+  String budgetsLeftForDays(String amount, int days);
+
+  /// Budget summary note outside the current month.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left.'**
+  String budgetsLeftNote(String amount);
+
+  /// Caption above the amount spent when a plan exists.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent of {amount} planned'**
+  String budgetsSpentOfPlanned(String amount);
+
+  /// Caption above the amount spent when no plan exists.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent'**
+  String get budgetsSpent;
+
+  /// Which day of the budget period today is.
+  ///
+  /// In en, this message translates to:
+  /// **'day {day} of {days}'**
+  String budgetsDayOf(int day, int days);
+
+  /// Category row note when the category has no budget.
+  ///
+  /// In en, this message translates to:
+  /// **'No limit set'**
+  String get budgetsNoLimitSet;
+
+  /// Category row note when spending exceeds its budget.
+  ///
+  /// In en, this message translates to:
+  /// **'Over by {amount}'**
+  String budgetsOverByLine(String amount);
+
+  /// Title and button of the prompt shown when there are no accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first account'**
+  String get noAccountsTitle;
+
+  /// Explanation in the no-accounts prompt. The quoted name matches accountKindCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts are where money is paid from and into. Start with \"Cash in hand\", then add your bank account.'**
+  String get noAccountsBody;
+
+  /// Title of the app-update prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get upgradeTitle;
+
+  /// Body of the app-update prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} {storeVersion} is now available — you have {installedVersion}.\n\nWhat\'s new? Check the store for release notes.'**
+  String upgradeBody(
+      String appName, String storeVersion, String installedVersion);
+
+  /// Button in the app-update prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get upgradeNow;
+
+  /// Button that dismisses the app-update prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get upgradeLater;
+
+  /// Accessibility name of the black label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Ink'**
+  String get swatchInk;
+
+  /// Accessibility name of the cobalt blue label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Cobalt'**
+  String get swatchCobalt;
+
+  /// Accessibility name of the amber label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get swatchAmber;
+
+  /// Accessibility name of the olive label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Olive'**
+  String get swatchOlive;
+
+  /// Accessibility name of the plum label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Plum'**
+  String get swatchPlum;
+
+  /// Accessibility name of the steel blue label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Steel'**
+  String get swatchSteel;
+
+  /// Accessibility name of the stone grey label color.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone'**
+  String get swatchStone;
+
+  /// Button in the transaction form's account row when the user has no accounts yet.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add an account'**
+  String get transactionFormAddFirstAccount;
+
+  /// Last option in the transaction form's account dropdown; opens the add-account form.
+  ///
+  /// In en, this message translates to:
+  /// **'+ New account'**
+  String get transactionFormNewAccountOption;
 }
 
 class _AppLocalizationsDelegate
@@ -3188,7 +4085,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'sv'].contains(locale.languageCode);
+      <String>['en', 'sv', 'ur'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3201,6 +4098,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'sv':
       return AppLocalizationsSv();
+    case 'ur':
+      return AppLocalizationsUr();
   }
 
   throw FlutterError(

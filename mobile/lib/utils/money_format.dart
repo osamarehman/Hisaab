@@ -59,4 +59,9 @@ class MoneyFormat {
     }
     return value < 0 ? '− $body' : body;
   }
+
+  /// Wraps [text] in a Unicode left-to-right isolate so a money string keeps
+  /// its "− Rs 1,200" order inside right-to-left (Urdu) text; the leading sign
+  /// is direction-neutral and would otherwise jump to the far end.
+  static String ltrIsolate(String text) => '\u2066$text\u2069';
 }

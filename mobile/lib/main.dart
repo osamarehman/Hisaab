@@ -10,6 +10,7 @@ import 'providers/tags_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/locale_provider.dart';
 import 'providers/privacy_provider.dart';
 import 'screens/backend_config_screen.dart';
 import 'screens/login_screen.dart';
@@ -70,6 +71,7 @@ class SureApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MerchantsProvider()),
         ChangeNotifierProvider(create: (_) => TagsProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(
             create: (_) => PrivacyProvider(initialHidden: moneyHidden)),
         ChangeNotifierProxyProvider<ConnectivityService, AccountsProvider>(
@@ -99,11 +101,12 @@ class SureApp extends StatelessWidget {
           },
         ),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) => MaterialApp(
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (context, themeProvider, localeProvider, _) => MaterialApp(
           onGenerateTitle: (ctx) => AppLocalizations.of(ctx).appTitle,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          locale: localeProvider.locale,
           debugShowCheckedModeBanner: false,
           navigatorObservers: TelemetryService.instance.navigatorObservers,
           theme: SureTheme.light,
@@ -135,10 +138,11 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
 
-  final _upgrader = Upgrader(
+  final _upgraderMessages = _SureUpgraderMessages();
+  late final _upgrader = Upgrader(
     durationUntilAlertAgain: const Duration(days: 7),
     countryCode: 'us',
-    messages: _SureUpgraderMessages(),
+    messages: _upgraderMessages,
   );
 
   @override
@@ -269,6 +273,12 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _upgraderMessages.l = AppLocalizations.of(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isCheckingConfig) {
       return const Scaffold(
@@ -329,21 +339,27 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
   }
 }
 
+/// Upgrader copy in the app's language. [l] is refreshed by [AppWrapper]
+/// whenever the locale changes; upgrader fills in the `{{...}}` tokens.
 class _SureUpgraderMessages extends UpgraderMessages {
+  AppLocalizations? l;
+
   @override
-  String get title => 'Update available';
+  String get title => l?.upgradeTitle ?? 'Update available';
 
   @override
   String get body =>
+      l?.upgradeBody('{{appName}}', '{{currentAppStoreVersion}}',
+          '{{currentInstalledVersion}}') ??
       '{{appName}} {{currentAppStoreVersion}} is now available — '
-      'you have {{currentInstalledVersion}}.\n\n'
-      "What's new? Check the store for release notes.";
+          'you have {{currentInstalledVersion}}.\n\n'
+          "What's new? Check the store for release notes.";
 
   @override
-  String get buttonTitleUpdate => 'Update now';
+  String get buttonTitleUpdate => l?.upgradeNow ?? 'Update now';
 
   @override
-  String get buttonTitleLater => 'Later';
+  String get buttonTitleLater => l?.upgradeLater ?? 'Later';
 
   @override
   String get releaseNotes => '';

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../models/import_job.dart';
 import '../providers/auth_provider.dart';
@@ -89,7 +90,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     if (token == null) {
       setState(() {
         _loading = false;
-        _error = 'Please sign in again.';
+        _error = AppLocalizations.of(context).commonSignInAgain;
       });
       return;
     }
@@ -99,7 +100,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     if (result['success'] != true) {
       setState(() {
         _loading = false;
-        _error = 'Could not load your accounts. Pull down to try again.';
+        _error = AppLocalizations.of(context).accountsLoadFailed;
       });
       return;
     }
@@ -200,12 +201,13 @@ class _StatementsScreenState extends State<StatementsScreen> {
     if (file == null || !mounted) return;
     final bytes = file.bytes ??
         (file.path == null ? null : await File(file.path!).readAsBytes());
+    if (!mounted) return;
     if (bytes == null) {
-      _toast('Could not read that file.');
+      _toast(AppLocalizations.of(context).assistantFileUnreadable);
       return;
     }
     if (ImportsService.fileKind(file.name) == null) {
-      _toast('Choose a PDF or CSV statement.');
+      _toast(AppLocalizations.of(context).assistantFileType);
       return;
     }
 
@@ -225,7 +227,8 @@ class _StatementsScreenState extends State<StatementsScreen> {
     if (!mounted) return;
     setState(() => _uploading = false);
     if (result['success'] != true) {
-      _toast(result['error']?.toString() ?? 'Upload failed.');
+      _toast(result['error']?.toString() ??
+          AppLocalizations.of(context).statementsUploadFailed);
       return;
     }
     _setCurrent(result['import'] as ImportJob);
@@ -302,7 +305,8 @@ class _StatementsScreenState extends State<StatementsScreen> {
       if (result['success'] == true) _published = true;
     });
     if (result['success'] != true) {
-      _toast(result['error']?.toString() ?? 'Could not add the lines.');
+      _toast(result['error']?.toString() ??
+          AppLocalizations.of(context).statementsPublishFailed);
       return;
     }
     _setCurrent(
@@ -336,6 +340,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: c.paper,
       body: SafeArea(
@@ -347,23 +352,22 @@ class _StatementsScreenState extends State<StatementsScreen> {
             children: [
               if (Navigator.of(context).canPop())
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: TextButton.icon(
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.chevron_left),
-                    label: const Text('Back'),
+                    label: Text(l.commonBack),
                   ),
                 ),
-              Text('Statements', style: LedgerText.title(color: c.ink)),
+              Text(l.navStatements, style: LedgerText.title(color: c.ink)),
               const SizedBox(height: 8),
               Text(
-                'Add a bank statement. Hisaab reads every line, files each one '
-                'under the right month and suggests a label.',
+                l.statementsIntro,
                 style: LedgerText.body(size: 15, color: c.muted)
                     .copyWith(height: 1.45),
               ),
               const SizedBox(height: 24),
-              ..._buildBody(c),
+              ..._buildBody(c, l),
             ],
           ),
         ),
@@ -371,7 +375,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  List<Widget> _buildBody(LedgerColors c) {
+  List<Widget> _buildBody(LedgerColors c, AppLocalizations l) {
     if (_loading) {
       return const [
         Padding(
@@ -395,27 +399,27 @@ class _StatementsScreenState extends State<StatementsScreen> {
       ];
     }
     return [
-      _accountPicker(c),
+      _accountPicker(c, l),
       const SizedBox(height: 12),
-      _fileButton(c),
+      _fileButton(c, l),
       const SizedBox(height: 24),
       if (_current != null) ...[
-        _importCard(c, _current!),
+        _importCard(c, l, _current!),
         const SizedBox(height: 24),
       ],
-      _coverageSection(c),
+      _coverageSection(c, l),
       if (_recent.isNotEmpty) ...[
         const SizedBox(height: 28),
-        _recentSection(c),
+        _recentSection(c, l),
       ],
     ];
   }
 
-  Widget _accountPicker(LedgerColors c) {
+  Widget _accountPicker(LedgerColors c, AppLocalizations l) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Bank account',
+        Text(l.accountKindBank,
             style: LedgerText.body(
                 size: 14, weight: FontWeight.w500, color: c.ink)),
         const SizedBox(height: 6),
@@ -445,10 +449,10 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  Widget _fileButton(LedgerColors c) {
+  Widget _fileButton(LedgerColors c, AppLocalizations l) {
     return Semantics(
       button: true,
-      label: 'Choose statement file',
+      label: l.statementsChooseFile,
       child: InkWell(
         onTap: _uploading ? null : _chooseFile,
         child: CustomPaint(
@@ -464,7 +468,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
                     children: [
                       const CircularProgressIndicator(strokeWidth: 2),
                       const SizedBox(height: 10),
-                      Text('Uploading…',
+                      Text(l.statementsUploading,
                           style: LedgerText.body(color: c.muted)),
                     ],
                   )
@@ -473,11 +477,11 @@ class _StatementsScreenState extends State<StatementsScreen> {
                     children: [
                       Icon(Icons.upload_outlined, size: 28, color: c.ink),
                       const SizedBox(height: 8),
-                      Text('Choose statement file',
+                      Text(l.statementsChooseFile,
                           style: LedgerText.body(
                               size: 17, weight: FontWeight.w600, color: c.ink)),
                       const SizedBox(height: 4),
-                      Text('PDF or CSV · up to 6 months in one file',
+                      Text(l.statementsFileHint,
                           style: LedgerText.body(size: 13, color: c.muted)),
                     ],
                   ),
@@ -487,18 +491,18 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  Widget _coverageSection(LedgerColors c) {
-    final name = _account?.name ?? 'Account';
+  Widget _coverageSection(LedgerColors c, AppLocalizations l) {
+    final name = _account?.name ?? l.statementsAccountFallback;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        LedgerSectionHeader(title: '$name · last 6 months'),
+        LedgerSectionHeader(title: l.statementsCoverageTitle(name)),
         const SizedBox(height: 12),
         if (_coverage.isEmpty)
           SizedBox(
             height: 76,
             child: Center(
-              child: Text('Checking months…',
+              child: Text(l.statementsCheckingMonths,
                   style: LedgerText.body(size: 13, color: c.muted)),
             ),
           )
@@ -507,7 +511,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
             children: [
               for (var i = 0; i < _coverage.length; i++) ...[
                 if (i > 0) const SizedBox(width: 4),
-                Expanded(child: _coverageCell(c, _coverage[i])),
+                Expanded(child: _coverageCell(c, l, _coverage[i])),
               ],
             ],
           ),
@@ -516,22 +520,24 @@ class _StatementsScreenState extends State<StatementsScreen> {
           spacing: 16,
           runSpacing: 6,
           children: [
-            _legend(c, c.ink, 'All labelled'),
-            _legend(c, c.moneyOut, 'Needs labels'),
-            _legend(c, c.hairline, 'No statement'),
+            _legend(c, c.ink, l.statementsLegendAllLabelled),
+            _legend(c, c.moneyOut, l.statementsLegendNeedsLabels),
+            _legend(c, c.hairline, l.statementsLegendNoStatement),
           ],
         ),
       ],
     );
   }
 
-  Widget _coverageCell(LedgerColors c, _MonthCoverage m) {
+  Widget _coverageCell(LedgerColors c, AppLocalizations l, _MonthCoverage m) {
     final color =
         m.total == 0 ? c.hairline : (m.unlabelled > 0 ? c.moneyOut : c.ink);
     final note = m.total == 0
         ? '–'
-        : (m.unlabelled > 0 ? '${m.unlabelled} left' : '${m.total} ✓');
-    final month = DateFormat.MMM('en').format(m.month);
+        : (m.unlabelled > 0
+            ? l.statementsMonthLeft(m.unlabelled)
+            : '${m.total} ✓');
+    final month = DateFormat.MMM(l.localeName).format(m.month);
     return Semantics(
       label: '$month: $note',
       excludeSemantics: true,
@@ -559,15 +565,18 @@ class _StatementsScreenState extends State<StatementsScreen> {
         ],
       );
 
-  Widget _importCard(LedgerColors c, ImportJob job) {
-    final (statusText, statusColor) = _statusLabel(c, job);
+  Widget _importCard(LedgerColors c, AppLocalizations l, ImportJob job) {
+    final (statusText, statusColor) = _statusLabel(c, l, job);
     final children = <Widget>[
       Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
             child: Text(
-              job.fileName ?? (job.isPdf ? 'PDF statement' : 'CSV statement'),
+              job.fileName ??
+                  (job.isPdf
+                      ? l.statementsPdfStatement
+                      : l.statementsCsvStatement),
               overflow: TextOverflow.ellipsis,
               style: LedgerText.figures(size: 14, color: c.ink),
             ),
@@ -584,7 +593,7 @@ class _StatementsScreenState extends State<StatementsScreen> {
     if (job.status == ImportStatus.failed) {
       gap();
       children.add(Text(
-        job.error ?? 'Hisaab could not read this statement. Try another file.',
+        job.error ?? l.statementsReadFailed,
         style: LedgerText.body(size: 14, color: c.moneyOut),
       ));
     } else if (_shouldPoll(job) || _publishing) {
@@ -597,23 +606,23 @@ class _StatementsScreenState extends State<StatementsScreen> {
       gap();
       children.add(Text(
         _published
-            ? 'Adding the lines to your books…'
-            : 'Hisaab is reading every line. This can take a minute.',
+            ? l.statementsAddingLines
+            : l.statementsReading,
         style: LedgerText.body(size: 14, color: c.muted),
       ));
     } else if (job.status == ImportStatus.pending) {
       gap();
-      children.add(_stat(c, '${job.rowsCount}', 'lines found', c.ink));
+      children
+          .add(_stat(c, '${job.rowsCount}', l.statementsLinesFound, c.ink));
       gap();
       if (job.publishable == false) {
         children.add(Text(
-          'This file needs its columns matched on the Hisaab website before '
-          'the lines can be added.',
+          l.statementsNeedsColumnMapping,
           style: LedgerText.body(size: 14, color: c.moneyOut),
         ));
       } else {
         children.add(InkButton(
-          label: 'Add these ${job.rowsCount} lines',
+          label: l.statementsAddLines(job.rowsCount),
           busy: _publishing,
           onPressed: job.canPublish ? _publish : null,
         ));
@@ -622,14 +631,19 @@ class _StatementsScreenState extends State<StatementsScreen> {
       final need = _needYou;
       gap();
       if (need == null) {
-        children.add(_stat(c, '${job.rowsCount}', 'lines found', c.ink));
+        children
+            .add(_stat(c, '${job.rowsCount}', l.statementsLinesFound, c.ink));
       } else {
         final auto = (job.rowsCount - need).clamp(0, job.rowsCount);
         children.add(Row(
           children: [
-            Expanded(child: _stat(c, '${job.rowsCount}', 'lines found', c.ink)),
-            Expanded(child: _stat(c, '$auto', 'auto-labelled', c.ink)),
-            Expanded(child: _stat(c, '$need', 'need you', c.moneyOut)),
+            Expanded(
+                child: _stat(
+                    c, '${job.rowsCount}', l.statementsLinesFound, c.ink)),
+            Expanded(
+                child: _stat(c, '$auto', l.statementsAutoLabelled, c.ink)),
+            Expanded(
+                child: _stat(c, '$need', l.statementsNeedYou, c.moneyOut)),
           ],
         ));
         if (auto + need > 0) {
@@ -649,8 +663,9 @@ class _StatementsScreenState extends State<StatementsScreen> {
         }
         gap();
         children.add(need > 0
-            ? InkButton(label: 'Label the $need items', onPressed: _openReview)
-            : Text('Everything is labelled.',
+            ? InkButton(
+                label: l.statementsLabelItems(need), onPressed: _openReview)
+            : Text(l.statementsAllLabelled,
                 style: LedgerText.body(size: 14, color: c.moneyIn)));
       }
     }
@@ -663,18 +678,24 @@ class _StatementsScreenState extends State<StatementsScreen> {
     );
   }
 
-  (String, Color) _statusLabel(LedgerColors c, ImportJob job) {
+  (String, Color) _statusLabel(
+      LedgerColors c, AppLocalizations l, ImportJob job) {
     switch (job.status) {
       case ImportStatus.failed:
       case ImportStatus.revertFailed:
-        return ('Failed', c.moneyOut);
+        return (l.statementsStatusFailed, c.moneyOut);
       case ImportStatus.complete:
-        return ('Added', c.moneyIn);
+        return (l.statementsStatusAdded, c.moneyIn);
       case ImportStatus.importing:
       case ImportStatus.reverting:
-        return (_published ? 'Adding…' : 'Reading…', c.muted);
+        return (
+          _published ? l.statementsStatusAdding : l.statementsStatusReading,
+          c.muted
+        );
       case ImportStatus.pending:
-        return job.rowsCount > 0 ? ('Read', c.moneyIn) : ('Waiting…', c.muted);
+        return job.rowsCount > 0
+            ? (l.statementsStatusRead, c.moneyIn)
+            : (l.statementsStatusWaiting, c.muted);
       case ImportStatus.unknown:
         return ('', c.muted);
     }
@@ -690,12 +711,22 @@ class _StatementsScreenState extends State<StatementsScreen> {
         ],
       );
 
-  Widget _recentSection(LedgerColors c) {
+  Widget _recentSection(LedgerColors c, AppLocalizations l) {
     final names = {for (final a in _accounts) a.id: a.name};
+    String title(ImportJob job) => '${job.isPdf ? 'PDF' : 'CSV'} · '
+        '${names[job.accountId] ?? l.statementsStatementFallback}';
+    String subtitle(ImportJob job) {
+      final added = l.statementsAddedOn(DateFormat('d MMM yyyy', l.localeName)
+          .format(job.createdAt!.toLocal()));
+      return job.rowsCount > 0
+          ? '$added · ${l.statementsLinesCount(job.rowsCount)}'
+          : added;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const LedgerSectionHeader(title: 'Recent statements'),
+        LedgerSectionHeader(title: l.statementsRecent),
         for (final job in _recent.take(6))
           InkWell(
             onTap: () => _setCurrent(job, resetPublished: true),
@@ -712,21 +743,19 @@ class _StatementsScreenState extends State<StatementsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${job.isPdf ? 'PDF' : 'CSV'} · '
-                          '${names[job.accountId] ?? 'Statement'}',
+                          title(job),
                           style: LedgerText.body(size: 15, color: c.ink),
                         ),
                         if (job.createdAt != null)
                           Text(
-                            'Added ${DateFormat('d MMM yyyy', 'en').format(job.createdAt!.toLocal())}'
-                            '${job.rowsCount > 0 ? ' · ${job.rowsCount} lines' : ''}',
+                            subtitle(job),
                             style: LedgerText.body(size: 13, color: c.muted),
                           ),
                       ],
                     ),
                   ),
                   Builder(builder: (_) {
-                    final (text, color) = _statusLabel(c, job);
+                    final (text, color) = _statusLabel(c, l, job);
                     return Text(text,
                         style: LedgerText.body(size: 13, color: color));
                   }),

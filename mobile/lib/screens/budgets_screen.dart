@@ -157,7 +157,9 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
     final locale = Localizations.localeOf(context).toString();
     return Row(
       children: [
-        Expanded(child: Text('Budget', style: LedgerText.title(color: c.ink))),
+        Expanded(
+            child: Text(AppLocalizations.of(context).budgetsScreenTitle,
+                style: LedgerText.title(color: c.ink))),
         MonthSwitcher(
           month: provider.month,
           label: DateFormat.yMMM(locale).format(provider.month),
@@ -374,6 +376,7 @@ class _Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final planned =
         budget.budgetedSpendingCents ?? budget.allocatedSpendingCents ?? 0;
     final spent = budget.actualSpendingCents ?? 0;
@@ -390,12 +393,11 @@ class _Summary extends StatelessWidget {
 
     final String note;
     if (left < 0) {
-      note = 'Over by ${_money(-left, currency, hidden)}.';
+      note = l.budgetsOverByNote(_money(-left, currency, hidden));
     } else if (inPeriod) {
-      note = '${_money(left, currency, hidden)} left for the last '
-          '$daysLeft ${daysLeft == 1 ? 'day' : 'days'}. Blue line is today.';
+      note = l.budgetsLeftForDays(_money(left, currency, hidden), daysLeft);
     } else {
-      note = '${_money(left, currency, hidden)} left.';
+      note = l.budgetsLeftNote(_money(left, currency, hidden));
     }
 
     return Container(
@@ -412,13 +414,14 @@ class _Summary extends StatelessWidget {
               Expanded(
                 child: Text(
                   planned > 0
-                      ? 'Spent of ${_money(planned, currency, hidden)} planned'
-                      : 'Spent',
+                      ? l.budgetsSpentOfPlanned(
+                          _money(planned, currency, hidden))
+                      : l.budgetsSpent,
                   style: LedgerText.body(size: 14, color: c.muted),
                 ),
               ),
               if (inPeriod)
-                Text('day $day of $days',
+                Text(l.budgetsDayOf(day, days),
                     style: LedgerText.figures(size: 13, color: c.muted)),
             ],
           ),
@@ -435,23 +438,23 @@ class _Summary extends StatelessWidget {
                     planned <= 0 ? 0.0 : (spent / planned).clamp(0.0, 1.0);
                 return Stack(
                   children: [
-                    Positioned(
-                      left: 0,
-                      right: 0,
+                    PositionedDirectional(
+                      start: 0,
+                      end: 0,
                       top: 5,
                       height: 14,
                       child: ColoredBox(color: c.hairline),
                     ),
-                    Positioned(
-                      left: 0,
+                    PositionedDirectional(
+                      start: 0,
                       top: 5,
                       height: 14,
                       width: box.maxWidth * share,
                       child: ColoredBox(color: left < 0 ? c.moneyOut : c.ink),
                     ),
                     if (inPeriod)
-                      Positioned(
-                        left: (box.maxWidth * day / days) - 1,
+                      PositionedDirectional(
+                        start: (box.maxWidth * day / days) - 1,
                         top: 0,
                         bottom: 0,
                         width: 2,
@@ -495,6 +498,7 @@ class _BudgetLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final spent = line.actualSpendingCents ?? 0;
     final limit = line.inheritsParentBudget
         ? (line.sharedBudgetCents ?? line.effectiveBudgetCents)
@@ -504,11 +508,11 @@ class _BudgetLine extends StatelessWidget {
 
     final String note;
     if (!line.isBudgeted) {
-      note = 'No limit set';
+      note = l.budgetsNoLimitSet;
     } else if (over) {
-      note = 'Over by ${_money(spent - limit, currency, hidden)}';
+      note = l.budgetsOverByLine(_money(spent - limit, currency, hidden));
     } else {
-      note = '${_money(limit - spent, currency, hidden)} left';
+      note = l.budgetsAmountLeft(_money(limit - spent, currency, hidden));
     }
 
     return InkWell(
@@ -542,7 +546,7 @@ class _BudgetLine extends StatelessWidget {
                 child: hidden
                     ? null
                     : FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
+                        alignment: AlignmentDirectional.centerStart,
                         widthFactor: line.isBudgeted
                             ? line.spentFraction.clamp(0.0, 1.0)
                             : (spent > 0 ? 1 : 0),
@@ -565,7 +569,7 @@ class _BudgetLine extends StatelessWidget {
                   ),
                 ),
                 if (line.isBudgeted)
-                  Text('of ${_money(limit, currency, hidden)}',
+                  Text(l.budgetsOfAmount(_money(limit, currency, hidden)),
                       style: LedgerText.figures(size: 13, color: c.muted)),
               ],
             ),

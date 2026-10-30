@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../models/category.dart';
 import '../models/rule.dart';
@@ -91,7 +92,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     if (token == null) {
       setState(() {
         _loading = false;
-        _error = 'Please sign in again.';
+        _error = AppLocalizations.of(context).commonSignInAgain;
       });
       return;
     }
@@ -135,7 +136,8 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
       );
       if (!mounted) return;
       if (result['success'] != true) {
-        setState(() => _error = 'Could not load the statement lines.');
+        setState(() =>
+            _error = AppLocalizations.of(context).statementReviewLoadFailed);
         return;
       }
       final rows = (result['transactions'] as List).cast<Transaction>();
@@ -220,7 +222,8 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     if (!mounted) return;
     if (result['success'] != true) {
       setState(() => _saving = false);
-      _toast(result['error']?.toString() ?? 'Could not save the label.');
+      _toast(result['error']?.toString() ??
+          AppLocalizations.of(context).labelsSaveFailed);
       return;
     }
 
@@ -243,8 +246,9 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
           _handled += matched.length;
         });
       } else {
-        _toast('Labelled this one. The keyword was not saved: '
-            '${rule['error'] ?? 'unknown error'}');
+        final l = AppLocalizations.of(context);
+        _toast(l.statementReviewKeywordFailed(
+            '${rule['error'] ?? l.statementReviewUnknownError}'));
       }
     }
     setState(() => _saving = false);
@@ -270,35 +274,37 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final item = _item;
     return Scaffold(
       backgroundColor: c.paper,
       body: SafeArea(
         child: Column(
           children: [
-            _header(c),
+            _header(c, l),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _error != null && item == null
-                      ? _message(c, _error!)
+                      ? _message(c, l, _error!)
                       : item == null
                           ? _message(
                               c,
+                              l,
                               _handled == 0
-                                  ? 'Nothing to label. Every line has a label.'
-                                  : 'All done. Every line has a label.',
+                                  ? l.statementReviewNothingToLabel
+                                  : l.statementReviewAllDone,
                             )
-                          : _itemView(c, item),
+                          : _itemView(c, l, item),
             ),
-            if (!_loading && item != null) _footer(c),
+            if (!_loading && item != null) _footer(c, l),
           ],
         ),
       ),
     );
   }
 
-  Widget _header(LedgerColors c) {
+  Widget _header(LedgerColors c, AppLocalizations l) {
     final total = _total < _handled + _queue.length - _index
         ? _handled + _queue.length - _index
         : _total;
@@ -312,14 +318,14 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               TextButton(
                 onPressed: () => Navigator.of(context).maybePop(),
                 style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
-                child: Text('Done for now',
+                child: Text(l.statementReviewDoneForNow,
                     style: LedgerText.body(color: c.moneyIn)),
               ),
               const Spacer(),
               if (_item != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('$pos of $total',
+                  child: Text(l.statementReviewPosition(pos, total),
                       style: LedgerText.figures(size: 14, color: c.ink)),
                 ),
             ],
@@ -341,7 +347,8 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     );
   }
 
-  Widget _message(LedgerColors c, String text) => Center(
+  Widget _message(LedgerColors c, AppLocalizations l, String text) =>
+      Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -352,7 +359,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                   style: LedgerText.display(color: c.ink)),
               const SizedBox(height: 20),
               OutlineInkButton(
-                label: 'Back',
+                label: l.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
             ],
@@ -360,10 +367,11 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
         ),
       );
 
-  Widget _itemView(LedgerColors c, Transaction item) {
+  Widget _itemView(LedgerColors c, AppLocalizations l, Transaction item) {
     final date = DateTime.tryParse(item.date);
-    final dateText =
-        date == null ? item.date : DateFormat('EEE d MMM', 'en').format(date);
+    final dateText = date == null
+        ? item.date
+        : DateFormat('EEE d MMM', l.localeName).format(date);
     final account = _accountNames[item.accountId];
     double amount = 0;
     try {
@@ -385,6 +393,8 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                   style: LedgerText.body(size: 13, color: c.muted)),
               const SizedBox(height: 10),
               Text.rich(
+                // "+ Rs 1,200" reads left-to-right in every language.
+                textDirection: TextDirection.ltr,
                 TextSpan(children: [
                   TextSpan(
                     text: moneyIn ? '+ Rs ' : 'Rs ',
@@ -417,7 +427,10 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
           ),
         ),
         const SizedBox(height: 22),
-        Text(moneyIn ? 'Where did this come from?' : 'What was this?',
+        Text(
+            moneyIn
+                ? l.statementReviewWhereFrom
+                : l.statementReviewWhatWasThis,
             style: LedgerText.body(
                 size: 15, weight: FontWeight.w500, color: c.ink)),
         const SizedBox(height: 10),
@@ -434,7 +447,8 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                   width: width,
                   child: _labelButton(
                     c,
-                    Category(id: _notExpenseId, name: 'Not an expense'),
+                    Category(
+                        id: _notExpenseId, name: l.statementReviewNotExpense),
                   ),
                 ),
               ],
@@ -442,14 +456,14 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
           },
         ),
         Align(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           child: TextButton(
             onPressed: _newLabel,
             style: TextButton.styleFrom(
               minimumSize: const Size(44, 44),
               padding: EdgeInsets.zero,
             ),
-            child: Text('+ Make a new label',
+            child: Text(l.statementReviewNewLabel,
                 style: LedgerText.body(size: 15, color: c.moneyIn)),
           ),
         ),
@@ -492,7 +506,21 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
     );
   }
 
-  Widget _footer(LedgerColors c) {
+  /// [text] with the first occurrence of [count] in bold.
+  static TextSpan _boldCount(String text, String count) {
+    final i = text.indexOf(count);
+    if (i < 0) return TextSpan(text: text);
+    return TextSpan(children: [
+      TextSpan(text: text.substring(0, i)),
+      TextSpan(
+        text: count,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      TextSpan(text: text.substring(i + count.length)),
+    ]);
+  }
+
+  Widget _footer(LedgerColors c, AppLocalizations l) {
     final similar = _similarCount;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
@@ -518,17 +546,10 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
                   Expanded(
                     child: Text.rich(
                       similar > 0
-                          ? TextSpan(children: [
-                              const TextSpan(text: 'Label all '),
-                              TextSpan(
-                                text: '$similar',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              const TextSpan(text: ' like this'),
-                            ])
-                          : const TextSpan(
-                              text: 'Auto-label future lines like this'),
+                          ? _boldCount(
+                              l.statementReviewLabelAllSimilar(similar),
+                              '$similar')
+                          : TextSpan(text: l.statementReviewAutoLabelFuture),
                       style: LedgerText.body(size: 15, color: c.ink),
                     ),
                   ),
@@ -541,7 +562,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
-                  Text('Lines containing',
+                  Text(l.statementReviewLinesContaining,
                       style: LedgerText.body(size: 13, color: c.muted)),
                   const SizedBox(width: 8),
                   Expanded(
@@ -563,7 +584,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
             children: [
               Expanded(
                 child: OutlineInkButton(
-                  label: 'Skip',
+                  label: l.statementReviewSkip,
                   height: 52,
                   onPressed:
                       _saving ? null : () => _advance(removeCurrent: false),
@@ -573,7 +594,7 @@ class _StatementReviewScreenState extends State<StatementReviewScreen> {
               Expanded(
                 flex: 2,
                 child: InkButton(
-                  label: 'Save & next',
+                  label: l.statementReviewSaveNext,
                   height: 52,
                   busy: _saving,
                   onPressed: _pickedId == null ? null : _save,

@@ -55,7 +55,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 builder: (context, child) {
                   final offset = _dotOffset(index, _controller.value);
                   return Padding(
-                    padding: EdgeInsets.only(right: index < 2 ? 5 : 0),
+                    padding: EdgeInsetsDirectional.only(end: index < 2 ? 5 : 0),
                     child: Transform.translate(
                       offset: Offset(0, offset),
                       child: Container(width: 5, height: 5, color: c.muted),

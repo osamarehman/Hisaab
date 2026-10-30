@@ -546,7 +546,7 @@ class DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: RupeeAmount(value, currency: currency, color: color),
           ),
         ],
@@ -738,7 +738,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               child: Container(
                 height: 3,
                 color: c.track,
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: FractionallySizedBox(
                   widthFactor: fraction.clamp(0.0, 1.0),
                   child: Container(color: color ?? c.muted),

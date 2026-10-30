@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
@@ -15,6 +15,7 @@ import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
+import '../theme/sure_typography.dart';
 import '../utils/amount_parser.dart';
 import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
@@ -288,13 +289,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     isIncome ? l.formPaidInto : l.formPaidFrom,
                     accounts.isEmpty
                         ? Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: TextButton(
                               onPressed: _addAccount,
                               style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(44, 48)),
-                              child: Text('+ Add an account',
+                              child: Text(l.transactionFormAddFirstAccount,
                                   style: TextStyle(
                                       fontSize: 16, color: c.moneyIn)),
                             ),
@@ -313,7 +314,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                   ),
                                 DropdownMenuItem(
                                   value: _newAccountValue,
-                                  child: Text('+ New account',
+                                  child: Text(l.transactionFormNewAccountOption,
                                       style: TextStyle(color: c.moneyIn)),
                                 ),
                               ],
@@ -333,7 +334,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     InkWell(
                       onTap: _pickDate,
                       child: Container(
-                        alignment: Alignment.centerLeft,
+                        alignment: AlignmentDirectional.centerStart,
                         constraints: const BoxConstraints(minHeight: 52),
                         child: Text(
                           DateFormat('EEE d MMM yyyy', 'en_US').format(_date),
@@ -406,36 +407,40 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: c.ink, width: 2)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            MoneyFormat.symbol(currency),
-            style: LedgerText.display(size: 28, color: c.muted),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextFormField(
-              controller: _amountController,
-              autofocus: true,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [GroupedAmountFormatter()],
-              validator: _validateAmount,
-              style: LedgerText.display(
-                size: 52,
-                color: c.ink,
-                letterSpacing: -1.5,
-                height: 1.1,
-              ),
-              decoration: _bare.copyWith(
-                hintText: '0',
-                contentPadding: EdgeInsets.zero,
+      // "Rs 1,200" is entered left-to-right in every language.
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              MoneyFormat.symbol(currency),
+              style: LedgerText.display(size: 28, color: c.muted),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                controller: _amountController,
+                autofocus: true,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [GroupedAmountFormatter()],
+                validator: _validateAmount,
+                style: LedgerText.display(
+                  size: 52,
+                  color: c.ink,
+                  letterSpacing: -1.5,
+                  height: 1.1,
+                ),
+                decoration: _bare.copyWith(
+                  hintText: '0',
+                  contentPadding: EdgeInsets.zero,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -528,7 +533,8 @@ class _TypeToggle extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  fontFamily: 'IBM Plex Sans',
+                  fontFamily: SureFonts.sans,
+                  fontFamilyFallback: SureFonts.fallback,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: on ? c.onInk : c.ink,

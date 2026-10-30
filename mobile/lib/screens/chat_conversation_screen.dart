@@ -642,7 +642,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 12),
           child: Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: TypingIndicator(),
           ),
         )
@@ -834,7 +834,7 @@ class _MessageBlock extends StatelessWidget {
         borderRadius: BorderRadius.circular(2),
       ),
       blockquoteDecoration: BoxDecoration(
-        border: Border(left: BorderSide(color: c.hairline, width: 2)),
+        border: BorderDirectional(start: BorderSide(color: c.hairline, width: 2)),
       ),
       horizontalRuleDecoration: BoxDecoration(
         border: Border(top: BorderSide(color: c.hairline)),
