@@ -8,15 +8,15 @@ class AppleAppSiteAssociationControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "application/json", response.media_type
-    assert_equal [ "C8WT3YC922.dev.shipdeck.hisaab" ], JSON.parse(response.body).dig("webcredentials", "apps")
+    assert_equal [ "HM8BSRM7Y7.dev.shipdeck.hisaab" ], JSON.parse(response.body).dig("webcredentials", "apps")
   end
 
   test "lists every configured app ID" do
-    with_ios_app(app_ids: [ "C8WT3YC922.dev.shipdeck.hisaab", "ABCDE12345.dev.shipdeck.hisaab.beta" ]) do
+    with_ios_app(app_ids: [ "HM8BSRM7Y7.dev.shipdeck.hisaab", "ABCDE12345.dev.shipdeck.hisaab.beta" ]) do
       get "/.well-known/apple-app-site-association"
     end
 
-    assert_equal [ "C8WT3YC922.dev.shipdeck.hisaab", "ABCDE12345.dev.shipdeck.hisaab.beta" ],
+    assert_equal [ "HM8BSRM7Y7.dev.shipdeck.hisaab", "ABCDE12345.dev.shipdeck.hisaab.beta" ],
       JSON.parse(response.body).dig("webcredentials", "apps")
   end
 

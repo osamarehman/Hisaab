@@ -62,7 +62,7 @@ Rails.application.configure do
   # The iOS app uses this RP ID for passkeys once
   # /.well-known/apple-app-site-association lists its App ID
   # ("<Team ID>.<bundle ID>") under webcredentials.
-  ios_app_ids = (ENV["IOS_APP_IDS"].presence || "C8WT3YC922.dev.shipdeck.hisaab")
+  ios_app_ids = (ENV["IOS_APP_IDS"].presence || "HM8BSRM7Y7.dev.shipdeck.hisaab")
     .split(",")
     .map(&:strip)
     .reject(&:empty?)
