@@ -7,7 +7,7 @@ import 'api_config.dart';
 /// Public pages the stores and the AGPL require the app to link to. Legal
 /// pages live on the server the user signs in to, since it holds their data.
 class LegalLinks {
-  static const sourceCodeUrl = 'https://github.com/osamarehman/sure-redesign';
+  static const sourceCodeUrl = 'https://github.com/osamarehman/Hisaab';
   static const contactEmail = 'osamarehmanmughal@gmail.com';
 
   static Uri get privacy => Uri.parse('${ApiConfig.baseUrl}/privacy');

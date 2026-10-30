@@ -7,5 +7,5 @@ Rails.application.configure do
   config.x.legal_contact_email = ENV["LEGAL_CONTACT_EMAIL"].presence || "osamarehmanmughal@gmail.com"
 
   # AGPL-3.0 requires offering the running code's source to its users.
-  config.x.source_code_url = ENV["SOURCE_CODE_URL"].presence || "https://github.com/osamarehman/sure-redesign"
+  config.x.source_code_url = ENV["SOURCE_CODE_URL"].presence || "https://github.com/osamarehman/Hisaab"
 end
