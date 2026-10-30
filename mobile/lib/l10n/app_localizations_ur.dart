@@ -2291,4 +2291,116 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get transactionFormNewAccountOption => '+ نیا اکاؤنٹ';
+
+  @override
+  String get settingsAiKeyTitle => 'AI اسسٹنٹ کی کلید';
+
+  @override
+  String get settingsAiKeySubtitle =>
+      'اسسٹنٹ کے لیے اپنی مفت AI کلید استعمال کریں';
+
+  @override
+  String get aiKeyTitle => 'AI اسسٹنٹ کی کلید';
+
+  @override
+  String get aiKeyIntro =>
+      'کسی مفت AI فراہم کنندہ کی کلید یہاں لگائیں تاکہ اسسٹنٹ، لیبلنگ اور اسٹیٹمنٹ پڑھنا آپ کے اپنے اکاؤنٹ سے چلے۔ یہ کلید پورے گھرانے کے لیے محفوظ ہوتی ہے اور دوبارہ نہیں دکھائی جاتی۔';
+
+  @override
+  String get aiKeyLoadFailed =>
+      'AI کلید کی ترتیبات لوڈ نہیں ہو سکیں۔ بعد میں دوبارہ کوشش کریں۔';
+
+  @override
+  String get aiKeyStatusNone =>
+      'کوئی کلید محفوظ نہیں۔ اسسٹنٹ سرور کا AI استعمال کرتا ہے، اگر موجود ہو۔';
+
+  @override
+  String aiKeyStatusSaved(String provider, String last4) {
+    return 'آپ کی $provider کلید استعمال ہو رہی ہے جس کے آخر میں $last4 ہے';
+  }
+
+  @override
+  String get aiKeyAdminOnly => 'صرف گھرانے کا ایڈمن AI کلید بدل سکتا ہے۔';
+
+  @override
+  String get aiKeyProviderLabel => 'فراہم کنندہ';
+
+  @override
+  String get aiKeyCustom => 'دیگر';
+
+  @override
+  String aiKeyWhereToGet(String site) {
+    return 'مفت کلید $site سے حاصل کریں';
+  }
+
+  @override
+  String get aiKeyKeyLabel => 'API کلید';
+
+  @override
+  String get aiKeyKeyHint => 'اپنی کلید یہاں لگائیں';
+
+  @override
+  String get aiKeyKeyKeepHint => 'محفوظ کلید رکھنے کے لیے خالی چھوڑ دیں';
+
+  @override
+  String get aiKeyModelLabel => 'ماڈل';
+
+  @override
+  String get aiKeyBaseUrlLabel => 'بیس URL';
+
+  @override
+  String get aiKeyKeyRequired => 'پہلے کلید لگائیں۔';
+
+  @override
+  String get aiKeyFieldsRequired => 'بیس URL اور ماڈل درج کریں۔';
+
+  @override
+  String get aiKeyTest => 'کلید جانچیں';
+
+  @override
+  String get aiKeyTestOk => 'کلید کام کر رہی ہے۔';
+
+  @override
+  String aiKeyTestFailed(String reason) {
+    return 'کلید کام نہیں کر سکی: $reason';
+  }
+
+  @override
+  String get aiKeyTestUnknown => 'کوئی وجہ نہیں بتائی گئی';
+
+  @override
+  String get aiKeySave => 'کلید محفوظ کریں';
+
+  @override
+  String get aiKeySaveFailed => 'کلید محفوظ نہیں ہو سکی۔ دوبارہ کوشش کریں۔';
+
+  @override
+  String get aiKeySavedToast => 'AI کلید محفوظ ہو گئی';
+
+  @override
+  String get aiKeyRemove => 'کلید ہٹائیں';
+
+  @override
+  String get aiKeyRemoveTitle => 'AI کلید ہٹا دیں؟';
+
+  @override
+  String get aiKeyRemoveBody =>
+      'اسسٹنٹ دوبارہ سرور کا AI استعمال کرے گا، یا اگر سرور پر AI نہیں تو کام کرنا بند کر دے گا۔';
+
+  @override
+  String get aiKeyRemovedToast => 'AI کلید ہٹا دی گئی';
+
+  @override
+  String get aiKeyRemoveFailed => 'کلید ہٹائی نہیں جا سکی۔ دوبارہ کوشش کریں۔';
+
+  @override
+  String get aiKeyOffline =>
+      'سرور تک رسائی نہیں ہو سکی۔ اپنا کنکشن چیک کر کے دوبارہ کوشش کریں۔';
+
+  @override
+  String get aiKeyPrivacyNote =>
+      'آپ کے سوال اور گھرانے کا وہ ڈیٹا جو اسسٹنٹ پڑھتا ہے، آپ کے چنے ہوئے فراہم کنندہ کو بھیجا جاتا ہے۔ مفت پلان انہیں اپنے ماڈل بہتر بنانے کے لیے استعمال کر سکتے ہیں۔';
+
+  @override
+  String get assistantUseOwnKey => 'اپنی AI کلید استعمال کریں';
 }

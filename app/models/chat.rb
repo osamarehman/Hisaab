@@ -40,7 +40,7 @@ class Chat < ApplicationRecord
   class << self
     def start!(prompt, model:)
       # Ensure we have a valid model by using the default if none provided
-      effective_model = model.presence || default_model
+      effective_model = model.presence || default_model(Current.family)
 
       create!(
         title: generate_title(prompt),
@@ -57,8 +57,11 @@ class Chat < ApplicationRecord
     # don't have to manually update every chat default. Falls through to a
     # provider that actually has credentials configured, otherwise the chosen
     # provider's classes would later raise "no LLM provider supports model …"
-    # even when the other provider is configured.
-    def default_model
+    # even when the other provider is configured. A family with its own LLM
+    # key uses the model it configured.
+    def default_model(family = nil)
+      return family.llm_model if family&.own_llm_key?
+
       prefers_anthropic = Setting.llm_provider == "anthropic"
 
       if prefers_anthropic && Provider::Anthropic.configured?

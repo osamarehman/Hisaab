@@ -4072,6 +4072,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+ New account'**
   String get transactionFormNewAccountOption;
+
+  /// Settings row that opens the household's own AI key screen.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistant key'**
+  String get settingsAiKeyTitle;
+
+  /// Subtitle of the AI key settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your own free AI key for the assistant'**
+  String get settingsAiKeySubtitle;
+
+  /// Title of the screen for the household's own AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistant key'**
+  String get aiKeyTitle;
+
+  /// Intro text on the AI key screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a key from a free AI provider to use the assistant, labelling and statement reading with your own account. The key is stored for your whole household and never shown again.'**
+  String get aiKeyIntro;
+
+  /// Error when the AI key settings fail to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the AI key settings. Try again later.'**
+  String get aiKeyLoadFailed;
+
+  /// Status line when the household has no AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'No key saved. The assistant uses the server\'s AI, if it has one.'**
+  String get aiKeyStatusNone;
+
+  /// Status line when the household has its own AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'Using your {provider} key ending in {last4}'**
+  String aiKeyStatusSaved(String provider, String last4);
+
+  /// Shown to members who cannot edit the AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'Only a household admin can change the AI key.'**
+  String get aiKeyAdminOnly;
+
+  /// Label above the AI provider choices.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get aiKeyProviderLabel;
+
+  /// Chip for a custom OpenAI-compatible provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get aiKeyCustom;
+
+  /// Hint naming where to create a key for the chosen provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a free key at {site}'**
+  String aiKeyWhereToGet(String site);
+
+  /// Label of the API key field.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get aiKeyKeyLabel;
+
+  /// Hint in the empty API key field.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your key'**
+  String get aiKeyKeyHint;
+
+  /// Hint in the API key field when a key is already saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank to keep the saved key'**
+  String get aiKeyKeyKeepHint;
+
+  /// Label of the model field.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get aiKeyModelLabel;
+
+  /// Label of the provider base URL field.
+  ///
+  /// In en, this message translates to:
+  /// **'Base URL'**
+  String get aiKeyBaseUrlLabel;
+
+  /// Validation message when no key was entered.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a key first.'**
+  String get aiKeyKeyRequired;
+
+  /// Validation message when base URL or model is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a base URL and a model.'**
+  String get aiKeyFieldsRequired;
+
+  /// Button that sends one tiny request to check the key.
+  ///
+  /// In en, this message translates to:
+  /// **'Test key'**
+  String get aiKeyTest;
+
+  /// Shown after a successful key test.
+  ///
+  /// In en, this message translates to:
+  /// **'The key works.'**
+  String get aiKeyTestOk;
+
+  /// Shown after a failed key test with the provider's reason.
+  ///
+  /// In en, this message translates to:
+  /// **'The key did not work: {reason}'**
+  String aiKeyTestFailed(String reason);
+
+  /// Fallback reason when a key test fails without a message.
+  ///
+  /// In en, this message translates to:
+  /// **'no reason given'**
+  String get aiKeyTestUnknown;
+
+  /// Button that saves the AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'Save key'**
+  String get aiKeySave;
+
+  /// Error when saving the key fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the key. Try again.'**
+  String get aiKeySaveFailed;
+
+  /// Snackbar after saving the AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'AI key saved'**
+  String get aiKeySavedToast;
+
+  /// Button that removes the saved AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove key'**
+  String get aiKeyRemove;
+
+  /// Title of the remove-key confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the AI key?'**
+  String get aiKeyRemoveTitle;
+
+  /// Body of the remove-key confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant will go back to the server\'s AI, or stop working if the server has none.'**
+  String get aiKeyRemoveBody;
+
+  /// Snackbar after removing the AI key.
+  ///
+  /// In en, this message translates to:
+  /// **'AI key removed'**
+  String get aiKeyRemovedToast;
+
+  /// Error when removing the key fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove the key. Try again.'**
+  String get aiKeyRemoveFailed;
+
+  /// Error when the AI key request fails to connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server. Check your connection and try again.'**
+  String get aiKeyOffline;
+
+  /// Privacy note under the AI key form.
+  ///
+  /// In en, this message translates to:
+  /// **'Your questions and the household data the assistant reads are sent to the provider you choose. Free tiers may use them to improve their models.'**
+  String get aiKeyPrivacyNote;
+
+  /// Button in the assistant consent panel that opens the AI key screen when AI is unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your own AI key'**
+  String get assistantUseOwnKey;
 }
 
 class _AppLocalizationsDelegate

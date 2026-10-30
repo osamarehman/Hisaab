@@ -16,6 +16,7 @@ class Family < ApplicationRecord
   include RedbarkConnectable
   include OnchainWalletConnectable
   include AiPromptable
+  include LlmConfigurable
 
   DATE_FORMATS = [
     [ "MM-DD-YYYY", "%m-%d-%Y" ],
@@ -188,12 +189,18 @@ class Family < ApplicationRecord
   # AI_ALLOWED_EMAILS (comma-separated) keeps an open-signup instance's LLM
   # quota for the listed people: only households with one of them as an active
   # member get the assistant, AI labelling and PDF statement reading. Empty
-  # means every household may use AI.
+  # means every household may use AI. A household that brings its own LLM key
+  # spends nothing of the server's quota, so it passes regardless.
   def self.ai_allowed_emails
     ENV.fetch("AI_ALLOWED_EMAILS", "").split(",").map { |email| email.strip.downcase }.reject(&:blank?)
   end
 
   def ai_allowed?
+    own_llm_key? || server_ai_allowed?
+  end
+
+  # Whether this family may spend the server's own AI credentials.
+  def server_ai_allowed?
     allowed = self.class.ai_allowed_emails
     return true if allowed.empty?
 
@@ -205,9 +212,10 @@ class Family < ApplicationRecord
   end
 
   # The LLM provider this family's AI features may call, or nil when none is
-  # configured or the family is outside AI_ALLOWED_EMAILS.
+  # configured or the family is outside AI_ALLOWED_EMAILS. The family's own
+  # key, when it has one, always wins over the server's.
   def llm_provider
-    Provider::Registry.preferred_llm_provider if ai_allowed?
+    Provider::Registry.preferred_llm_provider_for(self) if ai_allowed?
   end
 
   # The provider that will actually categorize this family's transactions,
@@ -236,6 +244,7 @@ class Family < ApplicationRecord
     case provider
     when Provider::Jev then Provider::Jev.effective_model
     when Provider::Anthropic then Provider::Anthropic.effective_model
+    when Provider::Openai then provider.default_model
     else Provider::Openai.effective_model
     end
   end
@@ -272,7 +281,11 @@ class Family < ApplicationRecord
   # Returns Jev, or nil when it cannot be built. The registry constructs a fresh
   # Provider::Jev per lookup and its constructor rejects a cleartext endpoint,
   # which JEV_ENDPOINT can set without passing the settings form's check.
+  # Jev runs on the server's key, so a family allowed AI only through its own
+  # LLM key does not get it.
   def configured_jev_provider
+    return unless server_ai_allowed?
+
     Provider::Registry.get_provider(:jev)
   rescue Provider::Error => error
     yield error if block_given?

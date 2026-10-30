@@ -210,6 +210,7 @@ class User < ApplicationRecord
     effective_type = family&.effective_assistant_type || "builtin"
     return false if effective_type == "mcp_only"
     return false unless family.nil? || family.ai_allowed?
+    return true if effective_type == "builtin" && family&.own_llm_key?
     return true unless Rails.application.config.app_mode.self_hosted?
 
     case effective_type

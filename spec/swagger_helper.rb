@@ -477,6 +477,50 @@ RSpec.configure do |config|
               pagination: { '$ref' => '#/components/schemas/Pagination' }
             }
           },
+          AiSettings: {
+            type: :object,
+            required: %w[key_present can_edit ai_available presets],
+            properties: {
+              key_present: { type: :boolean, description: 'Whether the household has its own LLM key. The key itself is never returned.' },
+              key_last4: { type: :string, nullable: true, description: 'Last four characters of the stored key' },
+              base_url: { type: :string, nullable: true, description: 'OpenAI-compatible base URL' },
+              model: { type: :string, nullable: true },
+              preset: { type: :string, nullable: true, enum: [ *Family::LLM_PRESETS.keys, 'custom', nil ] },
+              can_edit: { type: :boolean, description: 'Whether the caller is a family admin' },
+              ai_available: { type: :boolean, description: 'Whether the assistant can be enabled for the caller' },
+              presets: {
+                type: :array,
+                items: {
+                  type: :object,
+                  required: %w[id base_url model],
+                  properties: {
+                    id: { type: :string },
+                    base_url: { type: :string },
+                    model: { type: :string }
+                  }
+                }
+              }
+            }
+          },
+          AiSettingsInput: {
+            type: :object,
+            properties: {
+              api_key: { type: :string, description: 'Provider API key. Blank keeps the stored key.' },
+              base_url: { type: :string, description: 'https base URL. Blank uses the preset\'s.' },
+              model: { type: :string, description: 'Model name. Blank uses the preset\'s.' },
+              preset: { type: :string, enum: Family::LLM_PRESETS.keys }
+            }
+          },
+          AiSettingsTestResult: {
+            type: :object,
+            required: %w[success],
+            properties: {
+              success: { type: :boolean },
+              reply: { type: :string, nullable: true },
+              error: { type: :string, nullable: true },
+              message: { type: :string, nullable: true, description: 'The provider\'s error message' }
+            }
+          },
           FamilySettings: {
             type: :object,
             required: %w[id currency locale date_format month_start_day moniker default_account_sharing custom_enabled_currencies enabled_currencies created_at updated_at],

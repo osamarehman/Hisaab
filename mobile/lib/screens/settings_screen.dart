@@ -17,6 +17,7 @@ import '../services/preferences_service.dart';
 import '../services/legal_links.dart';
 import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
+import 'ai_key_screen.dart';
 import 'passkeys_screen.dart';
 import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -879,6 +880,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const PasskeysScreen()),
+            ),
+          ),
+          ListTile(
+            key: const Key('settingsAiKey'),
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: Text(l.settingsAiKeyTitle),
+            subtitle: Text(l.settingsAiKeySubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const AiKeyScreen()),
             ),
           ),
 

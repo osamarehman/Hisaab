@@ -823,6 +823,9 @@ Rails.application.routes.draw do
       resources :insights, only: [ :index ]
       resources :push_subscriptions, only: [ :create, :destroy ]
       resource :family_settings, only: [ :show ], controller: :family_settings
+      resource :ai_settings, only: [ :show, :update, :destroy ], controller: :ai_settings do
+        post :test, action: :test_connection
+      end
       post :sync, to: "sync#create", as: :sync_job
       resources :syncs, only: [ :index, :show ] do
         get :latest, on: :collection

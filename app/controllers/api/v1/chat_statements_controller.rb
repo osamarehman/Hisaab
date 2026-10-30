@@ -23,7 +23,7 @@ class Api::V1::ChatStatementsController < Api::V1::BaseController
     @message = @chat.messages.create!(
       type: "UserMessage",
       content: I18n.t("assistant.statements.attached", file: file_name || I18n.t("assistant.statements.default_file")),
-      ai_model: Chat.default_model,
+      ai_model: Chat.default_model(current_resource_owner.family),
       import: import,
       skip_assistant_response: true
     )

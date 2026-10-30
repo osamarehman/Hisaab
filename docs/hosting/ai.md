@@ -71,6 +71,30 @@ The easiest way to get started with AI features in Sure is to use OpenAI:
 
 That's it! Sure will use OpenAI's with a default model (currently `gpt-4.1`) for all AI operations.
 
+## Bring your own key (per household)
+
+A household can use its own OpenAI-compatible key instead of the server's. In the mobile app, a family admin opens **Settings → AI assistant key**, picks a provider, pastes a key, taps **Test key** and then **Save key**. Members see whether a key is set but can't change it. The same settings are available over the API at `GET/PUT/DELETE /api/v1/ai_settings` and `POST /api/v1/ai_settings/test` (see `docs/api/openapi.yaml`).
+
+The presets fill in the base URL and a model. The model stays editable:
+
+| Preset | Base URL | Default model | Free key |
+| --- | --- | --- | --- |
+| Google Gemini | `https://generativelanguage.googleapis.com/v1beta/openai/` | `gemini-2.5-flash` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| OpenRouter | `https://openrouter.ai/api/v1` | `meta-llama/llama-3.3-70b-instruct:free` | [openrouter.ai/keys](https://openrouter.ai/keys) |
+| Groq | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` | [console.groq.com/keys](https://console.groq.com/keys) |
+
+**Other** takes any OpenAI-compatible base URL. Free models change often, so check the provider's list if a preset model stops working.
+
+Once a household has a key, it applies to every AI feature for that household: the assistant, auto-categorization, merchant detection, PDF statement reading and voice notes. The household's chats use its model. The key also replaces the server's key when it is set:
+
+- **Routing:** requests go only to the household's endpoint, over chat completions (the generic, non-Responses path), with tool calling. The server's key, `LLM_PROVIDER` and Anthropic settings are not used for that household. `OPENAI_EXTRA_HEADERS` and `OPENAI_SUPPORTS_RESPONSES_ENDPOINT` are also left out, so headers meant for the operator's gateway never go to the household's provider. Token-budget settings (`LLM_CONTEXT_WINDOW` and others) still apply.
+- **Access:** a household with its own key gets AI even if it isn't covered by `AI_ALLOWED_EMAILS`, because it spends nothing from the server's quota. Jev categorization still runs only for households the allowlist covers.
+- **Without a key** nothing changes: the server's configuration applies.
+- **Storage:** the key is encrypted with Active Record encryption when that is configured, the same as other credentials. The API never returns it, only its last four characters.
+- **Safety checks:** the base URL must use `https://`. Outside production, `http://localhost` is also accepted for a local model. In production, the host has to resolve to a public address, so it can't point at the server's internal network.
+- **Capabilities depend on the model.** PDF reading and voice notes need a model that accepts files or audio (Gemini does). Many free Llama models handle chat and categorization but not PDFs or audio.
+- **Privacy:** the household's questions and the data the assistant reads go to the provider it chose. Free tiers may use that data for training.
+
 ## Local vs. Cloud Inference
 
 ### Cloud Inference (Recommended for Most Users)

@@ -26,7 +26,7 @@ class Api::V1::VoiceNotesController < Api::V1::BaseController
       duration_ms: params[:duration_ms].presence&.to_i
     ).transcribe!
 
-    @message = @chat.messages.create!(type: "UserMessage", content: @transcript, ai_model: Chat.default_model)
+    @message = @chat.messages.create!(type: "UserMessage", content: @transcript, ai_model: Chat.default_model(current_resource_owner.family))
     render :create, status: :created
   rescue Assistant::VoiceNote::Error => e
     render json: { error: e.code, message: e.message }, status: :unprocessable_entity

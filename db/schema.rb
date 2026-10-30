@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -869,6 +869,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_090000) do
     t.datetime "last_sync_all_attempted_at"
     t.datetime "latest_sync_activity_at", default: -> { "CURRENT_TIMESTAMP" }
     t.datetime "latest_sync_completed_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.text "llm_api_key"
+    t.string "llm_model"
+    t.string "llm_uri_base"
     t.string "locale", default: "en"
     t.string "moniker", default: "Family", null: false
     t.integer "month_start_day", default: 1, null: false

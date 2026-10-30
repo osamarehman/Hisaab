@@ -2074,5 +2074,103 @@
   "@transactionFormAddFirstAccount": {"description": "Button in the transaction form's account row when the user has no accounts yet."},
 
   "transactionFormNewAccountOption": "+ New account",
-  "@transactionFormNewAccountOption": {"description": "Last option in the transaction form's account dropdown; opens the add-account form."}
+  "@transactionFormNewAccountOption": {"description": "Last option in the transaction form's account dropdown; opens the add-account form."},
+  "settingsAiKeyTitle": "AI assistant key",
+  "@settingsAiKeyTitle": {"description": "Settings row that opens the household's own AI key screen."},
+
+  "settingsAiKeySubtitle": "Use your own free AI key for the assistant",
+  "@settingsAiKeySubtitle": {"description": "Subtitle of the AI key settings row."},
+
+  "aiKeyTitle": "AI assistant key",
+  "@aiKeyTitle": {"description": "Title of the screen for the household's own AI key."},
+
+  "aiKeyIntro": "Paste a key from a free AI provider to use the assistant, labelling and statement reading with your own account. The key is stored for your whole household and never shown again.",
+  "@aiKeyIntro": {"description": "Intro text on the AI key screen."},
+
+  "aiKeyLoadFailed": "Could not load the AI key settings. Try again later.",
+  "@aiKeyLoadFailed": {"description": "Error when the AI key settings fail to load."},
+
+  "aiKeyStatusNone": "No key saved. The assistant uses the server's AI, if it has one.",
+  "@aiKeyStatusNone": {"description": "Status line when the household has no AI key."},
+
+  "aiKeyStatusSaved": "Using your {provider} key ending in {last4}",
+  "@aiKeyStatusSaved": {"description": "Status line when the household has its own AI key.", "placeholders": {"provider": {"type": "String"}, "last4": {"type": "String"}}},
+
+  "aiKeyAdminOnly": "Only a household admin can change the AI key.",
+  "@aiKeyAdminOnly": {"description": "Shown to members who cannot edit the AI key."},
+
+  "aiKeyProviderLabel": "Provider",
+  "@aiKeyProviderLabel": {"description": "Label above the AI provider choices."},
+
+  "aiKeyCustom": "Other",
+  "@aiKeyCustom": {"description": "Chip for a custom OpenAI-compatible provider."},
+
+  "aiKeyWhereToGet": "Get a free key at {site}",
+  "@aiKeyWhereToGet": {"description": "Hint naming where to create a key for the chosen provider.", "placeholders": {"site": {"type": "String"}}},
+
+  "aiKeyKeyLabel": "API key",
+  "@aiKeyKeyLabel": {"description": "Label of the API key field."},
+
+  "aiKeyKeyHint": "Paste your key",
+  "@aiKeyKeyHint": {"description": "Hint in the empty API key field."},
+
+  "aiKeyKeyKeepHint": "Leave blank to keep the saved key",
+  "@aiKeyKeyKeepHint": {"description": "Hint in the API key field when a key is already saved."},
+
+  "aiKeyModelLabel": "Model",
+  "@aiKeyModelLabel": {"description": "Label of the model field."},
+
+  "aiKeyBaseUrlLabel": "Base URL",
+  "@aiKeyBaseUrlLabel": {"description": "Label of the provider base URL field."},
+
+  "aiKeyKeyRequired": "Paste a key first.",
+  "@aiKeyKeyRequired": {"description": "Validation message when no key was entered."},
+
+  "aiKeyFieldsRequired": "Enter a base URL and a model.",
+  "@aiKeyFieldsRequired": {"description": "Validation message when base URL or model is empty."},
+
+  "aiKeyTest": "Test key",
+  "@aiKeyTest": {"description": "Button that sends one tiny request to check the key."},
+
+  "aiKeyTestOk": "The key works.",
+  "@aiKeyTestOk": {"description": "Shown after a successful key test."},
+
+  "aiKeyTestFailed": "The key did not work: {reason}",
+  "@aiKeyTestFailed": {"description": "Shown after a failed key test with the provider's reason.", "placeholders": {"reason": {"type": "String"}}},
+
+  "aiKeyTestUnknown": "no reason given",
+  "@aiKeyTestUnknown": {"description": "Fallback reason when a key test fails without a message."},
+
+  "aiKeySave": "Save key",
+  "@aiKeySave": {"description": "Button that saves the AI key."},
+
+  "aiKeySaveFailed": "Could not save the key. Try again.",
+  "@aiKeySaveFailed": {"description": "Error when saving the key fails."},
+
+  "aiKeySavedToast": "AI key saved",
+  "@aiKeySavedToast": {"description": "Snackbar after saving the AI key."},
+
+  "aiKeyRemove": "Remove key",
+  "@aiKeyRemove": {"description": "Button that removes the saved AI key."},
+
+  "aiKeyRemoveTitle": "Remove the AI key?",
+  "@aiKeyRemoveTitle": {"description": "Title of the remove-key confirmation."},
+
+  "aiKeyRemoveBody": "The assistant will go back to the server's AI, or stop working if the server has none.",
+  "@aiKeyRemoveBody": {"description": "Body of the remove-key confirmation."},
+
+  "aiKeyRemovedToast": "AI key removed",
+  "@aiKeyRemovedToast": {"description": "Snackbar after removing the AI key."},
+
+  "aiKeyRemoveFailed": "Could not remove the key. Try again.",
+  "@aiKeyRemoveFailed": {"description": "Error when removing the key fails."},
+
+  "aiKeyOffline": "Could not reach the server. Check your connection and try again.",
+  "@aiKeyOffline": {"description": "Error when the AI key request fails to connect."},
+
+  "aiKeyPrivacyNote": "Your questions and the household data the assistant reads are sent to the provider you choose. Free tiers may use them to improve their models.",
+  "@aiKeyPrivacyNote": {"description": "Privacy note under the AI key form."},
+
+  "assistantUseOwnKey": "Use your own AI key",
+  "@assistantUseOwnKey": {"description": "Button in the assistant consent panel that opens the AI key screen when AI is unavailable."}
 }
