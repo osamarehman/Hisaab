@@ -1,6 +1,7 @@
 require "test_helper"
 
-# The interest-free switch end to end: loan calculations at an effective 0%.
+# The interest-free switch end to end: loan calculations at an effective 0%,
+# Interest left out of investment income, and Interest no longer choosable.
 # Each behaviour is checked with the switch on (the default) and off.
 class InterestFreeTest < ActiveSupport::TestCase
   setup do
@@ -84,6 +85,67 @@ class InterestFreeTest < ActiveSupport::TestCase
     assert_not build_loan(interest_rate: nil, rate_type: nil, term_months: 12, principal: 1_200).amortizable?
   end
 
+  test "interest-labelled activity is not investment income when interest-free" do
+    account = @family.accounts.create!(name: "Brokerage", balance: 500, currency: "USD", accountable: Investment.new)
+    date = Date.current.beginning_of_month
+    income_trade(account, "Dividend", 50, date)
+    income_trade(account, "Interest", 10, date)
+    account.entries.create!(name: "Interest", date: date, amount: -4, currency: "USD",
+                            entryable: Transaction.new(investment_activity_label: "Interest"))
+    period = Period.custom(start_date: date, end_date: date.end_of_month)
+
+    totals = InvestmentStatement.new(@family, user: nil).totals(period: period)
+
+    assert_equal Money.new(50, "USD"), totals.dividends
+    assert_equal Money.new(0, "USD"), totals.interest
+    assert_equal Money.new(50, "USD"), totals.total_income
+    assert_equal Money.new(0, "USD"), totals.contributions
+
+    InterestFree.stubs(:enabled?).returns(false)
+    totals = InvestmentStatement.new(@family, user: nil).totals(period: period)
+
+    assert_equal Money.new(14, "USD"), totals.interest
+    assert_equal Money.new(64, "USD"), totals.total_income
+  end
+
+  test "the flow classifier does not count interest as income when interest-free" do
+    account = @family.accounts.create!(name: "Brokerage", balance: 500, currency: "USD", accountable: Investment.new)
+    entry = income_trade(account, "Interest", 10, Date.current)
+    classifier = Portfolio::FlowClassifier.new(scope_account_ids: [ account.id ])
+
+    assert_equal :external_inflow, classifier.classify(entry)
+    assert_equal({ entry.id => :external_inflow }, classifier.classify_ids([ entry.id ]))
+    assert_not_includes Portfolio::FlowClassifier.labels_for(:income), "Interest"
+
+    InterestFree.stubs(:enabled?).returns(false)
+
+    assert_equal :income, classifier.classify(entry)
+    assert_equal({ entry.id => :income }, classifier.classify_ids([ entry.id ]))
+  end
+
+  test "Interest is not offered as a label or a trade type when interest-free" do
+    assert_not_includes InterestFree.selectable_activity_labels(Transaction::ACTIVITY_LABELS), "Interest"
+    assert_includes InterestFree.selectable_activity_labels(Transaction::ACTIVITY_LABELS, current: "Interest"), "Interest"
+    assert_not_includes Trade::CreateForm.supported_types, "interest"
+    assert_not Rule::ActionExecutor::SetInvestmentActivityLabel.new(nil).actionable?("Interest")
+
+    InterestFree.stubs(:enabled?).returns(false)
+
+    assert_includes InterestFree.selectable_activity_labels(Transaction::ACTIVITY_LABELS), "Interest"
+    assert_includes Trade::CreateForm.supported_types, "interest"
+  end
+
+  test "an interest trade is refused when interest-free" do
+    account = @family.accounts.create!(name: "Brokerage", balance: 500, currency: "USD", accountable: Investment.new)
+
+    assert_no_difference "Entry.count" do
+      model = Trade::CreateForm.new(account: account, type: "interest", date: Date.current, amount: 10, currency: "USD").create
+
+      assert_not model.persisted?
+      assert_includes model.errors[:base], I18n.t("trades.form.interest_unavailable")
+    end
+  end
+
   private
     def build_loan(interest_rate:, rate_type:, term_months:, principal:)
       account = @family.accounts.create!(
@@ -95,5 +157,13 @@ class InterestFreeTest < ActiveSupport::TestCase
       account.entries.create!(date: Date.new(2026, 1, 1), name: "Opening balance", amount: principal,
                               currency: "USD", entryable: Valuation.new(kind: "opening_anchor"))
       account.loan
+    end
+
+    def income_trade(account, label, amount, date)
+      account.entries.create!(
+        name: label, date: date, amount: -amount, currency: "USD",
+        entryable: Trade.new(security: Security.create!(ticker: "T#{SecureRandom.hex(6)}", name: "Test"),
+                             qty: 0, price: 0, currency: "USD", investment_activity_label: label)
+      )
     end
 end

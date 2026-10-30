@@ -218,7 +218,25 @@ class TradesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @entry.account
   end
 
+  test "interest-free, the new trade form does not offer interest and an interest trade is refused" do
+    get new_trade_url(account_id: @entry.account_id)
+
+    assert_response :success
+    assert_select "select[name='model[type]'] option[value='dividend']"
+    assert_select "select[name='model[type]'] option[value='interest']", count: 0
+
+    assert_no_difference "Entry.count" do
+      post trades_url(account_id: @entry.account_id), params: {
+        model: { type: "interest", date: Date.current, amount: 10, currency: "USD" }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
   test "creates interest entry as trade with synthetic cash security when no ticker given" do
+    InterestFree.stubs(:enabled?).returns(false)
+
     assert_difference [ "Entry.count", "Trade.count" ], 1 do
       post trades_url(account_id: @entry.account_id), params: {
         model: {
@@ -240,6 +258,8 @@ class TradesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "creates interest entry as trade with security when ticker given" do
+    InterestFree.stubs(:enabled?).returns(false)
+
     assert_difference [ "Entry.count", "Trade.count" ], 1 do
       post trades_url(account_id: @entry.account_id), params: {
         model: {

@@ -25,6 +25,7 @@ en:
       type_dividend: Dividend
       type_interest: Interest
       dividend_requires_security: Security is required for dividends
+      interest_unavailable: Interest is not recorded while Hisaab runs interest-free
       trade_requires_security: A security (ticker) is required for buy and sell trades
     header:
       buy: Buy

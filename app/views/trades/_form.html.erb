@@ -15,8 +15,8 @@
           [t(".type_deposit"), "deposit"],
           [t(".type_withdrawal"), "withdrawal"],
           [t(".type_dividend"), "dividend"],
-          [t(".type_interest"), "interest"]
-      ],
+          ([t(".type_interest"), "interest"] unless InterestFree.enabled?)
+      ].compact,
       { label: t(".type"), selected: type },
       { data: {
           action: "trade-form#changeType",
