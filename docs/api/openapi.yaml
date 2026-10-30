@@ -743,6 +743,94 @@ components:
             "$ref": "#/components/schemas/AccountDetail"
         pagination:
           "$ref": "#/components/schemas/Pagination"
+    AiSettings:
+      type: object
+      required:
+      - key_present
+      - can_edit
+      - ai_available
+      - presets
+      properties:
+        key_present:
+          type: boolean
+          description: Whether the household has its own LLM key. The key itself is
+            never returned.
+        key_last4:
+          type: string
+          nullable: true
+          description: Last four characters of the stored key
+        base_url:
+          type: string
+          nullable: true
+          description: OpenAI-compatible base URL
+        model:
+          type: string
+          nullable: true
+        preset:
+          type: string
+          nullable: true
+          enum:
+          - gemini
+          - openrouter
+          - groq
+          - custom
+          -
+        can_edit:
+          type: boolean
+          description: Whether the caller is a family admin
+        ai_available:
+          type: boolean
+          description: Whether the assistant can be enabled for the caller
+        presets:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - base_url
+            - model
+            properties:
+              id:
+                type: string
+              base_url:
+                type: string
+              model:
+                type: string
+    AiSettingsInput:
+      type: object
+      properties:
+        api_key:
+          type: string
+          description: Provider API key. Blank keeps the stored key.
+        base_url:
+          type: string
+          description: https base URL. Blank uses the preset's.
+        model:
+          type: string
+          description: Model name. Blank uses the preset's.
+        preset:
+          type: string
+          enum:
+          - gemini
+          - openrouter
+          - groq
+    AiSettingsTestResult:
+      type: object
+      required:
+      - success
+      properties:
+        success:
+          type: boolean
+        reply:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+          description: The provider's error message
     FamilySettings:
       type: object
       required:
@@ -5169,6 +5257,101 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/ai_settings":
+    get:
+      summary: Retrieve the household AI key settings
+      description: Whether the household brings its own OpenAI-compatible LLM key.
+        The key itself is never returned.
+      tags:
+      - AI Settings
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: settings retrieved
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AiSettings"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    put:
+      summary: Save the household AI key
+      description: Family admins only. Stores an OpenAI-compatible key, base URL and
+        model for every AI feature of the household. A preset fills in a blank base
+        URL or model.
+      tags:
+      - AI Settings
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: settings saved
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AiSettings"
+        '422':
+          description: invalid settings
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AiSettingsInput"
+        required: true
+    delete:
+      summary: Remove the household AI key
+      description: Family admins only. The household falls back to the server's AI
+        configuration.
+      tags:
+      - AI Settings
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: key removed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AiSettings"
+  "/api/v1/ai_settings/test":
+    post:
+      summary: Test an AI key
+      description: Family admins only. Sends one tiny completion with the given settings
+        (or the stored ones) and reports the provider's answer or error.
+      tags:
+      - AI Settings
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: connection works
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AiSettingsTestResult"
+        '422':
+          description: connection failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AiSettingsTestResult"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AiSettingsInput"
+        required: true
   "/api/v1/chats/{chat_id}/pending_actions/confirm":
     parameters:
     - name: chat_id
