@@ -111,8 +111,8 @@ class DialogBackTest < ApplicationSystemTestCase
     end
 
     def leave_the_list_and_come_back
-      find("a[href='#{reports_path}']", match: :first).click
-      assert_selector "h1", text: I18n.t("reports.index.title")
+      find("a[href='#{categories_path}']", match: :first).click
+      assert_selector "main h1", text: I18n.t("categories.index.categories")
 
       page.go_back
       assert_selector "main h1", text: I18n.t("transactions.index.title")
