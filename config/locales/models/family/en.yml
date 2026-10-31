@@ -17,4 +17,4 @@ en:
           attributes:
             llm_uri_base:
               insecure: "must be an https:// address"
-              not_public: "must be a public internet address"
+              not_allowed: "must be a supported AI provider"

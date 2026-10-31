@@ -43,17 +43,34 @@ class Family::LlmConfigurableTest < ActiveSupport::TestCase
     assert @family.valid?
   end
 
-  test "rejects a host that resolves to a private address in production" do
+  test "accepts only known AI provider hosts in production" do
     Rails.env.stubs(:production?).returns(true)
-    Addrinfo.stubs(:getaddrinfo).returns([ Addrinfo.ip("10.0.0.5") ])
+    Addrinfo.expects(:getaddrinfo).never
 
     @family.assign_attributes(llm_api_key: "key", llm_model: "m", llm_uri_base: "https://internal.example.com/v1")
     assert_not @family.valid?
-    assert @family.errors.of_kind?(:llm_uri_base, :not_public)
+    assert @family.errors.of_kind?(:llm_uri_base, :not_allowed)
+
+    @family.llm_uri_base = GROQ[:uri_base]
+    assert @family.valid?
 
     @family.llm_uri_base = "http://localhost:11434/v1"
     assert_not @family.valid?
     assert @family.errors.of_kind?(:llm_uri_base, :insecure)
+  end
+
+  test "LLM_ALLOWED_HOSTS adds hosts in production" do
+    Rails.env.stubs(:production?).returns(true)
+    @family.assign_attributes(llm_api_key: "key", llm_model: "m", llm_uri_base: "https://llm.example.com/v1")
+
+    ClimateControl.modify(LLM_ALLOWED_HOSTS: " LLM.example.com ") { assert @family.valid? }
+  end
+
+  test "the base URL is only checked when it changes" do
+    @family.update!(llm_api_key: "key", llm_model: "m", llm_uri_base: GROQ[:uri_base])
+    @family.expects(:llm_uri_base_must_be_reachable_safely).never
+
+    @family.update!(name: "Renamed")
   end
 
   test "an unknown base URL is a custom preset" do

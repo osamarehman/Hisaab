@@ -91,7 +91,7 @@ Once a household has a key, it applies to every AI feature for that household: t
 - **Access:** a household with its own key gets AI even if it isn't covered by `AI_ALLOWED_EMAILS`, because it spends nothing from the server's quota. Jev categorization still runs only for households the allowlist covers.
 - **Without a key** nothing changes: the server's configuration applies.
 - **Storage:** the key is encrypted with Active Record encryption when that is configured, the same as other credentials. The API never returns it, only its last four characters.
-- **Safety checks:** the base URL must use `https://`. Outside production, `http://localhost` is also accepted for a local model. In production, the host has to resolve to a public address, so it can't point at the server's internal network.
+- **Safety checks:** the base URL must use `https://`. Outside production, `http://localhost` is also accepted for a local model. In production, the host must be a known AI provider: Gemini, OpenRouter, Groq, OpenAI, Mistral, DeepSeek, Together or Cerebras. Set `LLM_ALLOWED_HOSTS` (comma-separated host names) to allow others. A fixed list is used because a DNS check at save time can be rebound to an internal address later.
 - **Capabilities depend on the model.** PDF reading and voice notes need a model that accepts files or audio (Gemini does). Many free Llama models handle chat and categorization but not PDFs or audio.
 - **Privacy:** the household's questions and the data the assistant reads go to the provider it chose. Free tiers may use that data for training.
 

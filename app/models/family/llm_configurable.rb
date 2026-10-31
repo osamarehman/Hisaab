@@ -14,6 +14,19 @@ module Family::LlmConfigurable
     "groq" => { uri_base: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile" }
   }.freeze
 
+  # Hosts a family may point its key at in production. A fixed list rather
+  # than a DNS check, because the server resolves the name again for every
+  # request and a check made once at save time can be rebound to an internal
+  # address. LLM_ALLOWED_HOSTS (comma-separated) adds more.
+  LLM_DEFAULT_HOSTS = %w[
+    generativelanguage.googleapis.com openrouter.ai api.groq.com api.openai.com
+    api.mistral.ai api.deepseek.com api.together.xyz api.cerebras.ai
+  ].freeze
+
+  def self.allowed_llm_hosts
+    LLM_DEFAULT_HOSTS | ENV.fetch("LLM_ALLOWED_HOSTS", "").split(",").map { |host| host.strip.downcase }.reject(&:empty?)
+  end
+
   # A connection test is one tiny completion; it should fail fast rather
   # than hold a request thread for the full chat timeout.
   LLM_TEST_TIMEOUT = 15
@@ -27,7 +40,7 @@ module Family::LlmConfigurable
 
     validates :llm_uri_base, :llm_model, presence: true, if: :own_llm_key?
     validates :llm_api_key, :llm_uri_base, :llm_model, length: { maximum: 2048 }
-    validate :llm_uri_base_must_be_reachable_safely
+    validate :llm_uri_base_must_be_reachable_safely, if: :llm_uri_base_changed?
   end
 
   def own_llm_key?
@@ -110,19 +123,12 @@ module Family::LlmConfigurable
       return errors.add(:llm_uri_base, :insecure) unless uri.is_a?(URI::HTTPS) && uri.host.present?
       return unless Rails.env.production?
 
-      errors.add(:llm_uri_base, :not_public) unless public_host?(uri.hostname)
+      errors.add(:llm_uri_base, :not_allowed) unless uri.hostname.downcase.in?(Family::LlmConfigurable.allowed_llm_hosts)
     rescue URI::InvalidURIError
       errors.add(:llm_uri_base, :invalid)
     end
 
     def local_development_uri?(uri)
       !Rails.env.production? && uri.instance_of?(URI::HTTP) && uri.hostname.in?(%w[localhost 127.0.0.1 ::1])
-    end
-
-    def public_host?(host)
-      addresses = Addrinfo.getaddrinfo(host, nil, nil, :STREAM).map(&:ip_address).uniq
-      addresses.any? && addresses.all? { |address| NetworkAddress.public?(address) }
-    rescue SocketError
-      false
     end
 end
