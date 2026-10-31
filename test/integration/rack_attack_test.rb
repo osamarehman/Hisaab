@@ -39,6 +39,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
       oidc_account_link/ip oidc_account_link/email
       api_login/ip api_login/email
       api_sso_link/ip api_sso_link/email
+      api_apple_login/ip
       password_change/ip password_change/user
     ].each do |name|
       assert_includes throttles, name, "#{name} should have rate limiting configured"

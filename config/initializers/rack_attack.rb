@@ -144,6 +144,12 @@ class Rack::Attack
     credential_guess_email.call(request) if request.post? && credential_guess_path.call(request, "/api/v1/auth/sso_link")
   end
 
+  # Each attempt verifies an Apple token, and one with an unknown key ID can
+  # make the server fetch Apple's keys.
+  throttle("api_apple_login/ip", limit: 10, period: 1.minute) do |request|
+    request.ip if request.post? && request.path == "/api/v1/auth/apple"
+  end
+
   # Self-service password change checks the current password
   # (password_challenge) for a signed-in user, so there's no email param. The
   # signed session cookie leads to the user whose password is being checked

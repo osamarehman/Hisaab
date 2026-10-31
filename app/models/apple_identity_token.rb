@@ -9,6 +9,8 @@ class AppleIdentityToken
   ISSUER = "https://appleid.apple.com"
   KEYS_URL = URI("https://appleid.apple.com/auth/keys")
   KEYS_CACHE_KEY = "apple_sign_in/jwks"
+  KEYS_REFETCH_KEY = "apple_sign_in/jwks_refetched"
+  KEYS_REFETCH_COOLDOWN = 5.minutes
 
   class InvalidError < StandardError; end
 
@@ -19,8 +21,12 @@ class AppleIdentityToken
   end
 
   def self.jwks(options = {})
-    # An unknown key ID usually means Apple rotated its keys.
-    Rails.cache.delete(KEYS_CACHE_KEY) if options[:kid_not_found]
+    # An unknown key ID usually means Apple rotated its keys. Refetch at most
+    # once per cooldown, so tokens with made-up key IDs can't make every
+    # request call Apple.
+    if options[:kid_not_found] && Rails.cache.write(KEYS_REFETCH_KEY, true, expires_in: KEYS_REFETCH_COOLDOWN, unless_exist: true)
+      Rails.cache.delete(KEYS_CACHE_KEY)
+    end
     Rails.cache.fetch(KEYS_CACHE_KEY, expires_in: 12.hours) { fetch_jwks }
   end
 

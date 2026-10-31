@@ -68,4 +68,20 @@ class AppleIdentityTokenTest < ActiveSupport::TestCase
       AppleIdentityToken.verify!(apple_identity_token(nonce: "n"), nonce: "n", client_ids: [ "dev.shipdeck.hisaab" ])
     end
   end
+  test "an unknown key ID refetches Apple's keys at most once per cooldown" do
+    unknown = apple_identity_token(nonce: "n", kid: "made-up-key")
+    attempt = -> {
+      assert_raises(AppleIdentityToken::InvalidError, JWT::DecodeError) do
+        AppleIdentityToken.verify!(unknown, nonce: "n", client_ids: [ "dev.shipdeck.hisaab" ])
+      end
+    }
+
+    3.times { attempt.call }
+    assert_requested :get, AppleIdentityToken::KEYS_URL.to_s, times: 2
+
+    travel AppleIdentityToken::KEYS_REFETCH_COOLDOWN + 1.second do
+      attempt.call
+    end
+    assert_requested :get, AppleIdentityToken::KEYS_URL.to_s, times: 3
+  end
 end

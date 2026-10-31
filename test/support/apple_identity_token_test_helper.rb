@@ -14,7 +14,7 @@ module AppleIdentityTokenTestHelper
 
   def apple_identity_token(nonce:, sub: "001234.apple-user", email: "apple-user@privaterelay.appleid.com",
                            aud: "dev.shipdeck.hisaab", iss: AppleIdentityToken::ISSUER, exp: 10.minutes.from_now,
-                           key: APPLE_TEST_KEY)
+                           key: APPLE_TEST_KEY, kid: APPLE_TEST_KID)
     payload = {
       iss: iss,
       aud: aud,
@@ -25,6 +25,6 @@ module AppleIdentityTokenTestHelper
       email: email,
       email_verified: "true"
     }.compact
-    JWT.encode(payload, key, "RS256", kid: APPLE_TEST_KID)
+    JWT.encode(payload, key, "RS256", kid: kid)
   end
 end
