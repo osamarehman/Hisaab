@@ -60,9 +60,12 @@
     page it showed only the selected pill and loose words. surface-inset is the
     track DS::Tabs gives Transactions' view switch, and the budgets owner
     switcher already overrides it the same way. %>
-<%= render DS::SegmentedControl.new(aria_label: t("bills.views.aria_label"), class: "bg-surface-inset") do |control| %>
-  <% control.with_segment(t("bills.views.overview"), active: active == "overview", href: bills_path) %>
-  <% control.with_segment(t("bills.views.calendar"), active: active == "calendar", href: bills_path(view: "calendar")) %>
-  <% control.with_segment(t("bills.views.paycheck"), active: active == "paycheck", href: bills_path(view: "paycheck")) %>
-  <% control.with_segment(t("bills.views.all"), active: active == "all", href: bills_path(view: "all")) %>
+<%# Four segments at the default px-3 overflow a 375px phone, so they take
+    the narrower padding there and share the full width. %>
+<% segment_class = "px-2 sm:px-3" %>
+<%= render DS::SegmentedControl.new(aria_label: t("bills.views.aria_label"), full_width: true, class: "bg-surface-inset") do |control| %>
+  <% control.with_segment(t("bills.views.overview"), active: active == "overview", href: bills_path, class: segment_class) %>
+  <% control.with_segment(t("bills.views.calendar"), active: active == "calendar", href: bills_path(view: "calendar"), class: segment_class) %>
+  <% control.with_segment(t("bills.views.paycheck"), active: active == "paycheck", href: bills_path(view: "paycheck"), class: segment_class) %>
+  <% control.with_segment(t("bills.views.all"), active: active == "all", href: bills_path(view: "all"), class: segment_class) %>
 <% end %>

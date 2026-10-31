@@ -17,3 +17,13 @@ Layout/SpaceInsidePercentLiteralDelimiters:
 Layout/SpaceInsideArrayLiteralBrackets:
   Exclude:
     - "db/schema.rb"
+
+# mobile/ is the Flutter app; RuboCop would otherwise parse its .arb
+# translation files as Ruby (Arbre templates share the extension).
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  Exclude:
+    - "mobile/**/*"
