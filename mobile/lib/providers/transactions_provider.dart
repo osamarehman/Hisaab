@@ -25,11 +25,18 @@ class TransactionsProvider with ChangeNotifier {
   bool _isListenerAttached = false;
   bool _isDisposed = false;
 
+  // Server ids of entries uploaded from this device in this session. The
+  // Activity list keeps showing them until its month fetch includes them.
+  final Set<String> _recentlyUploadedIds = {};
+
   List<Transaction> get transactions =>
       UnmodifiableListView(_transactions.map((t) => t.toTransaction()));
 
   List<OfflineTransaction> get offlineTransactions =>
       UnmodifiableListView(_transactions);
+
+  Set<String> get recentlyUploadedIds =>
+      UnmodifiableSetView(_recentlyUploadedIds);
 
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -158,6 +165,12 @@ class TransactionsProvider with ChangeNotifier {
   }
 
   /// Create a new transaction (offline-first)
+  Future<void> _reloadLocal() async {
+    _transactions =
+        await _offlineStorage.getTransactions(accountId: _currentAccountId);
+    if (!_isDisposed) notifyListeners();
+  }
+
   Future<bool> createTransaction({
     required String accessToken,
     required String accountId,
@@ -205,8 +218,9 @@ class TransactionsProvider with ChangeNotifier {
 
       _log.info('TransactionsProvider', 'Transaction saved locally');
 
-      // Reload transactions to show the new one immediately
-      await fetchTransactions(accessToken: accessToken, accountId: accountId);
+      // Show the new entry straight from local storage; a server sync here
+      // would hold the form open.
+      await _reloadLocal();
 
       // If online, try to upload in background
       if (isOnline) {
@@ -237,6 +251,15 @@ class TransactionsProvider with ChangeNotifier {
             _log.info(
                 'TransactionsProvider', 'Transaction uploaded successfully');
             final serverTransaction = result['transaction'] as Transaction;
+            if (serverTransaction.id != null) {
+              _recentlyUploadedIds.add(serverTransaction.id!);
+            }
+            await _offlineStorage.updateTransactionSyncStatus(
+              localId: localTransaction.localId,
+              syncStatus: SyncStatus.synced,
+              serverId: serverTransaction.id,
+            );
+            await _reloadLocal();
             if (attachments != null &&
                 attachments.isNotEmpty &&
                 serverTransaction.id != null) {
@@ -249,17 +272,9 @@ class TransactionsProvider with ChangeNotifier {
                 _log.warning('TransactionsProvider',
                     'Receipt upload failed: ${upload['error']}');
                 _error = 'Saved, but the receipt could not be attached.';
+                notifyListeners();
               }
             }
-            // Update local transaction with server ID and mark as synced
-            await _offlineStorage.updateTransactionSyncStatus(
-              localId: localTransaction.localId,
-              syncStatus: SyncStatus.synced,
-              serverId: serverTransaction.id,
-            );
-            // Reload to update UI
-            await fetchTransactions(
-                accessToken: accessToken, accountId: accountId);
           } else {
             _log.warning('TransactionsProvider',
                 'Server upload failed: ${result['error']}. Transaction will sync later.');

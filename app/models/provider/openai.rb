@@ -77,14 +77,20 @@ class Provider::Openai < Provider
   # @param access_token [String] API token for the OpenAI-compatible endpoint
   # @param uri_base [String, nil] custom endpoint base URL (OpenAI when nil)
   # @param model [String, nil] default model; required when uri_base is set
+  # @param server_overrides [Boolean] false for a household's own key: the
+  #   operator's OPENAI_EXTRA_HEADERS (which may carry gateway credentials) are
+  #   not sent to an endpoint the operator did not choose, and the Responses
+  #   endpoint override does not apply
+  # @param request_timeout [Integer, nil] overrides the configured timeout
   # @return [void]
-  def initialize(access_token, uri_base: nil, model: nil)
+  def initialize(access_token, uri_base: nil, model: nil, server_overrides: true, request_timeout: nil)
     client_options = { access_token: access_token }
     llm_uri_base = uri_base.presence
     llm_model = model.presence
+    @server_overrides = server_overrides
     client_options[:uri_base] = llm_uri_base if llm_uri_base.present?
-    client_options[:request_timeout] = self.class.request_timeout
-    parsed_headers = self.class.extra_headers
+    client_options[:request_timeout] = request_timeout || self.class.request_timeout
+    parsed_headers = server_overrides ? self.class.extra_headers : {}
     @session_extra_headers = parsed_headers.select { |_, value| value.include?("{session_id}") }
     static_headers = parsed_headers.except(*@session_extra_headers.keys)
     client_options[:extra_headers] = static_headers if static_headers.present?
@@ -109,7 +115,7 @@ class Provider::Openai < Provider
     return @supports_responses_endpoint if defined?(@supports_responses_endpoint)
 
     env_override = ENV["OPENAI_SUPPORTS_RESPONSES_ENDPOINT"]
-    if env_override.to_s.present?
+    if @server_overrides && env_override.to_s.present?
       return @supports_responses_endpoint = ActiveModel::Type::Boolean.new.cast(env_override)
     end
 
@@ -130,6 +136,36 @@ class Provider::Openai < Provider
 
   def custom_provider?
     @uri_base.present?
+  end
+
+  attr_reader :default_model
+
+  # One minimal chat completion, to check that the key, endpoint and model
+  # work together. Data is the reply text; on failure the error message is the
+  # provider's own explanation where it gave one.
+  def test_connection
+    with_provider_response(error_transformer: ->(error) { Error.new(self.class.upstream_error_message(error)) }) do
+      response = client.chat(parameters: {
+        model: @default_model,
+        messages: [ { role: "user", content: "Reply with the word OK." } ],
+        max_tokens: 16
+      })
+      response.dig("choices", 0, "message", "content").to_s.strip
+    end
+  end
+
+  # The human-readable message from an OpenAI-compatible error body. Gemini
+  # wraps it in an array, OpenAI/OpenRouter/Groq return `{"error": {...}}`.
+  def self.upstream_error_message(error)
+    body = error.respond_to?(:response) && error.response.is_a?(Hash) ? error.response[:body] : nil
+    body = JSON.parse(body) if body.is_a?(String) && body.present?
+    body = body.first if body.is_a?(Array)
+    message = body.dig("error", "message") if body.is_a?(Hash) && body["error"].is_a?(Hash)
+    message ||= body["error"] if body.is_a?(Hash) && body["error"].is_a?(String)
+    message ||= body["message"] if body.is_a?(Hash)
+    (message.presence || error.message).to_s.truncate(300)
+  rescue JSON::ParserError
+    error.message.to_s.truncate(300)
   end
 
   # Token-budget knobs. Precedence: ENV > Setting > default. Defaults match

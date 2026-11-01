@@ -268,6 +268,7 @@ Rails.application.routes.draw do
   get ".well-known/oauth-protected-resource", to: "oauth_metadata#protected_resource"
   get ".well-known/oauth-authorization-server", to: "oauth_metadata#authorization_server"
   get ".well-known/assetlinks.json", to: "asset_links#show", format: false, defaults: { format: :json }
+  get ".well-known/apple-app-site-association", to: "apple_app_site_association#show", format: false, defaults: { format: :json }
   post "register", to: "oauth_registration#create"
   use_doorkeeper do |mapping|
     mapping.controllers authorizations: "oauth/authorizations"
@@ -773,6 +774,7 @@ Rails.application.routes.draw do
       post "auth/sso_create_account", to: "auth#sso_create_account"
       post "auth/passkey/options", to: "auth#passkey_options"
       post "auth/passkey/login", to: "auth#passkey_login"
+      post "auth/apple", to: "auth#apple_login"
       patch "auth/enable_ai", to: "auth#enable_ai"
       resources :passkeys, only: [ :index, :create, :destroy ] do
         post :options, on: :collection
@@ -821,6 +823,9 @@ Rails.application.routes.draw do
       resources :insights, only: [ :index ]
       resources :push_subscriptions, only: [ :create, :destroy ]
       resource :family_settings, only: [ :show ], controller: :family_settings
+      resource :ai_settings, only: [ :show, :update, :destroy ], controller: :ai_settings do
+        post :test, action: :test_connection
+      end
       post :sync, to: "sync#create", as: :sync_job
       resources :syncs, only: [ :index, :show ] do
         get :latest, on: :collection

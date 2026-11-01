@@ -1,6 +1,10 @@
 require "test_helper"
 
 class LoansControllerTest < ActionDispatch::IntegrationTest
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   include AccountableResourceInterfaceTest
 
   setup do
@@ -705,6 +709,31 @@ class LoansControllerTest < ActionDispatch::IntegrationTest
       ActiveSupport::NumberHelper.number_to_rounded(in_force.amount, precision: 2, delimiter: ","),
       "the card quotes the repayment in force today"
     assert_no_match I18n.t("loans.tabs.overview.not_applicable"), card.text
+  end
+
+  test "interest-free, the loan pages show no rate, interest figures or interest fields" do
+    InterestFree.stubs(:enabled?).returns(true)
+    @account.loan.update!(rate_type: "fixed", interest_rate: 6, term_months: 360)
+
+    get account_path(@account, tab: "overview")
+    assert_response :success
+    assert_no_match "6.000%", response.body
+    assert_select "h4", text: I18n.t("loans.tabs.overview.interest_rate"), count: 0
+    # 500,000 repaid over 360 months with nothing added.
+    assert_match "1,388.89", response.body
+    assert_select "h4", text: I18n.t("UI.account.chart.loan.interest_saved"), count: 0
+
+    get account_path(@account, tab: "schedule")
+    assert_response :success
+    assert_select "h4", text: I18n.t("loans.tabs.schedule.total_interest"), count: 0
+    assert_select "th", text: I18n.t("loans.tabs.schedule.interest"), count: 0
+
+    get edit_loan_path(@account)
+    assert_response :success
+    assert_select "input[name='account[accountable_attributes][interest_rate]']", count: 0
+    assert_select "select[name='account[accountable_attributes][rate_type]']", count: 0
+    assert_select "select[name='account[accountable_attributes][day_count_convention]']", count: 0
+    assert_select "[data-controller='loan-rate-changes']", count: 0
   end
 
   test "the overview tab of a fixed loan still shows its rate and monthly payment" do

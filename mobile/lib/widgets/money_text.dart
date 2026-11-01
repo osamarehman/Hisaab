@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/sure_colors.dart';
+import '../utils/money_format.dart';
 
 /// Directional meaning of a monetary value, used to pick its semantic color.
 /// This mirrors the app's existing in/out coloring (money in is positive, money
@@ -101,7 +102,9 @@ class MoneyText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
+      Directionality.of(context) == TextDirection.rtl
+          ? MoneyFormat.ltrIsolate(text)
+          : text,
       textAlign: textAlign,
       overflow: overflow,
       style: SureMoney.style(context, trend: trend, base: style),

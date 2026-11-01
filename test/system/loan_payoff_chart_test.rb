@@ -14,6 +14,10 @@ require "application_system_test_case"
 # re-checked payoff dates here would be re-running Loan::PayoffChartTest
 # through a browser, slowly.
 class LoanPayoffChartTest < ApplicationSystemTestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   # Pinned so the schedule, the projection and therefore the number of drawn
   # series are the same run to run. The loan opens 2026-01-01 over 24 months,
   # so this sits mid-term with real history behind it and real term ahead.

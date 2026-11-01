@@ -58,14 +58,14 @@ class SureTheme {
     // merging with it, so without the family it renders in Roboto.
     TextStyle buttonText(double size, FontWeight weight) => TextStyle(
           fontFamily: SureTokens.fontSans,
-          fontFamilyFallback: SureTokens.fontFallback,
+          fontFamilyFallback: SureFonts.fallback,
           fontSize: size,
           fontWeight: weight,
         );
 
     final base = ThemeData(
       fontFamily: SureTokens.fontSans,
-      fontFamilyFallback: SureTokens.fontFallback,
+      fontFamilyFallback: SureFonts.fallback,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: tokens.surface,
       useMaterial3: true,
@@ -81,6 +81,7 @@ class SureTheme {
         shape: Border(bottom: BorderSide(color: hairline)),
         titleTextStyle: TextStyle(
           fontFamily: SureFonts.display,
+          fontFamilyFallback: SureFonts.fallback,
           fontSize: 22,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.2,

@@ -7,6 +7,7 @@ import '../models/chat.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/ledger/ledger.dart';
+import 'ai_key_screen.dart';
 import 'chat_conversation_screen.dart';
 
 /// Assistant tab: ask a new question or reopen an earlier one. Asks for AI
@@ -73,6 +74,14 @@ class ChatListScreenState extends State<ChatListScreen> {
     } else {
       reload();
     }
+  }
+
+  /// Saving a key there makes AI available, so turn it on right away.
+  Future<void> _openAiKey() async {
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => const AiKeyScreen()),
+    );
+    if (saved == true && mounted) await _enableAi();
   }
 
   Future<void> _open(String? chatId, {String? initialQuestion}) async {
@@ -198,6 +207,16 @@ class ChatListScreenState extends State<ChatListScreen> {
             busy: _enabling,
             onPressed: _enableAi,
           ),
+          // The server has no AI for this household: a key of its own
+          // turns it on.
+          if (_enableError != null) ...[
+            const SizedBox(height: 12),
+            OutlineInkButton(
+              key: const ValueKey('assistant-use-own-key'),
+              label: l.assistantUseOwnKey,
+              onPressed: _enabling ? null : _openAiKey,
+            ),
+          ],
         ],
       ),
     );
@@ -242,8 +261,8 @@ class ChatListScreenState extends State<ChatListScreen> {
           direction: DismissDirection.endToStart,
           background: Container(
             color: c.danger,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 16),
+            alignment: AlignmentDirectional.centerEnd,
+            padding: const EdgeInsetsDirectional.only(end: 16),
             child: Icon(Icons.delete_outline, color: c.onInk),
           ),
           confirmDismiss: (_) => _delete(chat),

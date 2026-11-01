@@ -10,6 +10,10 @@ require "test_helper"
 class RedbarkAccount::LoanDetailsProcessorTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   setup do
     @redbark_account = redbark_accounts(:savings_account)
     @family = @redbark_account.redbark_item.family

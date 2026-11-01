@@ -106,6 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleAppleLogin() async {
+    final l = AppLocalizations.of(context);
+    await Provider.of<AuthProvider>(context, listen: false)
+        .loginWithApple(failedMessage: l.loginAppleFailed);
+  }
+
   Widget _fieldLabel(String text, LedgerColors c) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(
@@ -197,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.only(left: 12),
+                      padding: const EdgeInsetsDirectional.only(start: 12),
                       decoration: BoxDecoration(
                         border: Border.all(color: c.danger),
                         borderRadius: BorderRadius.circular(2),
@@ -226,6 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   focusNode: _emailFocus,
                   keyboardType: TextInputType.emailAddress,
+                  textDirection: TextDirection.ltr,
                   autocorrect: false,
                   autofillHints: const [AutofillHints.username],
                   textInputAction: TextInputAction.next,
@@ -333,6 +340,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, _) {
+                    if (!authProvider.appleSignInSupported) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: OutlinedButton.icon(
+                        onPressed:
+                            authProvider.isLoading ? null : _handleAppleLogin,
+                        icon: const Icon(Icons.apple, size: 20),
+                        label: Text(l.loginSignInWithApple),
+                      ),
+                    );
+                  },
+                ),
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, _) => OutlinedButton.icon(
                     onPressed: authProvider.isLoading

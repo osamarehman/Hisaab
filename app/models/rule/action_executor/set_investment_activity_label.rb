@@ -8,7 +8,7 @@ class Rule::ActionExecutor::SetInvestmentActivityLabel < Rule::ActionExecutor
   end
 
   def options
-    Transaction::ACTIVITY_LABELS.map { |l| [ l, l ] }
+    InterestFree.selectable_activity_labels(Transaction::ACTIVITY_LABELS).map { |l| [ l, l ] }
   end
 
   def claimed_attributes
@@ -16,11 +16,11 @@ class Rule::ActionExecutor::SetInvestmentActivityLabel < Rule::ActionExecutor
   end
 
   def actionable?(value)
-    Transaction::ACTIVITY_LABELS.include?(value)
+    InterestFree.selectable_activity_labels(Transaction::ACTIVITY_LABELS).include?(value)
   end
 
   def execute(transaction_scope, value: nil, ignore_attribute_locks: false, rule_run: nil)
-    return 0 unless Transaction::ACTIVITY_LABELS.include?(value)
+    return 0 unless actionable?(value)
 
     scope = transaction_scope
 

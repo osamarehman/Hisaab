@@ -3,6 +3,10 @@ require "test_helper"
 # The behaviour #104 exists for: a schedule that re-amortises at each recorded
 # rate change, and does so on the right dates.
 class Loan::VariableRateScheduleTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   setup do
     @family = families(:dylan_family)
   end

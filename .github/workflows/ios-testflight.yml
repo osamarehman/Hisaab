@@ -96,7 +96,7 @@ jobs:
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         if: ${{ steps.check_prereqs.outputs.enabled == 'true' }}
         with:
-          flutter-version: '3.32.4'
+          flutter-version: '3.47.9'
           channel: 'stable'
           cache: true
 
@@ -160,7 +160,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          IOS_VERSION="$(tr -d '[:space:]' < ../.sure-version | sed 's/-.*$//')"
+          IOS_VERSION="$(sed -n 's/^version:[[:space:]]*\([0-9.]*\).*/\1/p' pubspec.yaml)"
           IOS_BUILD_NUMBER="$(date -u +%Y%m%d%H%M)"
           ARCHIVE_PATH="$RUNNER_TEMP/Runner.xcarchive"
           EXPORT_PATH="$PWD/build/ios/ipa"
@@ -227,7 +227,7 @@ jobs:
           EOF
 
           if [ -z "$IOS_VERSION" ]; then
-            echo "::error::.sure-version is empty or unreadable"
+            echo "::error::Could not read the app version from mobile/pubspec.yaml"
             exit 1
           fi
 

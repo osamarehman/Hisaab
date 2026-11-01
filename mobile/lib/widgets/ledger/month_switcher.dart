@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'ledger_style.dart';
 
 /// Outlined "‹ Oct 2026 ›" control; calls [onChanged] with the first day of the new month and, unless [canGoNext] says otherwise, disables future months.
@@ -32,6 +33,7 @@ class MonthSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final current = firstOf(month);
     final today = firstOf(now ?? DateTime.now());
     final canGoNext = this.canGoNext ?? current.isBefore(today);
@@ -72,7 +74,7 @@ class MonthSwitcher extends StatelessWidget {
         children: [
           arrow(
             '‹',
-            'Previous month',
+            l.budgetsPreviousMonth,
             () => onChanged(DateTime(current.year, current.month - 1)),
           ),
           ConstrainedBox(
@@ -89,7 +91,7 @@ class MonthSwitcher extends StatelessWidget {
           ),
           arrow(
             '›',
-            'Next month',
+            l.budgetsNextMonth,
             canGoNext
                 ? () => onChanged(DateTime(current.year, current.month + 1))
                 : null,

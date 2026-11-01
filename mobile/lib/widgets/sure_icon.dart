@@ -33,12 +33,17 @@ class SureIcon extends StatelessWidget {
   /// semantics tree — use this only when an adjacent widget carries the name.
   final String? semanticLabel;
 
+  /// Mirror the glyph in right-to-left locales, like Material `Icon`'s flag of
+  /// the same name. Use for directional glyphs such as chevrons and arrows.
+  final bool matchTextDirection;
+
   const SureIcon(
     this.name, {
     super.key,
     this.size,
     this.color,
     this.semanticLabel,
+    this.matchTextDirection = false,
   });
 
   @override
@@ -50,7 +55,7 @@ class SureIcon extends StatelessWidget {
     // a parent imposes tight constraints larger than the icon (e.g. a fixed-size
     // Container). The outer SizedBox sets the intrinsic size; the Center loosens
     // the constraints handed to SvgPicture so its width/height aren't stretched.
-    return SizedBox(
+    final icon = SizedBox(
       width: resolvedSize,
       height: resolvedSize,
       child: Center(
@@ -64,6 +69,9 @@ class SureIcon extends StatelessWidget {
         ),
       ),
     );
+    final mirror = matchTextDirection &&
+        Directionality.maybeOf(context) == TextDirection.rtl;
+    return mirror ? Transform.flip(flipX: true, child: icon) : icon;
   }
 }
 

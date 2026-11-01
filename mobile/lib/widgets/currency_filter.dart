@@ -61,7 +61,7 @@ class CurrencyFilter extends StatelessWidget {
         children: [
           // "All" chip
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsetsDirectional.only(end: 8),
             child: SureChip(
               label: l.commonAll,
               selected: isAllSelected,
@@ -79,7 +79,7 @@ class CurrencyFilter extends StatelessWidget {
                 : currency;
 
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: SureChip(
                 label: displayText,
                 selected: isSelected,

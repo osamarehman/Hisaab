@@ -25,7 +25,7 @@ class Api::V1::ChatsController < Api::V1::BaseController
         @message = @chat.messages.build(
           content: chat_params[:message],
           type: "UserMessage",
-          ai_model: chat_params[:model].presence || Chat.default_model
+          ai_model: chat_params[:model].presence || Chat.default_model(current_resource_owner.family)
         )
 
         if @message.save

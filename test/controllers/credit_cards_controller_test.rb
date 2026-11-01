@@ -8,6 +8,25 @@ class CreditCardsControllerTest < ActionDispatch::IntegrationTest
     @account = accounts(:credit_card)
   end
 
+  test "interest-free, the card's APR is neither asked for nor shown" do
+    get edit_credit_card_path(@account)
+    assert_response :success
+    assert_select "input[name='account[accountable_attributes][apr]']", count: 0
+
+    get account_path(@account, tab: "overview")
+    assert_response :success
+    assert_select "h4", text: I18n.t("credit_cards.tabs.overview.apr"), count: 0
+    assert_no_match "18.990%", response.body
+  end
+
+  test "with interest-free off, the card's APR is asked for" do
+    InterestFree.stubs(:enabled?).returns(false)
+
+    get edit_credit_card_path(@account)
+    assert_response :success
+    assert_select "input[name='account[accountable_attributes][apr]']", count: 1
+  end
+
   test "creates with credit card details" do
     assert_difference -> { Account.count } => 1,
       -> { CreditCard.count } => 1,

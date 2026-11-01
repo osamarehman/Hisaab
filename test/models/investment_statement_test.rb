@@ -1,6 +1,10 @@
 require "test_helper"
 
 class InvestmentStatementTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   setup do
     @family = families(:empty)
     # families(:empty) defaults to currency "USD"

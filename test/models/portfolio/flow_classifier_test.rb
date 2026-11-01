@@ -6,6 +6,10 @@ require "test_helper"
 # transfer, and what a caller must do with the answer. One test per rule, so a
 # rule that loses its evidence loses a named test with it.
 class Portfolio::FlowClassifierTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   include PortfolioFlowTestHelper
 
   setup do

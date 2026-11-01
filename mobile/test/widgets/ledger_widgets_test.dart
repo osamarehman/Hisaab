@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sure_mobile/l10n/app_localizations.dart';
 import 'package:sure_mobile/screens/transaction_form_screen.dart';
 import 'package:sure_mobile/theme/sure_theme.dart';
 import 'package:sure_mobile/widgets/ledger/ledger.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
       theme: SureTheme.light,
+      locale: const Locale('en'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: Scaffold(body: Center(child: child)),
     );
 

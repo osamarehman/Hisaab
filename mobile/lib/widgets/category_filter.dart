@@ -32,7 +32,7 @@ class CategoryFilter extends StatelessWidget {
         children: [
           // "All" chip
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsetsDirectional.only(end: 8),
             child: FilterChip(
               label: Text(l.commonAll),
               selected: isAllSelected,
@@ -63,7 +63,7 @@ class CategoryFilter extends StatelessWidget {
                 selectedCategoryIds.contains(category.id) && !isAllSelected;
 
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: FilterChip(
                 label: Text(category.displayName),
                 selected: isSelected,

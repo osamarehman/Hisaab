@@ -1,6 +1,10 @@
 require "test_helper"
 
 class PlaidAccount::Liabilities::MortgageProcessorTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   # Rate changes are dated after it, so the loan accepts them.
   ORIGINATED = Date.new(2020, 1, 1)
 

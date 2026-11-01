@@ -258,8 +258,8 @@ class Demo::Generator
       @insurance_cat = family.categories.create!(name: "Insurance", color: "#6366f1")
       @misc_cat      = family.categories.create!(name: "Miscellaneous", color: "#6b7280")
 
-      # Interest expense bucket
-      @interest_cat = family.categories.create!(name: "Loan Interest", color: "#475569")
+      # Interest expense bucket. None interest-free: the demo loans charge none.
+      @interest_cat = family.categories.create!(name: "Loan Interest", color: "#475569") unless InterestFree.enabled?
     end
 
     def create_realistic_accounts!(family)
@@ -302,31 +302,38 @@ class Demo::Generator
       # month before generate_loan_payments! makes their first payment.
       mortgage_start = 5.years.ago.to_date
       loans_start = 37.months.ago.beginning_of_month.to_date
+      # Interest-free, the loans carry no rate terms at all.
+      mortgage_rate_terms = demo_loan_rate_terms(
+        rate_type: "adjustable", interest_rate: 6.25,
+        rate_changes: [
+          { effective_date: (mortgage_start >> 24).iso8601, rate: "5.5" },
+          { effective_date: (mortgage_start >> 48).iso8601, rate: "6.75" }
+        ]
+      )
       @mortgage = family.accounts.create!(
         accountable: Loan.new(
-          subtype: "mortgage", rate_type: "adjustable", interest_rate: 6.25, term_months: 360,
+          subtype: "mortgage", term_months: 360,
           start_date: mortgage_start, initial_balance: 320_000,
           # A deposit and a level-term policy, so the demo mortgage shows the
           # leverage and insurance cards rather than hiding both.
           down_payment: 70_000, insurance_rate: 0.36, insurance_rate_type: "level_term",
-          rate_changes: [
-            { effective_date: (mortgage_start >> 24).iso8601, rate: "5.5" },
-            { effective_date: (mortgage_start >> 48).iso8601, rate: "6.75" }
-          ]
+          **mortgage_rate_terms
         ),
         name: "Home Mortgage", balance: 0, currency: "USD"
       )
       @car_loan = family.accounts.create!(
-        accountable: Loan.new(subtype: "auto", rate_type: "fixed", interest_rate: 6.9, term_months: 60,
+        accountable: Loan.new(subtype: "auto", term_months: 60,
                               start_date: loans_start, initial_balance: 24_000,
                               # The other policy shape, on a fixed loan.
                               down_payment: 4_000, insurance_rate: 0.5,
-                              insurance_rate_type: "decreasing_life"),
+                              insurance_rate_type: "decreasing_life",
+                              **demo_loan_rate_terms(rate_type: "fixed", interest_rate: 6.9)),
         name: "Car Loan", balance: 0, currency: "USD"
       )
       @student_loan = family.accounts.create!(
-        accountable: Loan.new(subtype: "student", rate_type: "fixed", interest_rate: 5.5, term_months: 120,
-                              start_date: loans_start, initial_balance: 42_000),
+        accountable: Loan.new(subtype: "student", term_months: 120,
+                              start_date: loans_start, initial_balance: 42_000,
+                              **demo_loan_rate_terms(rate_type: "fixed", interest_rate: 5.5)),
         name: "Student Loan", balance: 0, currency: "USD"
       )
 
@@ -1112,8 +1119,14 @@ class Demo::Generator
       # Principal portion – transfer from checking to loan account
       create_transfer!(@chase_checking, principal_account, principal_amount, memo, date)
 
-      # Interest portion – expense from checking
+      # Interest portion – expense from checking. None when interest-free.
+      return if InterestFree.enabled? || interest_amount.zero?
+
       create_transaction!(@chase_checking, interest_amount, "#{memo} Interest", interest_category, date)
+    end
+
+    def demo_loan_rate_terms(**terms)
+      InterestFree.enabled? ? {} : terms
     end
 
     # Generate additional baseline expenses to reach 8k-12k transaction target

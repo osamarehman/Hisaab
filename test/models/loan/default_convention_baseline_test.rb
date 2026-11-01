@@ -12,6 +12,10 @@ require "digest"
 # A digest covers every row of a scenario; the spot figures beside it say which
 # part moved when the digest fails.
 class Loan::DefaultConventionBaselineTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   AS_OF = Date.new(2027, 1, 15)
   START = Date.new(2026, 1, 1)
 

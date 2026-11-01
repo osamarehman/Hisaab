@@ -179,6 +179,47 @@ module Api
         render_invalid_passkey
       end
 
+      # Native Sign in with Apple from the iOS app. A linked Apple ID gets the
+      # same token payload as login; an unlinked one gets a linking code for
+      # sso_link / sso_create_account, like mobile SSO through the browser.
+      def apple_login
+        unless AuthConfig.apple_sign_in_enabled?
+          render json: { error: "Sign in with Apple is disabled" }, status: :forbidden
+          return
+        end
+
+        unless valid_device_info?
+          render json: { error: "Device information is required" }, status: :bad_request
+          return
+        end
+
+        token = AppleIdentityToken.verify!(params[:identity_token], nonce: params[:nonce])
+        provider = AppleIdentityToken::PROVIDER
+
+        return render_removed_identity if SsoIdentityBlock.blocked?(provider: provider, uid: token.subject)
+
+        identity = OidcIdentity.find_by(provider: provider, uid: token.subject)
+        return render_apple_linking(token) unless identity
+
+        user = identity.user
+        unless user.active?
+          render json: { error: "This account has been deactivated. Please contact an administrator." }, status: :unauthorized
+          return
+        end
+
+        if user.otp_required?
+          render json: { error: "MFA users should sign in with email and password", mfa_required: true }, status: :unauthorized
+          return
+        end
+
+        identity.record_authentication!
+        SsoAuditLog.log_login!(user: user, provider: provider, request: request)
+        issue_mobile_tokens(user, device_params.to_h)
+      rescue AppleIdentityToken::InvalidError => e
+        Rails.logger.warn("[Auth] Apple sign-in rejected: #{e.message}")
+        render json: { error: "Apple sign-in could not be verified. Please try again." }, status: :unauthorized
+      end
+
       def sso_exchange
         code = sso_exchange_params
 
@@ -550,6 +591,44 @@ module Api
           end
 
           cached
+        end
+
+        # Apple sends the user's name only on the first sign-in, so the app
+        # passes it along with the token.
+        def render_apple_linking(token)
+          email = token.email
+          first_name = params[:first_name].presence
+          last_name = params[:last_name].presence
+          has_pending_invitation = email.present? && Invitation.pending.exists?(email: email)
+          allow_creation = email.present? &&
+            (has_pending_invitation || (!AuthConfig.jit_link_only? && AuthConfig.allowed_oidc_domain?(email)))
+
+          linking_code = SecureRandom.urlsafe_base64(32)
+          Rails.cache.write(
+            "mobile_sso_link:#{linking_code}",
+            {
+              provider: AppleIdentityToken::PROVIDER,
+              uid: token.subject,
+              email: email,
+              first_name: first_name,
+              last_name: last_name,
+              name: [ first_name, last_name ].compact.join(" ").presence,
+              issuer: AppleIdentityToken::ISSUER,
+              device_info: device_params.to_h,
+              allow_account_creation: allow_creation
+            },
+            expires_in: 10.minutes
+          )
+
+          render json: {
+            status: "account_not_linked",
+            linking_code: linking_code,
+            email: email,
+            first_name: first_name,
+            last_name: last_name,
+            allow_account_creation: allow_creation,
+            has_pending_invitation: has_pending_invitation
+          }
         end
 
         def render_passkey_login_disabled

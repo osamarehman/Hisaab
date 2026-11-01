@@ -8,6 +8,7 @@ import '../models/auth_tokens.dart';
 import '../services/auth_service.dart';
 import '../services/device_service.dart';
 import '../services/api_config.dart';
+import '../services/apple_sign_in_service.dart';
 import '../services/log_service.dart';
 import '../services/passkey_service.dart';
 import '../services/telemetry_service.dart';
@@ -16,6 +17,7 @@ class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final DeviceService _deviceService = DeviceService();
   final PasskeyService _passkeyService = PasskeyService();
+  final AppleSignInService _appleSignInService = AppleSignInService();
 
   User? _user;
   AuthTokens? _tokens;
@@ -50,6 +52,7 @@ class AuthProvider with ChangeNotifier {
   bool get mfaRequired => _mfaRequired;
   bool get showMfaInput => _showMfaInput; // Expose MFA input state
   bool get passkeysSupported => _passkeyService.isSupported;
+  bool get appleSignInSupported => _appleSignInService.isSupported;
 
   // SSO onboarding getters
   bool get ssoOnboardingPending => _ssoOnboardingPending;
@@ -361,6 +364,51 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Signs in with Apple on iOS. An Apple ID not yet linked to an account
+  /// starts SSO onboarding, the same as Google sign-in through the browser.
+  Future<bool> loginWithApple({required String failedMessage}) async {
+    _errorMessage = null;
+    _mfaRequired = false;
+    _showMfaInput = false;
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final deviceInfo = await _deviceService.getDeviceInfo();
+      final result = await _appleSignInService.signIn(deviceInfo: deviceInfo);
+
+      if (result['success'] == true) {
+        final saved = await _authService
+            .saveLoginResponse(result['body'] as Map<String, dynamic>);
+        if (saved['success'] == true) {
+          _tokens = saved['tokens'] as AuthTokens?;
+          _user = saved['user'] as User?;
+          _updateTelemetryUser(_user);
+          _addTelemetryBreadcrumb('auth', 'apple_login_success');
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+        _errorMessage = failedMessage;
+      } else if (result['account_not_linked'] == true) {
+        _startSsoOnboarding(result);
+      } else if (result['cancelled'] == true) {
+        _errorMessage = null;
+      } else {
+        final error = result['error'] as String?;
+        _errorMessage = (error == null || error.isEmpty) ? failedMessage : error;
+        _addTelemetryBreadcrumb('auth', 'apple_login_failed');
+      }
+    } catch (e, stackTrace) {
+      _logAuthException('Apple login', e);
+      _captureTelemetryException(e, stackTrace, operation: 'auth.apple_login');
+      _errorMessage = failedMessage;
+    }
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
   Future<bool> handleSsoCallback(Uri uri) async {
     _errorMessage = null;
     _isLoading = true;
@@ -382,22 +430,7 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
         return true;
       } else if (result['account_not_linked'] == true) {
-        // SSO onboarding needed - store linking data
-        _ssoOnboardingPending = true;
-        _ssoLinkingCode = result['linking_code'] as String?;
-        _ssoEmail = result['email'] as String?;
-        _ssoFirstName = result['first_name'] as String?;
-        _ssoLastName = result['last_name'] as String?;
-        _ssoAllowAccountCreation = result['allow_account_creation'] == true;
-        _ssoHasPendingInvitation = result['has_pending_invitation'] == true;
-        _addTelemetryBreadcrumb(
-          'auth',
-          'sso_onboarding_required',
-          data: {
-            'account_creation_allowed': _ssoAllowAccountCreation,
-            'has_pending_invitation': _ssoHasPendingInvitation,
-          },
-        );
+        _startSsoOnboarding(result);
         _isLoading = false;
         notifyListeners();
         return false;
@@ -539,6 +572,24 @@ class AuthProvider with ChangeNotifier {
   void cancelSsoOnboarding() {
     _clearSsoOnboardingState();
     notifyListeners();
+  }
+
+  void _startSsoOnboarding(Map<String, dynamic> result) {
+    _ssoOnboardingPending = true;
+    _ssoLinkingCode = result['linking_code'] as String?;
+    _ssoEmail = result['email'] as String?;
+    _ssoFirstName = result['first_name'] as String?;
+    _ssoLastName = result['last_name'] as String?;
+    _ssoAllowAccountCreation = result['allow_account_creation'] == true;
+    _ssoHasPendingInvitation = result['has_pending_invitation'] == true;
+    _addTelemetryBreadcrumb(
+      'auth',
+      'sso_onboarding_required',
+      data: {
+        'account_creation_allowed': _ssoAllowAccountCreation,
+        'has_pending_invitation': _ssoHasPendingInvitation,
+      },
+    );
   }
 
   void _clearSsoOnboardingState() {

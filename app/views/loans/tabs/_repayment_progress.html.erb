@@ -45,6 +45,8 @@
         <dl class="space-y-2">
           <% [ :principal, :interest, :insurance ].each do |part| %>
             <% next if part == :insurance && breakdown[:insurance].zero? %>
+            <%# Interest-free, an instalment is principal (and any premium) only. %>
+            <% next if part == :interest && InterestFree.enabled? %>
             <div class="flex items-center justify-between gap-2">
               <dt class="text-sm text-secondary"><%= t(".#{part}") %></dt>
               <dd class="text-sm text-primary privacy-sensitive tabular-nums">

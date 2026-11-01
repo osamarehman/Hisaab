@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/merchants_provider.dart';
 import '../providers/tags_provider.dart';
+import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/privacy_provider.dart';
 import '../services/offline_storage_service.dart';
@@ -16,6 +17,7 @@ import '../services/preferences_service.dart';
 import '../services/legal_links.dart';
 import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
+import 'ai_key_screen.dart';
 import 'passkeys_screen.dart';
 import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -748,6 +750,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
 
+          Consumer<LocaleProvider>(
+            builder: (context, localeProvider, _) {
+              return ListTile(
+                leading: const Icon(Icons.translate),
+                title: Text(l.settingsLanguageLabel),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: SegmentedButton<String>(
+                    key: const ValueKey('settings-language-picker'),
+                    segments: [
+                      ButtonSegment(
+                        value: 'system',
+                        label: Text(l.settingsLanguageSystem),
+                      ),
+                      for (final locale in LocaleProvider.selectableLocales)
+                        ButtonSegment(
+                          value: locale.languageCode,
+                          label: Text(
+                            locale.languageCode == 'ur'
+                                ? l.settingsLanguageUrdu
+                                : l.settingsLanguageEnglish,
+                          ),
+                        ),
+                    ],
+                    selected: {
+                      localeProvider.locale?.languageCode ?? 'system',
+                    },
+                    onSelectionChanged: (codes) => localeProvider.setLocale(
+                      codes.first == 'system' ? null : Locale(codes.first),
+                    ),
+                    showSelectedIcon: false,
+                  ),
+                ),
+              );
+            },
+          ),
+
           const Divider(),
 
           Padding(
@@ -841,6 +880,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const PasskeysScreen()),
+            ),
+          ),
+          ListTile(
+            key: const Key('settingsAiKey'),
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: Text(l.settingsAiKeyTitle),
+            subtitle: Text(l.settingsAiKeySubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const AiKeyScreen()),
             ),
           ),
 

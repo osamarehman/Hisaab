@@ -51,7 +51,10 @@ class Assistant::VoiceNote
     provider = family.llm_provider
     raise error(:transcription_failed, "transcription_failed") unless provider.respond_to?(:transcribe_audio)
 
-    response = provider.transcribe_audio(audio_base64: Base64.strict_encode64(bytes), format: format, model: self.class.model)
+    # A family's own key reaches its own provider, where the server's model
+    # name may not exist; its configured model has to handle the audio.
+    model = family.own_llm_key? ? family.llm_model : self.class.model
+    response = provider.transcribe_audio(audio_base64: Base64.strict_encode64(bytes), format: format, model: model)
     unless response.success?
       Rails.logger.warn("Voice note transcription failed: #{response.error&.class}: #{response.error&.message}")
       raise error(:transcription_failed, "transcription_failed")

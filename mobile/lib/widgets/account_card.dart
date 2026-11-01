@@ -148,8 +148,8 @@ class AccountCard extends StatelessWidget {
         },
         background: Container(
           margin: const EdgeInsets.only(bottom: 12),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
+          alignment: AlignmentDirectional.centerEnd,
+          padding: const EdgeInsetsDirectional.only(end: 20),
           decoration: BoxDecoration(
             color: Colors.blue,
             borderRadius: BorderRadius.circular(SureTokens.radiusLg),

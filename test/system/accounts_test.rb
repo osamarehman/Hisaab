@@ -1,6 +1,9 @@
 require "application_system_test_case"
 
 class AccountsTest < ApplicationSystemTestCase
+  # Loan and credit card forms fill rate fields that interest-free mode hides.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   setup do
     sign_in @user = users(:family_admin)
 

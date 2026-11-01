@@ -157,6 +157,7 @@ class SureListRow extends StatelessWidget {
         SureIcons.chevronRight,
         size: SureIconSize.md,
         color: palette.textSubdued,
+        matchTextDirection: true,
       );
     }
 

@@ -318,7 +318,7 @@
                   </div>
                   <%= ef.select :investment_activity_label,
                         options_for_select(
-                          [["—", nil]] + Transaction::ACTIVITY_LABELS.map { |l| [investment_activity_label_name(l), l] },
+                          [["—", nil]] + InterestFree.selectable_activity_labels(Transaction::ACTIVITY_LABELS, current: @entry.entryable.investment_activity_label).map { |l| [investment_activity_label_name(l), l] },
                           @entry.entryable.investment_activity_label
                         ),
                         { label: false },

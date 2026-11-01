@@ -185,8 +185,9 @@ class Assistant::Function::ImportBankStatement < Assistant::Function
     end
 
     # Only OpenAI takes the OpenAI model setting; other providers (Anthropic)
-    # resolve their own default when given nil.
+    # resolve their own default when given nil. A family's own key carries
+    # its own model.
     def model_for(provider)
-      Provider::Openai.effective_model if provider.is_a?(Provider::Openai)
+      provider.default_model if provider.is_a?(Provider::Openai)
     end
 end

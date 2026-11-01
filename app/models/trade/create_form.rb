@@ -19,6 +19,11 @@ class Trade::CreateForm
   TRANSFER_TYPES = %w[deposit withdrawal].freeze
   SUPPORTED_TYPES = (ACTIVITY_LABELS.keys + TRANSFER_TYPES).freeze
 
+  # The types that can be created now: interest-free, "interest" is not one.
+  def self.supported_types
+    InterestFree.enabled? ? SUPPORTED_TYPES - %w[interest] : SUPPORTED_TYPES
+  end
+
   attr_accessor :account, :date, :amount, :currency, :qty,
                 :price, :fee, :ticker, :manual_ticker, :type, :transfer_account_id
 
@@ -114,7 +119,15 @@ class Trade::CreateForm
 
     # Interest in an investment account is always a Trade.
     # Falls back to a synthetic cash security when none is selected.
+    # Refused interest-free: the form does not offer it, and a crafted
+    # request is answered with an error rather than a booked interest trade.
     def create_interest_income
+      if InterestFree.enabled?
+        entry = account.entries.build(entryable: Trade.new)
+        entry.errors.add(:base, I18n.t("trades.form.interest_unavailable"))
+        return entry
+      end
+
       sec = ticker_present? ? security : Security.cash_for(account, currency: currency)
       label = CASH_TRADE_LABELS.fetch("interest")
       name = sec.cash? ? label : "#{label}: #{sec.ticker}"

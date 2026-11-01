@@ -81,6 +81,7 @@ class LedgerText {
   }) =>
       TextStyle(
         fontFamily: SureFonts.mono,
+        fontFamilyFallback: SureFonts.fallback,
         fontSize: size,
         color: color,
         fontWeight: weight,
@@ -95,6 +96,7 @@ class LedgerText {
   }) =>
       TextStyle(
         fontFamily: SureFonts.sans,
+        fontFamilyFallback: SureFonts.fallback,
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -119,6 +121,7 @@ class LedgerText {
   }) =>
       TextStyle(
         fontFamily: SureFonts.display,
+        fontFamilyFallback: SureFonts.fallback,
         fontSize: size,
         fontWeight: weight,
         color: color,

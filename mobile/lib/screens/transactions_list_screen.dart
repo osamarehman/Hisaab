@@ -106,8 +106,9 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
       return;
     }
     categories.fetchCategories(accessToken: accessToken);
-    // Local cache: pending rows and the offline fallback.
-    await provider.fetchTransactions(
+    // Local cache: pending rows and the offline fallback. Loaded alongside
+    // the month fetch so a first-run full sync doesn't hold up the list.
+    final localLoad = provider.fetchTransactions(
       accessToken: accessToken,
       accountId: widget.account?.id,
     );
@@ -115,6 +116,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     final month = _month;
     final online = connectivity?.isOnline ?? true;
     if (!online) {
+      await localLoad;
       if (mounted && token == _loadToken) {
         setState(() {
           _offline = true;
@@ -131,6 +133,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
       endDate: DateFormat('yyyy-MM-dd')
           .format(DateTime(month.year, month.month + 1, 0)),
     );
+    await localLoad;
     if (!mounted || token != _loadToken) return;
     if (result['error'] == 'unauthorized') {
       await auth.logout();
@@ -167,11 +170,17 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     if (_offline) {
       rows.addAll(local.map((t) => _Row(t, local: t)));
     } else {
+      final serverIds = {for (final t in _server) t.id};
+      final uploaded = provider.recentlyUploadedIds;
       rows.addAll(_server.map((t) => _Row(t, local: byServerId[t.id])));
+      // Pending rows, plus entries uploaded after the month list was fetched.
       rows.addAll(local
           .where((t) =>
               t.syncStatus == SyncStatus.pending ||
-              t.syncStatus == SyncStatus.failed)
+              t.syncStatus == SyncStatus.failed ||
+              (t.id != null &&
+                  uploaded.contains(t.id) &&
+                  !serverIds.contains(t.id)))
           .map((t) => _Row(t, local: t)));
     }
     rows.sort((a, b) => b.tx.date.compareTo(a.tx.date));
@@ -554,7 +563,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
               const SizedBox(height: 2),
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: value,
               ),
             ],
@@ -712,7 +721,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                       source,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.end,
                       style: TextStyle(
                         fontSize: 13,
                         color: row.pendingCreate ? c.moneyOut : c.muted,

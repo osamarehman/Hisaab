@@ -78,7 +78,7 @@ class InvestmentStatement::Totals
           COALESCE(SUM(CASE WHEN trades.qty > 0 AND NOT #{income_label_sql} THEN ABS(entries.amount * COALESCE(er.rate, 1)) ELSE 0 END), 0) as contributions,
           COALESCE(SUM(CASE WHEN trades.qty < 0 AND NOT #{income_label_sql} THEN ABS(entries.amount * COALESCE(er.rate, 1)) ELSE 0 END), 0) as withdrawals,
           COALESCE(-SUM(CASE WHEN #{label_sql} = 'Dividend' THEN entries.amount * COALESCE(er.rate, 1) ELSE 0 END), 0) as dividends,
-          COALESCE(-SUM(CASE WHEN #{label_sql} = 'Interest' THEN entries.amount * COALESCE(er.rate, 1) ELSE 0 END), 0) as interest,
+          #{interest_sql} as interest,
           COUNT(trades.id) as trades_count
         FROM entries
         LEFT JOIN trades ON trades.id = entries.entryable_id AND entries.entryable_type = 'Trade'
@@ -107,7 +107,16 @@ class InvestmentStatement::Totals
     end
 
     def income_transaction_sql
-      "transactions.investment_activity_label IN ('Dividend', 'Interest')"
+      InterestFree.enabled? ? "transactions.investment_activity_label = 'Dividend'" : "transactions.investment_activity_label IN ('Dividend', 'Interest')"
+    end
+
+    # Interest-free, activity labelled Interest (imported or recorded before)
+    # is not income: it sums to nothing here. Its trades stay out of the
+    # contribution and withdrawal branches through income_label_sql either way.
+    def interest_sql
+      return "0" if InterestFree.enabled?
+
+      "COALESCE(-SUM(CASE WHEN #{label_sql} = 'Interest' THEN entries.amount * COALESCE(er.rate, 1) ELSE 0 END), 0)"
     end
 
     def sql_params

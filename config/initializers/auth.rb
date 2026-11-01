@@ -23,6 +23,11 @@ Rails.configuration.x.auth.allowed_oidc_domains = raw_domains.split(",").map(&:s
 
 Rails.configuration.x.auth.providers = (auth_config[:providers] || [])
 
+# Bundle IDs whose native Sign in with Apple tokens /api/v1/auth/apple accepts.
+# Empty disables it.
+Rails.configuration.x.auth.apple_client_ids = ENV.fetch("APPLE_SIGN_IN_CLIENT_IDS", "dev.shipdeck.hisaab")
+  .split(",").map(&:strip).reject(&:empty?)
+
 # These will be populated by the OmniAuth initializer once providers are
 # successfully registered.
 Rails.configuration.x.auth.sso_providers ||= []

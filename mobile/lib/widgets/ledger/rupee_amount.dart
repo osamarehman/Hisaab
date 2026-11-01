@@ -6,6 +6,12 @@ import '../../utils/money_format.dart';
 import '../../utils/money_masker.dart';
 import 'ledger_style.dart';
 
+/// Keeps money strings in left-to-right order when the app runs in Urdu.
+String _ltr(BuildContext context, String text) =>
+    Directionality.of(context) == TextDirection.rtl
+        ? MoneyFormat.ltrIsolate(text)
+        : text;
+
 bool _hidden(BuildContext context) {
   try {
     return context.select<PrivacyProvider, bool>((p) => p.hidden);
@@ -39,7 +45,7 @@ class RupeeAmount extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = MoneyFormat.format(value, currency: currency, signed: signed);
     return Text(
-      _hidden(context) ? MoneyMasker.mask(text) : text,
+      _ltr(context, _hidden(context) ? MoneyMasker.mask(text) : text),
       textAlign: textAlign,
       style: LedgerText.figures(
         size: size,
@@ -69,14 +75,16 @@ class HeadlineAmount extends StatelessWidget {
     final number =
         _hidden(context) ? MoneyMasker.maskedNumber : MoneyFormat.number(value);
     final sign = value < 0 ? '−' : '';
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     return Text.rich(
       TextSpan(children: [
         TextSpan(
-          text: '$sign${MoneyFormat.symbol(currency)} ',
+          // In RTL the two spans form one LTR isolate (LRI … PDI).
+          text: '${rtl ? '\u2066' : ''}$sign${MoneyFormat.symbol(currency)} ',
           style: LedgerText.display(size: size / 2, color: c.muted),
         ),
         TextSpan(
-          text: number,
+          text: rtl ? '$number\u2069' : number,
           style: LedgerText.display(
             size: size,
             color: c.ink,

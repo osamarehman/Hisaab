@@ -13,7 +13,7 @@ class MessagesController < ApplicationController
     @message = UserMessage.new(
       chat: @chat,
       content: message_params[:content],
-      ai_model: message_params[:ai_model].presence || Chat.default_model
+      ai_model: message_params[:ai_model].presence || Chat.default_model(Current.family)
     )
 
     if @message.save

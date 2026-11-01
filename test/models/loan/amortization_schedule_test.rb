@@ -1,6 +1,10 @@
 require "test_helper"
 
 class Loan::AmortizationScheduleTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   test "builds one payment per month of the term" do
     schedule = build_schedule
 

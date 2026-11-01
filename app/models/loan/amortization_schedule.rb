@@ -25,7 +25,7 @@ class Loan::AmortizationSchedule
 
       new(
         principal: loan.original_balance.amount,
-        annual_rate: loan.interest_rate,
+        annual_rate: loan.effective_interest_rate,
         term_months: loan.term_months,
         start_date: loan.origination_date,
         currency: loan.account.currency,

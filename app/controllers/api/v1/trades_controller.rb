@@ -221,8 +221,8 @@ class Api::V1::TradesController < Api::V1::BaseController
 
     def build_create_form_params(account)
       type = params.dig(:trade, :type).to_s.downcase
-      unless Trade::CreateForm::SUPPORTED_TYPES.include?(type)
-        supported_types = Trade::CreateForm::SUPPORTED_TYPES.join(", ")
+      unless Trade::CreateForm.supported_types.include?(type)
+        supported_types = Trade::CreateForm.supported_types.join(", ")
         render_validation_error(
           I18n.t("trades.api_errors.invalid_type"),
           [ I18n.t("trades.api_errors.supported_types", types: supported_types) ]

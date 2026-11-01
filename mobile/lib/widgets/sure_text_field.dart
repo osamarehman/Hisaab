@@ -174,7 +174,7 @@ class SureTextField extends StatelessWidget {
         // detached label node.
         ExcludeSemantics(
           child: Padding(
-            padding: const EdgeInsets.only(left: 2, bottom: SureSpacing.sm),
+            padding: const EdgeInsetsDirectional.only(start: 2, bottom: SureSpacing.sm),
             child: Text(
               label!,
               style: theme.textTheme.labelMedium?.copyWith(

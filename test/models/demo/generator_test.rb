@@ -106,6 +106,7 @@ class Demo::GeneratorTest < ActiveSupport::TestCase
   # recorded changes, so the demo shows a schedule re-amortising; the other two
   # are fixed.
   test "demo loans carry the terms and principal a schedule is built from" do
+    InterestFree.stubs(:enabled?).returns(false)
     @family.update!(currency: "USD")
     generator = Demo::Generator.new(seed: 42)
     generator.send(:create_realistic_categories!, @family)
@@ -139,6 +140,7 @@ class Demo::GeneratorTest < ActiveSupport::TestCase
   # loan, which made one extra payment (2,000, a year ago) and so is ahead of
   # its schedule for a real reason.
   test "demo loans owe what their own schedules say, the student loan ahead by its extra payment" do
+    InterestFree.stubs(:enabled?).returns(false)
     @family.update!(currency: "USD")
     generator = Demo::Generator.new(seed: 42)
     generator.send(:create_realistic_categories!, @family)
@@ -164,6 +166,35 @@ class Demo::GeneratorTest < ActiveSupport::TestCase
     booked_interest = checking.entries.where(name: "Student Loan Payment Interest").sum(:amount)
     assert_in_delta due.sum { |payment| payment.interest.amount }, booked_interest, 0.01,
       "the interest booked must be the schedule's interest, not a flat figure"
+  end
+
+  test "interest-free demo loans carry no rate and book no interest" do
+    @family.update!(currency: "USD")
+    generator = Demo::Generator.new(seed: 42)
+    generator.send(:create_realistic_categories!, @family)
+    generator.send(:create_realistic_accounts!, @family)
+    generator.send(:generate_housing_transactions!)
+    generator.send(:generate_transportation_transactions!)
+    generator.send(:generate_major_purchases!)
+    generator.send(:generate_loan_payments!)
+    checking = generator.instance_variable_get(:@chase_checking)
+
+    assert_not @family.categories.exists?(name: "Loan Interest")
+    assert_not checking.entries.where("name LIKE ?", "% Interest").exists?
+
+    [ "Home Mortgage", "Car Loan", "Student Loan" ].each do |name|
+      account = @family.accounts.find_by!(name: name)
+      loan = account.loan
+      assert_nil loan.interest_rate, "#{name} should carry no rate"
+      assert_nil loan.rate_type, "#{name} should carry no rate type"
+      assert_equal Money.new(0, "USD"), loan.amortization_schedule.total_interest
+
+      Sync.create!(syncable: account).perform
+      due = account.reload.loan.amortization_schedule.payments.select { |payment| payment.date <= Date.current }
+      extra = name == "Student Loan" ? 2_000 : 0
+      assert_in_delta due.last.ending_balance.amount - extra, account.balance, 0.01,
+        "#{name} must owe its schedule's balance today"
+    end
   end
 
   # What the chart says about the demo loans follows

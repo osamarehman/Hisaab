@@ -10,6 +10,10 @@ require "test_helper"
 # single accrual point for every loan figure in the product, so a default that
 # moved would silently restate every schedule.
 class Loan::DayCountConventionTest < ActiveSupport::TestCase
+  # Exercises interest-bearing behaviour, so interest-free mode is off here;
+  # InterestFreeTest covers it on.
+  setup { InterestFree.stubs(:enabled?).returns(false) }
+
   BALANCE = 300_000
   RATE = 6
 

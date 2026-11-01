@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../screens/account_form_screen.dart';
 import 'ledger/ledger.dart';
@@ -24,22 +25,22 @@ class NoAccountsPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     return LedgerPanel(
       key: const ValueKey('no-accounts-prompt'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Add your first account',
+          Text(l.noAccountsTitle,
               style: LedgerText.display(size: 22, color: c.ink)),
           const SizedBox(height: 8),
           Text(
-            'Accounts are where money is paid from and into. Start with '
-            '"Cash in hand", then add your bank account.',
+            l.noAccountsBody,
             style: LedgerText.body(size: 15, color: c.muted),
           ),
           const SizedBox(height: 16),
           InkButton(
-            label: 'Add your first account',
+            label: l.noAccountsTitle,
             onPressed: () => _add(context),
           ),
         ],

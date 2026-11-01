@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../models/rule.dart';
 import '../providers/auth_provider.dart';
@@ -56,7 +57,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
     if (token == null) {
       setState(() {
         _loading = false;
-        _error = 'Please sign in again.';
+        _error = AppLocalizations.of(context).commonSignInAgain;
       });
       return;
     }
@@ -68,7 +69,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
     if (results[0]['success'] != true) {
       setState(() {
         _loading = false;
-        _error = 'Could not load your labels. Pull down to try again.';
+        _error = AppLocalizations.of(context).labelsLoadFailed;
       });
       return;
     }
@@ -134,7 +135,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
   Future<void> _addLabel() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      _toast('Give the label a name.');
+      _toast(AppLocalizations.of(context).labelsNameRequired);
       return;
     }
     final token = await _token();
@@ -148,7 +149,8 @@ class _LabelsScreenState extends State<LabelsScreen> {
     if (!mounted) return;
     if (result['success'] != true) {
       setState(() => _adding = false);
-      _toast(result['error']?.toString() ?? 'Could not add the label.');
+      _toast(result['error']?.toString() ??
+          AppLocalizations.of(context).labelsAddFailed);
       return;
     }
     final label = result['category'] as Category;
@@ -161,9 +163,10 @@ class _LabelsScreenState extends State<LabelsScreen> {
     _nameController.clear();
     _keywordsController.clear();
     setState(() => _adding = false);
+    final l = AppLocalizations.of(context);
     _toast(keywordsOk
-        ? 'Added "$name".'
-        : 'Added "$name", but some keywords were not saved.');
+        ? l.labelsAdded(name)
+        : l.labelsAddedKeywordsFailed(name));
     await _load();
   }
 
@@ -192,6 +195,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: c.paper,
       body: SafeArea(
@@ -205,11 +209,11 @@ class _LabelsScreenState extends State<LabelsScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                   children: [
-                    Text('Labels', style: LedgerText.title(color: c.ink)),
+                    Text(l.labelsTitle, style: LedgerText.title(color: c.ink)),
                     const SizedBox(height: 24),
-                    _newLabelForm(c),
+                    _newLabelForm(c, l),
                     const SizedBox(height: 24),
-                    ..._labelList(c),
+                    ..._labelList(c, l),
                   ],
                 ),
               ),
@@ -220,21 +224,21 @@ class _LabelsScreenState extends State<LabelsScreen> {
     );
   }
 
-  Widget _newLabelForm(LedgerColors c) {
+  Widget _newLabelForm(LedgerColors c, AppLocalizations l) {
     final labelStyle =
         LedgerText.body(size: 14, weight: FontWeight.w500, color: c.ink);
     return LedgerPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('New label', style: labelStyle),
+          Text(l.labelsNewLabel, style: labelStyle),
           const SizedBox(height: 6),
           TextField(
             controller: _nameController,
             textCapitalization: TextCapitalization.sentences,
             style: LedgerText.body(color: c.ink),
             decoration: ledgerInputDecoration(context,
-                hint: 'e.g. Committee, Doodh wala'),
+                hint: l.labelsNameHint),
           ),
           const SizedBox(height: 12),
           SwatchPicker(
@@ -242,18 +246,18 @@ class _LabelsScreenState extends State<LabelsScreen> {
             onChanged: (hex) => setState(() => _color = hex),
           ),
           const SizedBox(height: 12),
-          Text('Auto-label statement lines containing', style: labelStyle),
+          Text(l.labelsKeywordsLabel, style: labelStyle),
           const SizedBox(height: 6),
           TextField(
             controller: _keywordsController,
             textCapitalization: TextCapitalization.characters,
             style: LedgerText.figures(size: 16, color: c.ink),
             decoration:
-                ledgerInputDecoration(context, hint: 'e.g. ASLAM, DOODH'),
+                ledgerInputDecoration(context, hint: l.labelsKeywordsHint),
           ),
           const SizedBox(height: 12),
           InkButton(
-            label: 'Add label',
+            label: l.labelsAddButton,
             height: 48,
             busy: _adding,
             onPressed: _addLabel,
@@ -263,7 +267,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
     );
   }
 
-  List<Widget> _labelList(LedgerColors c) {
+  List<Widget> _labelList(LedgerColors c, AppLocalizations l) {
     if (_loading) {
       return const [
         Padding(
@@ -276,18 +280,19 @@ class _LabelsScreenState extends State<LabelsScreen> {
       return [Text(_error!, style: LedgerText.body(color: c.moneyOut))];
     }
     return [
-      const LedgerCapsHeader(label: 'Your labels', trailing: 'uses this month'),
-      for (final label in _labels) _labelRow(c, label),
+      LedgerCapsHeader(
+          label: l.labelsYourLabels, trailing: l.labelsUsesThisMonth),
+      for (final label in _labels) _labelRow(c, l, label),
       if (_labels.isEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: Text('No labels yet. Add one above.',
+          child: Text(l.labelsEmpty,
               style: LedgerText.body(color: c.muted)),
         ),
     ];
   }
 
-  Widget _labelRow(LedgerColors c, Category label) {
+  Widget _labelRow(LedgerColors c, AppLocalizations l, Category label) {
     final keywords =
         (_rulesByLabel[label.id] ?? const []).map((r) => r.keyword!).toList();
     final uses = _uses[label.id];
@@ -318,8 +323,8 @@ class _LabelsScreenState extends State<LabelsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     keywords.isEmpty
-                        ? 'No auto rule'
-                        : 'Auto: ${keywords.join(', ')}',
+                        ? l.labelsNoAutoRule
+                        : l.labelsAutoKeywords(keywords.join(', ')),
                     style: LedgerText.figures(size: 12, color: c.muted),
                   ),
                 ],
@@ -376,7 +381,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Give the label a name.');
+      setState(() => _error = AppLocalizations.of(context).labelsNameRequired);
       return;
     }
     final token = await widget.tokenLoader();
@@ -386,6 +391,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
       _error = null;
     });
 
+    final l = AppLocalizations.of(context);
     final errors = <String>[];
     if (name != widget.label.name ||
         _color.toUpperCase() != (widget.label.color ?? '').toUpperCase()) {
@@ -396,7 +402,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
         color: _color,
       );
       if (result['success'] != true) {
-        errors.add(result['error']?.toString() ?? 'Could not save the label.');
+        errors.add(result['error']?.toString() ?? l.labelsSaveFailed);
       }
     }
 
@@ -409,7 +415,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
         final result = await widget.rulesService
             .deleteRule(accessToken: token, ruleId: entry.value.id);
         if (result['success'] != true) {
-          errors.add('Could not remove ${entry.key}.');
+          errors.add(l.labelsKeywordRemoveFailed(entry.key));
         }
       }
     }
@@ -419,7 +425,9 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
         keyword: keyword,
         categoryId: widget.label.id,
       );
-      if (result['success'] != true) errors.add('Could not add $keyword.');
+      if (result['success'] != true) {
+        errors.add(l.labelsKeywordAddFailed(keyword));
+      }
     }
 
     if (!mounted) return;
@@ -435,23 +443,21 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
 
   Future<void> _delete() async {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: const RoundedRectangleBorder(),
-        title: Text('Delete "${widget.label.name}"?'),
-        content: const Text(
-          'Lines with this label become unlabelled. Its auto-label keywords '
-          'stop working.',
-        ),
+        title: Text(l.commonDeleteNamed(widget.label.name)),
+        content: Text(l.labelsDeleteBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep'),
+            child: Text(l.commonKeep),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete', style: TextStyle(color: c.danger)),
+            child: Text(l.commonDelete, style: TextStyle(color: c.danger)),
           ),
         ],
       ),
@@ -472,7 +478,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
     } else {
       setState(() {
         _busy = false;
-        _error = result['error']?.toString() ?? 'Could not delete the label.';
+        _error = result['error']?.toString() ?? l.labelsDeleteFailed;
       });
     }
   }
@@ -480,6 +486,7 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final labelStyle =
         LedgerText.body(size: 14, weight: FontWeight.w500, color: c.ink);
     return Padding(
@@ -490,9 +497,9 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LedgerSectionHeader(title: 'Edit label'),
+            LedgerSectionHeader(title: l.labelsEditTitle),
             const SizedBox(height: 16),
-            Text('Name', style: labelStyle),
+            Text(l.transactionEditNameLabel, style: labelStyle),
             const SizedBox(height: 6),
             TextField(
               controller: _name,
@@ -505,14 +512,14 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
               onChanged: (hex) => setState(() => _color = hex),
             ),
             const SizedBox(height: 12),
-            Text('Auto-label statement lines containing', style: labelStyle),
+            Text(l.labelsKeywordsLabel, style: labelStyle),
             const SizedBox(height: 6),
             TextField(
               controller: _keywords,
               textCapitalization: TextCapitalization.characters,
               style: LedgerText.figures(size: 16, color: c.ink),
               decoration: ledgerInputDecoration(context,
-                  hint: 'Comma separated, e.g. K-ELECTRIC, SSGC'),
+                  hint: l.labelsKeywordsEditHint),
             ),
             if (_error != null) ...[
               const SizedBox(height: 10),
@@ -520,12 +527,12 @@ class _EditLabelSheetState extends State<_EditLabelSheet> {
                   style: LedgerText.body(size: 14, color: c.moneyOut)),
             ],
             const SizedBox(height: 16),
-            InkButton(label: 'Save', busy: _busy, onPressed: _save),
+            InkButton(label: l.commonSave, busy: _busy, onPressed: _save),
             const SizedBox(height: 8),
             TextButton(
               onPressed: _busy ? null : _delete,
               style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
-              child: Text('Delete label',
+              child: Text(l.labelsDeleteButton,
                   style: LedgerText.body(size: 15, color: c.danger)),
             ),
           ],

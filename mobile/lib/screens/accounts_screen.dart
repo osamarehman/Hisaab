@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/privacy_provider.dart';
@@ -53,7 +54,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     if (token == null) {
       setState(() {
         _loading = false;
-        _error = 'Please sign in again.';
+        _error = AppLocalizations.of(context).commonSignInAgain;
       });
       return;
     }
@@ -67,7 +68,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     setState(() {
       _loading = false;
       if (accounts['success'] != true) {
-        _error = 'Could not load your accounts. Pull down to try again.';
+        _error = AppLocalizations.of(context).accountsLoadFailed;
         return;
       }
       _error = null;
@@ -88,33 +89,34 @@ class _AccountsScreenState extends State<AccountsScreen> {
     return raw is num ? raw : num.tryParse('${raw ?? ''}');
   }
 
-  static String _groupName(Account a) {
+  static String _groupName(AppLocalizations l, Account a) {
     switch (a.accountType) {
       case 'depository':
-        return 'Bank';
+        return l.accountsGroupBank;
       case 'credit_card':
-        return 'Cards';
+        return l.accountsGroupCards;
       case 'loan':
-        return 'Loans';
+        return l.accountsGroupLoans;
       case 'other_liability':
-        return 'Other money owed';
+        return l.accountsGroupOtherOwed;
       case 'property':
       case 'vehicle':
-        return 'Property';
+        return l.accountsGroupProperty;
       default:
-        return 'Savings & gold';
+        return l.accountsGroupSavings;
     }
   }
 
   static bool _takesStatements(Account a) =>
       a.accountType == 'depository' || a.accountType == 'credit_card';
 
-  List<_Group> _groups({required bool owed}) {
+  List<_Group> _groups(AppLocalizations l, {required bool owed}) {
     final groups = <String, _Group>{};
     for (final a in _accounts) {
       if (a.isLiability != owed) continue;
+      final name = _groupName(l, a);
       groups
-          .putIfAbsent(_groupName(a), () => _Group(_groupName(a)))
+          .putIfAbsent(name, () => _Group(name))
           .accounts
           .add(a);
     }
@@ -138,6 +140,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    final l = AppLocalizations.of(context);
     final hidden = context.watch<PrivacyProvider>().hidden;
     String money(num? v) => v == null
         ? '–'
@@ -157,8 +160,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
               Row(
                 children: [
                   Expanded(
-                    child:
-                        Text('Accounts', style: LedgerText.title(color: c.ink)),
+                    child: Text(l.navAccounts,
+                        style: LedgerText.title(color: c.ink)),
                   ),
                   TextButton(
                     key: const ValueKey('accounts-add-statement'),
@@ -167,7 +170,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       minimumSize: const Size(44, 44),
                       foregroundColor: c.moneyIn,
                     ),
-                    child: Text('Add statement',
+                    child: Text(l.accountsAddStatement,
                         style: LedgerText.body(size: 14, color: c.moneyIn)),
                   ),
                   TextButton(
@@ -177,7 +180,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       minimumSize: const Size(44, 44),
                       foregroundColor: c.moneyIn,
                     ),
-                    child: Text('+ Add',
+                    child: Text(l.accountsAdd,
                         style: LedgerText.body(
                             size: 14,
                             color: c.moneyIn,
@@ -196,17 +199,17 @@ class _AccountsScreenState extends State<AccountsScreen> {
               else if (_accounts.isEmpty)
                 NoAccountsPrompt(onCreated: (_) => _load())
               else ...[
-                _netWorthBlock(c),
+                _netWorthBlock(c, l),
                 const SizedBox(height: 24),
-                _sideToggle(c, money),
+                _sideToggle(c, l, money),
                 const SizedBox(height: 24),
-                for (final g in _groups(owed: _showOwed)) ...[
-                  _groupSection(c, g, hidden),
+                for (final g in _groups(l, owed: _showOwed)) ...[
+                  _groupSection(c, l, g, hidden),
                   const SizedBox(height: 24),
                 ],
-                if (_groups(owed: _showOwed).isEmpty)
+                if (_groups(l, owed: _showOwed).isEmpty)
                   Text(
-                    _showOwed ? 'Nothing owed.' : 'No accounts yet.',
+                    _showOwed ? l.accountsNothingOwed : l.accountsEmpty,
                     style: LedgerText.body(color: c.muted),
                   ),
               ],
@@ -217,12 +220,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  Widget _netWorthBlock(LedgerColors c) {
+  Widget _netWorthBlock(LedgerColors c, AppLocalizations l) {
     final value = _netWorth;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Net worth', style: LedgerText.body(size: 14, color: c.muted)),
+        Text(l.homeNetWorth, style: LedgerText.body(size: 14, color: c.muted)),
         const SizedBox(height: 6),
         if (value == null)
           Text('–', style: LedgerText.display(size: 42, color: c.ink))
@@ -232,7 +235,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  Widget _sideToggle(LedgerColors c, String Function(num?) money) {
+  Widget _sideToggle(
+      LedgerColors c, AppLocalizations l, String Function(num?) money) {
     Widget side(String label, num? total, bool owed) {
       final on = _showOwed == owed;
       return Expanded(
@@ -270,14 +274,15 @@ class _AccountsScreenState extends State<AccountsScreen> {
       ),
       child: Row(
         children: [
-          side('What we have', _assets, false),
-          side('What we owe', _liabilities, true),
+          side(l.accountsWhatWeHave, _assets, false),
+          side(l.accountsWhatWeOwe, _liabilities, true),
         ],
       ),
     );
   }
 
-  Widget _groupSection(LedgerColors c, _Group g, bool hidden) {
+  Widget _groupSection(
+      LedgerColors c, AppLocalizations l, _Group g, bool hidden) {
     String cents(int v, String currency) =>
         MoneyMasker.mask(MoneyFormat.format(v / 100, currency: currency),
             hidden: hidden);
@@ -330,14 +335,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
                             padding: EdgeInsets.zero,
                             tapTargetSize: MaterialTapTargetSize.padded,
                           ),
-                          child: Text('Add statement',
+                          child: Text(l.accountsAddStatement,
                               style:
                                   LedgerText.body(size: 13, color: c.moneyIn)),
                         )
                       else
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text('Edit',
+                          child: Text(l.accountsEdit,
                               style: LedgerText.body(size: 13, color: c.muted)),
                         ),
                     ],

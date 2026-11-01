@@ -91,7 +91,8 @@ class Loan
         # cannot run or never clears the balance, so a card is not shown for a
         # comparison that does not exist.
         months_saved: projection.converged? ? projection.months_saved : nil,
-        interest_saved: projection.converged? ? projection.interest_saved.amount.to_f : nil,
+        # Nil interest-free too: there is no interest to save.
+        interest_saved: projection.converged? && !InterestFree.enabled? ? projection.interest_saved.amount.to_f : nil,
         # What the contracted repayment leaves owing at the original maturity
         # when it does not clear the balance; nil when it does. The one figure
         # the not-converged notice can quote.
@@ -172,7 +173,11 @@ class Loan
 
         # Each payment carries what it is made of, for the tooltip. The opening
         # point is the amount borrowed, not a payment, so it carries no split.
+        # Interest-free there is no split to show: every payment is principal,
+        # and without one the chart draws no shading and no tooltip split.
         opening = { date: loan.origination_date.iso8601, balance: schedule.principal.to_f }
+        return [ opening ] + series(rows) { |p| [ p.date, p.ending_balance.amount ] } if InterestFree.enabled?
+
         [ opening ] + rows.map do |p|
           { date: p.date.iso8601, balance: p.ending_balance.amount.to_f,
             principal: p.principal.amount.to_f, interest: p.interest.amount.to_f }
@@ -248,7 +253,7 @@ class Loan
           ) ].join(" ")
         end
 
-        description = [ description, interest_share_sentence ].join(" ") if scheduled_visible
+        description = [ description, interest_share_sentence ].join(" ") if scheduled_visible && !InterestFree.enabled?
 
         description
       end

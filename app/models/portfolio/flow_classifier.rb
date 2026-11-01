@@ -77,10 +77,20 @@ class Portfolio::FlowClassifier
     "Other" => nil
   }.freeze
 
+  # Interest-free, interest is not income or return: an Interest entry is
+  # read as money crossing the boundary by its direction, as a Contribution or
+  # Withdrawal is, so it is neither counted as income nor left inside the
+  # return.
+  INTEREST_FREE_LABEL_RULES = LABEL_RULES.merge(InterestFree::INTEREST_LABEL => :external).freeze
+
+  def self.label_rules
+    InterestFree.enabled? ? INTEREST_FREE_LABEL_RULES : LABEL_RULES
+  end
+
   # Every label the table knows, so a new Transaction::ACTIVITY_LABELS entry
   # without a rule fails the test that compares the two.
   def self.labels_for(klass)
-    LABEL_RULES.select { |_, rule| rule == klass }.keys.freeze
+    label_rules.select { |_, rule| rule == klass }.keys.freeze
   end
 
   # True for a `transactions` row the classifier calls pending, as SQL: the
@@ -92,10 +102,10 @@ class Portfolio::FlowClassifier
     Transaction.pending_sql("transactions")
   end
 
-  INCOME_LABELS = labels_for(:income)
+  # Income and external labels depend on InterestFree, so they are read
+  # through labels_for at classification time rather than fixed here.
   FEE_LABELS = labels_for(:fee)
   INTERNAL_LABELS = labels_for(:internal)
-  EXTERNAL_LABELS = labels_for(:external)
   TRANSFER_LABEL = "Transfer".freeze
 
   attr_reader :scope_account_ids
@@ -171,10 +181,10 @@ class Portfolio::FlowClassifier
         WHEN entries.entryable_type NOT IN ('Trade', 'Transaction') THEN NULL
         WHEN entries.entryable_type = 'Transaction' AND (#{pending_sql}) THEN NULL
         WHEN transactions.transfer_id IS NOT NULL AND transactions.kind = 'standard' THEN 'fee'
-        WHEN #{label_sql} IN (#{quote_list(INCOME_LABELS)}) THEN 'income'
+        WHEN #{label_sql} IN (#{quote_list(self.class.labels_for(:income))}) THEN 'income'
         WHEN #{label_sql} IN (#{quote_list(FEE_LABELS)}) THEN 'fee'
         WHEN #{label_sql} IN (#{quote_list(INTERNAL_LABELS)}) THEN 'internal'
-        WHEN #{label_sql} IN (#{quote_list(EXTERNAL_LABELS)}) THEN #{transfer_resolution_sql}
+        WHEN #{label_sql} IN (#{quote_list(self.class.labels_for(:external))}) THEN #{transfer_resolution_sql}
         WHEN #{label_sql} = '#{TRANSFER_LABEL}' AND entries.entryable_type = 'Trade'
           THEN CASE WHEN #{security_transfer_counterpart_in_scope_sql} THEN 'internal' ELSE #{direction_sql} END
         WHEN #{label_sql} = '#{TRANSFER_LABEL}' THEN #{transfer_resolution_sql}
@@ -187,7 +197,7 @@ class Portfolio::FlowClassifier
 
   private
     def classify_trade(entry, trade)
-      rule = LABEL_RULES[trade.investment_activity_label]
+      rule = self.class.label_rules[trade.investment_activity_label]
 
       case rule
       when nil then :internal
@@ -203,7 +213,7 @@ class Portfolio::FlowClassifier
       # back at their transfer; nothing else sets transfer_id.
       return :fee if transaction.transfer_id.present? && transaction.kind == "standard"
 
-      rule = LABEL_RULES[transaction.investment_activity_label]
+      rule = self.class.label_rules[transaction.investment_activity_label]
 
       case rule
       when nil
