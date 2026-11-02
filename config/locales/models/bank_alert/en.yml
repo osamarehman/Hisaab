@@ -1,0 +1,5 @@
+---
+en:
+  bank_alerts:
+    default_name: "Bank alert"
+    unparsed: "No parser recognised this email"

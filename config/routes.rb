@@ -803,6 +803,16 @@ Rails.application.routes.draw do
       resources :holdings, only: [ :index, :show ]
       resources :transfers, only: [ :index, :show ]
       resources :rejected_transfers, only: [ :index, :show ]
+      resource :email_inbox, only: :show do
+        post :rotate
+      end
+      resources :email_senders, only: [ :index, :create, :destroy ]
+      resources :bank_alerts, only: :index do
+        member do
+          post :approve
+          post :reject
+        end
+      end
       resources :valuations, only: [ :index, :create, :update, :show ]
       resources :recurring_transactions, only: [ :index, :show, :create, :update, :destroy ]
       resources :family_exports, only: [ :index, :show, :create ] do

@@ -1,6 +1,12 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Bank alert emails arrive from a Cloudflare Email Worker, which posts the
+  # raw message to the relay ingress with RAILS_INBOUND_EMAIL_PASSWORD.
+  config.action_mailbox.ingress = :relay
+  # Sidekiq only works the queues in config/sidekiq.yml.
+  config.action_mailbox.queues = { routing: :high_priority, incineration: :low_priority }
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

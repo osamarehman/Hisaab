@@ -413,6 +413,7 @@ RSpec.configure do |config|
               status: { type: :string, enum: %w[active draft disabled pending_deletion] },
               institution_name: { type: :string, nullable: true },
               institution_domain: { type: :string, nullable: true },
+              number_last4: { type: :string, nullable: true, description: 'Last four digits of the account number; matches bank alert emails to this account' },
               created_at: { type: :string, format: :'date-time' },
               updated_at: { type: :string, format: :'date-time' }
             }
@@ -2117,6 +2118,48 @@ RSpec.configure do |config|
               comparable: { type: :boolean },
               total: { type: :string }, normal_total: { type: :string, nullable: true },
               categories: { type: :array, items: { '$ref' => '#/components/schemas/SpendingVsNormalCategory' }, description: 'Parent categories, largest total first' }
+            }
+          },
+          EmailSender: {
+            type: :object,
+            required: %w[id pattern created_at],
+            properties: {
+              id: { type: :string, format: :uuid },
+              pattern: { type: :string, description: 'An address, or a whole domain written @bank.com' },
+              created_at: { type: :string, format: :'date-time' }
+            }
+          },
+          BankAlert: {
+            type: :object,
+            required: %w[id status received_at from subject parser amount currency direction last4 occurred_at payee account transaction_id error],
+            properties: {
+              id: { type: :string, format: :uuid },
+              status: { type: :string, enum: %w[pending needs_account unparsed ignored approved rejected], description: 'pending: a pending transaction awaits review. needs_account: parsed, no account carries its last four digits. unparsed: allowed sender, not recognised. ignored: sender not allowed; never parsed.' },
+              received_at: { type: :string, format: :'date-time' },
+              from: { type: :string, nullable: true }, subject: { type: :string, nullable: true },
+              parser: { type: :string, nullable: true },
+              amount: { type: :string, nullable: true }, currency: { type: :string, nullable: true },
+              direction: { type: :string, nullable: true, enum: [ 'in', 'out', nil ] },
+              last4: { type: :string, nullable: true },
+              occurred_at: { type: :string, format: :'date-time', nullable: true },
+              payee: { type: :string, nullable: true },
+              account: { type: :object, nullable: true, properties: { id: { type: :string, format: :uuid }, name: { type: :string } } },
+              transaction_id: { type: :string, format: :uuid, nullable: true, description: 'The entry created for this alert' },
+              error: { type: :string, nullable: true }
+            }
+          },
+          EmailInbox: {
+            type: :object,
+            required: %w[address rotated_at confirmation senders recent],
+            properties: {
+              address: { type: :string, description: 'The household\'s private forwarding address' },
+              rotated_at: { type: :string, format: :'date-time' },
+              confirmation: {
+                type: :object, nullable: true, description: 'Gmail\'s forwarding confirmation, once received',
+                properties: { code: { type: :string, nullable: true }, url: { type: :string, nullable: true }, received_at: { type: :string, format: :'date-time' } }
+              },
+              senders: { type: :array, items: { '$ref' => '#/components/schemas/EmailSender' } },
+              recent: { type: :array, items: { '$ref' => '#/components/schemas/BankAlert' }, description: 'Latest 20 alerts, any status' }
             }
           },
           CashFlow: {

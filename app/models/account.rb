@@ -9,6 +9,10 @@ class Account < ApplicationRecord
   after_destroy_commit :move_account_statements_to_inbox
 
   validates :name, :balance, :currency, presence: true
+  # The last four digits of the account number, which bank alert emails quote
+  # (e.g. "account xxx9483") and which match those alerts to this account.
+  normalizes :number_last4, with: ->(value) { value.to_s.strip.presence }
+  validates :number_last4, format: { with: /\A\d{4}\z/ }, allow_nil: true
   validate :owner_belongs_to_family, if: -> { owner_id.present? && family_id.present? }
 
   belongs_to :family
