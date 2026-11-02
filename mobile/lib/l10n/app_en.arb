@@ -2373,5 +2373,8 @@
   "@accountFormLast4Help": {"description": "Help text under the last-4-digits field."},
 
   "accountFormLast4Invalid": "Enter exactly 4 digits.",
-  "@accountFormLast4Invalid": {"description": "Validation message for the last-4-digits field."}
+  "@accountFormLast4Invalid": {"description": "Validation message for the last-4-digits field."},
+
+  "bankAlertsUnverified": "Couldn't confirm this came from {domain}. Check it before you keep it.",
+  "@bankAlertsUnverified": {"description": "Warning on a bank alert whose sender failed the mail server's DMARC check. {domain} is the sender's domain.", "placeholders": {"domain": {"type": "String"}}}
 }

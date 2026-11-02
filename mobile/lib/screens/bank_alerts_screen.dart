@@ -626,6 +626,24 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
               ),
             ],
           ),
+          if (alert.senderVerified == false) ...[
+            const SizedBox(height: 8),
+            Row(
+              key: ValueKey('bank-alert-unverified-${alert.id}'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.warning_amber_rounded, size: 18, color: c.danger),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l.bankAlertsUnverified(MoneyFormat.ltrIsolate(
+                        alert.senderDomain ?? alert.from ?? '')),
+                    style: LedgerText.body(size: 13, color: c.danger),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [

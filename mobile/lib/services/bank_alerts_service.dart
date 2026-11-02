@@ -43,6 +43,7 @@ class BankAlert {
     this.accountName,
     this.transactionId,
     this.error,
+    this.senderVerified,
   });
 
   factory BankAlert.fromJson(Map<String, dynamic> json) {
@@ -63,6 +64,9 @@ class BankAlert {
       accountName: account is Map ? account['name']?.toString() : null,
       transactionId: json['transaction_id']?.toString(),
       error: json['error']?.toString(),
+      senderVerified: json['sender_verified'] is bool
+          ? json['sender_verified'] as bool
+          : null,
     );
   }
 
@@ -92,6 +96,16 @@ class BankAlert {
   final String? accountName;
   final String? transactionId;
   final String? error;
+
+  /// Whether the mail server's DMARC check passed for the sender's domain.
+  /// null from servers older than the check.
+  final bool? senderVerified;
+
+  /// The sender's domain, e.g. `meezanbank.com`.
+  String? get senderDomain {
+    final at = from?.lastIndexOf('@') ?? -1;
+    return at < 0 ? null : from!.substring(at + 1);
+  }
 
   /// Waiting for the user to approve or reject.
   bool get needsReview => status == pending || status == needsAccount;

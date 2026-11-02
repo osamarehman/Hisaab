@@ -2659,4 +2659,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get accountFormLast4Invalid => 'Enter exactly 4 digits.';
+
+  @override
+  String bankAlertsUnverified(String domain) {
+    return 'Couldn\'t confirm this came from $domain. Check it before you keep it.';
+  }
 }

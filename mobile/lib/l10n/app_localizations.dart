@@ -4672,6 +4672,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter exactly 4 digits.'**
   String get accountFormLast4Invalid;
+
+  /// Warning on a bank alert whose sender failed the mail server's DMARC check. {domain} is the sender's domain.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm this came from {domain}. Check it before you keep it.'**
+  String bankAlertsUnverified(String domain);
 }
 
 class _AppLocalizationsDelegate

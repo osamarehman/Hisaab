@@ -151,6 +151,29 @@ void main() {
     expect(jsonDecode(requests.last.body), {'account_id': 'acc1'});
   });
 
+  testWidgets('warns on an unverified sender but still allows keeping',
+      (tester) async {
+    alerts = [
+      {..._alert('v1', 'pending'), 'sender_verified': false},
+      {..._alert('v2', 'pending'), 'sender_verified': true},
+      _alert('v3', 'pending'),
+    ];
+    await pumpScreen(tester);
+
+    expect(
+        find.byKey(const ValueKey('bank-alert-unverified-v1')), findsOneWidget);
+    expect(find.textContaining('meezanbank.com⁩. Check it'),
+        findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('bank-alert-unverified-v2')), findsNothing);
+    expect(
+        find.byKey(const ValueKey('bank-alert-unverified-v3')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('bank-alert-approve-v1')));
+    await tester.pumpAndSettle();
+    expect(requests.last.url.path, '/api/v1/bank_alerts/v1/approve');
+  });
+
   testWidgets('discards an alert', (tester) async {
     alerts = [_alert('a3', 'pending')];
     await pumpScreen(tester);

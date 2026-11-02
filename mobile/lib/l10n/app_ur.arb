@@ -762,5 +762,7 @@
   "homeBankAlertsPendingDetail": "آپ کے بینک کی ای میلز سے",
   "accountFormLast4Label": "اکاؤنٹ یا کارڈ نمبر کے آخری 4 ہندسے (اختیاری)",
   "accountFormLast4Help": "بینک کی الرٹ ای میلز کو اس اکاؤنٹ سے ملانے کے لیے۔",
-  "accountFormLast4Invalid": "پورے 4 ہندسے لکھیں۔"
+  "accountFormLast4Invalid": "پورے 4 ہندسے لکھیں۔",
+
+  "bankAlertsUnverified": "تصدیق نہیں ہو سکی کہ یہ {domain} سے آئی ہے۔ رکھنے سے پہلے اسے جانچ لیں۔"
 }

@@ -2644,4 +2644,9 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get accountFormLast4Invalid => 'پورے 4 ہندسے لکھیں۔';
+
+  @override
+  String bankAlertsUnverified(String domain) {
+    return 'تصدیق نہیں ہو سکی کہ یہ $domain سے آئی ہے۔ رکھنے سے پہلے اسے جانچ لیں۔';
+  }
 }
