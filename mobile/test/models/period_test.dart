@@ -17,18 +17,17 @@ void main() {
       expect(r.end, DateTime(2026, 11, 15));
     });
 
-    test('rolling periods end today and start the day after N months ago', () {
-      expect(const Period.last3().range(now: now).start, DateTime(2026, 8, 16));
-      expect(const Period.last6().range(now: now).start, DateTime(2026, 5, 16));
+    test('last N months are whole months including this one', () {
+      expect(const Period.last3().range(now: now).start, DateTime(2026, 9, 1));
+      expect(const Period.last6().range(now: now).start, DateTime(2026, 6, 1));
       expect(
-          const Period.last12().range(now: now).start, DateTime(2025, 11, 16));
+          const Period.last12().range(now: now).start, DateTime(2025, 12, 1));
       expect(const Period.last3().range(now: now).end, DateTime(2026, 11, 15));
     });
 
-    test('rolling start normalises short months', () {
-      // 31 May minus 3 months is "31 Feb", which rolls into March.
-      final r = const Period.last3().range(now: DateTime(2026, 5, 31));
-      expect(r.start, DateTime(2026, 3, 4));
+    test('last 3 months crosses the year boundary', () {
+      final r = const Period.last3().range(now: DateTime(2027, 1, 10));
+      expect(r.start, DateTime(2026, 11, 1));
     });
 
     test('all time has no start', () {
@@ -52,7 +51,7 @@ void main() {
     });
 
     test('rolling and custom periods send explicit dates', () {
-      final expected = {'start_date': '2026-08-16', 'end_date': '2026-11-15'};
+      final expected = {'start_date': '2026-09-01', 'end_date': '2026-11-15'};
       expect(const Period.last3().cashFlowQuery(now: now), expected);
       expect(const Period.last3().transactionDates(now: now), expected);
     });

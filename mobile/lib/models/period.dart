@@ -4,8 +4,8 @@ enum PeriodKind { month, last3, last6, last12, allTime, custom }
 
 /// The date range Home and Activity show.
 ///
-/// Rolling periods end today and start the day after the same date N months
-/// ago, so "Last 3 months" on 15 Nov covers 16 Aug – 15 Nov. Every period
+/// "Last N months" are whole calendar months including the current one, as
+/// the server defines them: on 15 Nov "Last 3 months" covers 1 Sep – 15 Nov. Every period
 /// except [PeriodKind.allTime] is sent to the server as explicit dates so the
 /// totals and the transaction list always cover the same days.
 class Period {
@@ -52,7 +52,7 @@ class Period {
     final today = _day(now ?? DateTime.now());
     DateTime cap(DateTime d) => d.isAfter(today) ? today : d;
     DateTime rolling(int months) =>
-        DateTime(today.year, today.month - months, today.day + 1);
+        DateTime(today.year, today.month - months + 1);
     switch (kind) {
       case PeriodKind.month:
         final m = _month!;
