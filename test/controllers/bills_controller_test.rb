@@ -433,6 +433,9 @@ class BillsControllerTest < ActionDispatch::IntegrationTest
     occurrence = snoozed_late_bill
     travel_to occurrence.reload.effective_due_on - 2.days
     pay(occurrence)
+    # Late in a month this lands over 30 days after setup signed in, past the
+    # session's lifetime.
+    sign_in @user
 
     get bills_url
 
