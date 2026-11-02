@@ -160,8 +160,20 @@ en:
           heading: Changes
           paragraphs:
             - "We may update these terms. The date below shows the latest version; continuing to use %{product_name} after a change means you accept it."
+    range:
+      title: "Custom range"
+      from: "From"
+      to: "To"
+      submit: "Show"
     dashboard:
       welcome: "Welcome back, %{name}"
+      ranges:
+        month: "This month"
+        last_3_months: "Last 3 months"
+        last_6_months: "Last 6 months"
+        last_12_months: "Last 12 months"
+        all_time: "All time"
+        custom: "Custom range…"
       subtitle: "Here's what's happening with your finances"
       new: "New"
       new_account: "New account"
@@ -174,6 +186,9 @@ en:
         more_than: "%{amount} more than %{month}"
         less_than: "%{amount} less than %{month}"
         kept: "%{percent}% of income kept"
+        balance: "Balance"
+        opened_with: "Opened with %{amount}"
+        previous_period: "the period before"
         where_it_went: "Where it went"
         budget: "Budget"
         recent: "Recent activity"

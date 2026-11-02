@@ -2,12 +2,17 @@
 # went out, where it went by label, and the latest activity. Figures come
 # from IncomeStatement's netted category totals, the same numbers the
 # outflows widget and budgets use, so refunds net against their label.
+#
+# A `range` (last 3/6/12 months, all time or custom dates) replaces the month
+# with any period. Either way the header also shows the cash position the
+# period opened and closed with, so money left over carries into the next.
 class MonthOverview
   RECENT_LIMIT = 8
+  RANGE_KEYS = %w[last_3_months last_6_months last_12_months all_time].freeze
 
   LabelRow = Data.define(:category, :amount, :share)
 
-  attr_reader :family, :user, :month
+  attr_reader :family, :user, :month, :range
 
   # A month after the current one is clamped to the current one: its period
   # would end before it starts.
@@ -18,10 +23,33 @@ class MonthOverview
     today.beginning_of_month
   end
 
-  def initialize(family, user:, month:)
+  # ?range=<key>, or ?range=custom&from=YYYY-MM-DD&to=YYYY-MM-DD. Nil (the
+  # month view) for anything else, including a custom range out of order.
+  def self.range_from_params(params, family:, today: Date.current)
+    case params[:range]
+    when "all_time"
+      # From the oldest entry, opening balances included, so it opens at zero.
+      Period.new(key: "all_time", start_date: [ family.oldest_entry_date, today ].min, end_date: today)
+    when *RANGE_KEYS
+      Period.from_key(params[:range])
+    when "custom"
+      from = Date.iso8601(params[:from].to_s)
+      to = [ Date.iso8601(params[:to].to_s), today ].min
+      Period.custom(start_date: from, end_date: to) if from <= to
+    end
+  rescue Date::Error
+    nil
+  end
+
+  def initialize(family, user:, month:, range: nil)
     @family = family
     @user = user
     @month = month.to_date.beginning_of_month
+    @range = range
+  end
+
+  def ranged?
+    range.present?
   end
 
   def current_month?
@@ -47,9 +75,29 @@ class MonthOverview
     (left_over.amount / came_in.amount * 100).round
   end
 
-  # Positive when this month's spending is above last month's.
+  # Positive when spending is above the comparison period's: last month for
+  # a month, the same length of time before a range. Nil for all time.
   def spent_change
-    spent - money(statement.net_category_totals(period: period_for(month.prev_month)).total_net_expense)
+    return nil unless comparison_period
+
+    spent - money(statement.net_category_totals(period: comparison_period).total_net_expense)
+  end
+
+  def comparison_period
+    return Period.custom(start_date: month.prev_month, end_date: month.prev_month.end_of_month) unless ranged?
+    return nil if range.key == "all_time"
+
+    Period.custom(start_date: period.start_date - period.days, end_date: period.start_date - 1)
+  end
+
+  # Cash and bank accounts minus credit card debt the day before the period,
+  # and on its last day. Nil when a balance can't be converted.
+  def opening_balance
+    cash_money(cash_position.on(period.start_date - 1))
+  end
+
+  def closing_balance
+    cash_money(cash_position.on(period.end_date))
   end
 
   def label_rows
@@ -79,7 +127,7 @@ class MonthOverview
   end
 
   def period
-    @period ||= period_for(month)
+    @period ||= range || period_for(month)
   end
 
   private
@@ -97,5 +145,13 @@ class MonthOverview
 
     def money(amount)
       Money.new(amount, family.currency)
+    end
+
+    def cash_money(amount)
+      amount && money(amount)
+    end
+
+    def cash_position
+      @cash_position ||= IncomeStatement::CashPosition.new(family, accounts: user.finance_accounts)
     end
 end

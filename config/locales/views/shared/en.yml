@@ -4,6 +4,8 @@ en:
     self_hostable:
       redis_configured: "Redis is now configured properly! You can now setup your Hisaab application."
   shared:
+    range_menu:
+      aria_label: "Period: %{period}"
     preview: Preview
     dot_separator: "·"
     sync_toast:

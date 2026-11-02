@@ -1,0 +1,17 @@
+<%# locals: (label:, items:) %>
+<%# A period menu for list and summary pages: items are [text, href, selected],
+    and an href of the custom-range dialog opens in the modal frame. %>
+<%= render DS::Menu.new(variant: :button) do |menu| %>
+  <% menu.with_button(
+       type: "button",
+       class: "inline-flex items-center gap-1.5 bg-container border border-secondary font-medium rounded-lg pl-3 pr-2 py-2 text-sm cursor-pointer text-primary hover:bg-container-inset-hover",
+       aria: { label: t("shared.range_menu.aria_label", period: label) }
+     ) do %>
+    <%= icon("calendar-range", size: "sm") %>
+    <span class="whitespace-nowrap"><%= label %></span>
+    <%= icon("chevron-down", size: "sm") %>
+  <% end %>
+  <% items.each do |text, href, selected, frame| %>
+    <% menu.with_item(variant: :link, text: text, href: href, selected: selected, frame: frame) %>
+  <% end %>
+<% end %>

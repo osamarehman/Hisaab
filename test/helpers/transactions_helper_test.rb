@@ -162,4 +162,19 @@ class TransactionsHelperTest < ActionView::TestCase
   test "investment_activity_label_name falls back to the stored label when it has no translation" do
     assert_equal "Legacy Label", investment_activity_label_name("Legacy Label")
   end
+
+  test "range label and menu follow the date filter" do
+    travel_to Date.new(2026, 11, 2) do
+      assert_equal I18n.t("pages.dashboard.ranges.all_time"), transactions_range_label({})
+      assert_equal "Nov 2026", transactions_range_label(start_date: "2026-11-01", end_date: "2026-11-30")
+      assert_equal I18n.t("pages.dashboard.ranges.last_3_months"), transactions_range_label(start_date: "2026-09-01", end_date: "2026-11-02")
+
+      items = transactions_range_items({ "start_date" => "2026-09-01", "end_date" => "2026-11-02", "categories" => [ "Food" ] })
+      selected = items.select { |item| item[2] }.map(&:first)
+      assert_equal [ I18n.t("pages.dashboard.ranges.last_3_months") ], selected
+      six_months = items.find { |item| item.first == I18n.t("pages.dashboard.ranges.last_6_months") }
+      assert_includes CGI.unescape(six_months[1]), "q[start_date]=2026-06-01"
+      assert_includes CGI.unescape(six_months[1]), "q[categories][]=Food", "other filters are kept"
+    end
+  end
 end

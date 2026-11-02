@@ -1,13 +1,17 @@
 <% content_for :page_header do %>
   <% month = @month_overview&.month || Date.current.beginning_of_month %>
   <%= render DS::PageHeader.new(
-    title: l(month, format: "%B %Y"),
+    title: @month_overview ? month_overview_label(@month_overview, month_format: "%B %Y") : l(month, format: "%B %Y"),
     eyebrow: [ Current.family.name.presence, Current.family.currency ].compact.join(" · "),
     class: "mb-8"
   ) do |header| %>
     <% header.with_actions do %>
       <% if @month_overview %>
-        <%= render DS::MonthSwitcher.new(month: month, max: Date.current) %>
+        <% unless @month_overview.ranged? %>
+          <%= render DS::MonthSwitcher.new(month: month, max: Date.current) %>
+        <% end %>
+
+        <%= render "shared/range_menu", label: month_overview_label(@month_overview, month_format: "%b %Y"), items: month_overview_range_items(@month_overview) %>
       <% end %>
 
       <% if accessible_accounts.any? %>

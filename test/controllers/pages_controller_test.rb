@@ -325,6 +325,27 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#recent-activity"
   end
 
+  test "dashboard shows a range instead of a month, with its balance" do
+    get root_path(range: "last_6_months")
+
+    assert_response :ok
+    assert_select "h1", text: I18n.t("pages.dashboard.ranges.last_6_months")
+    assert_select "[role=group][aria-label=?]", I18n.t("ds.month_switcher.aria_label"), count: 0
+    assert_select "a[href=?][aria-checked=true]", "/?range=last_6_months"
+    assert_select "#where-it-went"
+    assert_select "dt, span, p", text: I18n.t("pages.dashboard.month_overview.balance")
+  end
+
+  test "dashboard range dialog submits back to the dashboard or the activity list" do
+    get dashboard_range_path
+    assert_response :ok
+    assert_select "form[action=?][method=get] input[name=range][value=custom]", root_path
+    assert_select "input[type=date][name=from]"
+
+    get dashboard_range_path(for: "activity", from: "2026-01-01", to: "2026-01-31")
+    assert_select "form[action=?] input[type=date][name=?][value=?]", transactions_path, "q[start_date]", "2026-01-01"
+  end
+
   test "dashboard steps back to an earlier month" do
     month = Date.current.prev_month(2).beginning_of_month
 
@@ -936,7 +957,9 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "dashboard spending trend header treats current month final day as in progress" do
-    selected_month = (0..24).map { |i| i.months.ago.beginning_of_month.to_date }
+    # Two months back at least: fixtures dated a few days ago would otherwise
+    # land in the compared month during the first days of a month.
+    selected_month = (2..26).map { |i| i.months.ago.beginning_of_month.to_date }
       .find { |m| (m - 1.month).end_of_month.day > m.end_of_month.day }
     previous_month = (selected_month - 1.month).beginning_of_month
 

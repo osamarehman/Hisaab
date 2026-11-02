@@ -52,6 +52,26 @@ class Period
       label: "Last 90 Days",
       comparison_label: "vs. last quarter"
     },
+    # Whole calendar months, this one included, so the range reads like a
+    # run of monthly statements rather than a rolling day count.
+    "last_3_months" => {
+      date_range: -> { [ 2.months.ago.to_date.beginning_of_month, Date.current ] },
+      label_short: "3M",
+      label: "Last 3 Months",
+      comparison_label: "vs. previous 3 months"
+    },
+    "last_6_months" => {
+      date_range: -> { [ 5.months.ago.to_date.beginning_of_month, Date.current ] },
+      label_short: "6M",
+      label: "Last 6 Months",
+      comparison_label: "vs. previous 6 months"
+    },
+    "last_12_months" => {
+      date_range: -> { [ 11.months.ago.to_date.beginning_of_month, Date.current ] },
+      label_short: "12M",
+      label: "Last 12 Months",
+      comparison_label: "vs. previous 12 months"
+    },
     "current_year" => {
       date_range: -> { [ Date.current.beginning_of_year, Date.current ] },
       label_short: "YTD",

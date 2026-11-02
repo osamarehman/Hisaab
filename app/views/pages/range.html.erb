@@ -1,0 +1,18 @@
+<% from = @range&.start_date || Date.current.beginning_of_month %>
+<% to = @range&.end_date || Date.current %>
+<%= render DS::Dialog.new do |dialog| %>
+  <% dialog.with_header(title: t(".title")) %>
+  <% dialog.with_body do %>
+    <%= styled_form_with url: (@for_activity ? transactions_path : root_path), method: :get, class: "space-y-4", data: { turbo_frame: "_top" } do |f| %>
+      <% if @for_activity %>
+        <%= f.date_field "q[start_date]", label: t(".from"), value: from, max: Date.current, required: true %>
+        <%= f.date_field "q[end_date]", label: t(".to"), value: to, max: Date.current, required: true %>
+      <% else %>
+        <%= hidden_field_tag :range, "custom" %>
+        <%= f.date_field :from, label: t(".from"), value: from, max: Date.current, required: true %>
+        <%= f.date_field :to, label: t(".to"), value: to, max: Date.current, required: true %>
+      <% end %>
+      <%= f.submit t(".submit") %>
+    <% end %>
+  <% end %>
+<% end %>

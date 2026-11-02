@@ -63,10 +63,8 @@
     <div class="flex flex-wrap items-center gap-2">
       <% if filter_month %>
         <%= render DS::MonthSwitcher.new(month: filter_month, href_for: ->(month) { transactions_month_path(@q, month) }) %>
-        <%= render DS::Link.new(text: t(".all_dates"), variant: "ghost", href: transactions_filter_path(@q.except(:start_date, :end_date))) %>
-      <% else %>
-        <%= render DS::Link.new(text: t(".by_month"), icon: "calendar", variant: "secondary", href: transactions_month_path(@q, Date.current.beginning_of_month)) %>
       <% end %>
+      <%= render "shared/range_menu", label: transactions_range_label(@q), items: transactions_range_items(@q) %>
     </div>
   </div>
 

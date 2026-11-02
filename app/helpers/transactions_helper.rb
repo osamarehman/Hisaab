@@ -26,6 +26,69 @@ module TransactionsHelper
   end
 
   # @param q [Hash] the search params
+  # @return [Period, nil] the date filter as a period, when it has both dates in order
+  def transactions_filter_period(q)
+    q = q.to_h.with_indifferent_access
+    start_date = Date.iso8601(q[:start_date].to_s)
+    end_date = Date.iso8601(q[:end_date].to_s)
+    Period.custom(start_date: start_date, end_date: end_date) if start_date <= end_date
+  rescue Date::Error
+    nil
+  end
+
+  # @param q [Hash] the search params
+  # @return [String, nil] the named range the date filter matches exactly
+  def transactions_range_key(q)
+    period = transactions_filter_period(q)
+    return unless period
+
+    RANGE_KEYS.find do |key|
+      range = Period.from_key(key)
+      range.start_date == period.start_date && range.end_date == period.end_date
+    end
+  end
+
+  RANGE_KEYS = %w[last_3_months last_6_months last_12_months].freeze
+
+  # @param q [Hash] the search params
+  # @return [String] what the date filter covers: a month, a named range,
+  #   the dates of any other range, or all time
+  def transactions_range_label(q)
+    q = q.to_h.with_indifferent_access
+    if (month = transactions_filter_month(q))
+      return l(month, format: "%b %Y")
+    end
+
+    key = transactions_range_key(q)
+    return t("pages.dashboard.ranges.#{key}") if key
+
+    period = transactions_filter_period(q)
+    period ? period.label_range : t("pages.dashboard.ranges.all_time")
+  end
+
+  # @param q [Hash] the search params
+  # @return [Array<Array>] [text, href, selected, frame] rows for the range
+  #   menu; other filters are kept
+  def transactions_range_items(q)
+    q = q.to_h.with_indifferent_access
+    month = transactions_filter_month(q)
+    key = transactions_range_key(q)
+    period = transactions_filter_period(q)
+
+    [
+      [ t("pages.dashboard.ranges.month"), transactions_month_path(q, Date.current.beginning_of_month), month == Date.current.beginning_of_month ],
+      *RANGE_KEYS.map do |range_key|
+        range = Period.from_key(range_key)
+        [ t("pages.dashboard.ranges.#{range_key}"),
+          transactions_filter_path(q.to_h.merge("start_date" => range.start_date.iso8601, "end_date" => range.end_date.iso8601)),
+          key == range_key ]
+      end,
+      [ t("pages.dashboard.ranges.all_time"), transactions_filter_path(q.except(:start_date, :end_date)), period.nil? ],
+      [ t("pages.dashboard.ranges.custom"), dashboard_range_path(for: "activity", from: period&.start_date, to: period&.end_date), period.present? && month.nil? && key.nil?, :modal ]
+    ]
+  end
+
+  # @param q [Hash] the search params
   # @return [Boolean] whether the list shows only transactions with no label
   def transactions_unlabelled_filter?(q)
     Array(q[:categories]) == [ Category::UNCATEGORIZED_FILTER_VALUE ]

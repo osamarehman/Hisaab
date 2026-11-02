@@ -229,8 +229,6 @@ en:
       show: "Show"
       show_all: "All"
       show_unlabelled: "Needs a label (%{count})"
-      by_month: "By month"
-      all_dates: "All dates"
       categorize_button:
         one: "Categorize (1)"
         other: "Categorize (%{count})"

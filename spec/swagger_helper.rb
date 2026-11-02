@@ -2121,16 +2121,30 @@ RSpec.configure do |config|
           },
           CashFlow: {
             type: :object,
-            required: %w[month as_of time_zone currency period income spending net_savings savings_rate spending_comparison],
+            required: %w[month as_of time_zone currency period income spending net_savings savings_rate opening_balance closing_balance other_changes spending_by_category spending_comparison],
             properties: {
-              month: { type: :string, format: :date }, as_of: { type: :string, format: :date },
+              month: { type: :string, format: :date, nullable: true, description: 'The requested month; null for period and date-range requests.' },
+              as_of: { type: :string, format: :date },
               time_zone: { type: :string }, currency: { type: :string },
               period: { '$ref' => '#/components/schemas/FinancialPeriod' },
               income: { type: :string }, spending: { type: :string }, net_savings: { type: :string },
               sankey: { '$ref' => '#/components/schemas/CashFlowSankey' },
               savings_rate: { type: :string, nullable: true, description: 'Percentage points; null when income is nonpositive. May be negative.' },
+              opening_balance: { type: :string, nullable: true, description: 'Cash position the day before the period starts: cash and bank accounts minus credit card debt. Null when a balance cannot be converted to the family currency.' },
+              closing_balance: { type: :string, nullable: true, description: 'Cash position on the last day of the period. A month closes with the next month\'s opening balance.' },
+              other_changes: { type: :string, nullable: true, description: 'closing_balance - opening_balance - income + spending: transfers, balance edits and currency moves that are neither income nor spending.' },
+              spending_by_category: {
+                type: :array, description: 'Top-level categories with spending in the period, largest first. A parent includes its subcategories.',
+                items: {
+                  type: :object, required: %w[category_id name color amount],
+                  properties: {
+                    category_id: { type: :string, format: :uuid, nullable: true, description: 'Null for uncategorized spending' },
+                    name: { type: :string }, color: { type: :string }, amount: { type: :string }
+                  }
+                }
+              },
               spending_comparison: {
-                type: :object,
+                type: :object, nullable: true, description: 'Null for all-time requests. A month compares with the previous month up to the same day; other ranges with the same-length range before them.',
                 required: %w[previous_period current_total comparison_total comparison_end_date delta current previous],
                 properties: {
                   previous_period: { '$ref' => '#/components/schemas/FinancialPeriod' },

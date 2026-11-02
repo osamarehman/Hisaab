@@ -89,6 +89,13 @@ class PagesController < ApplicationController
     redirect_to root_path(view_params.merge(customize: true, **changed)), status: :see_other
   end
 
+  # The custom range dialog for the dashboard header, or with for=activity
+  # for the transactions list; it submits back to the page it came from.
+  def range
+    @range = MonthOverview.range_from_params(params.merge(range: "custom"), family: Current.family)
+    @for_activity = params[:for] == "activity"
+  end
+
   def changelog
     @breadcrumbs = [ [ t("breadcrumbs.home"), root_path ], [ t("breadcrumbs.changelog"), nil ] ]
     @release_notes = github_provider.fetch_latest_release_notes
@@ -355,9 +362,14 @@ class PagesController < ApplicationController
     end
 
     # The month header above the widgets: totals, spending by label and the
-    # latest activity for ?month=YYYY-MM (this month by default).
+    # latest activity for ?month=YYYY-MM (this month by default), or for a
+    # longer ?range= (see MonthOverview.range_from_params).
     def month_overview
-      MonthOverview.new(Current.family, user: Current.user, month: MonthOverview.month_from_param(params[:month]))
+      MonthOverview.new(
+        Current.family, user: Current.user,
+        month: MonthOverview.month_from_param(params[:month]),
+        range: MonthOverview.range_from_params(params, family: Current.family)
+      )
     end
 
     def github_provider

@@ -68,13 +68,56 @@ class Api::V1::CashFlowsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "rejects ambiguous or invalid graph ranges" do
-    [ { start_date: "2024-01-01" }, { view: "sankey", start_date: "2024-01-01" },
+    [ { start_date: "2024-01-01" }, { end_date: "2024-01-01" }, { view: "sankey", start_date: "2024-01-01" },
       { view: "sankey", start_date: "2024-02-30", end_date: "2024-03-01" },
       { view: "sankey", start_date: "2024-02-01", end_date: "2024-01-01" },
       { view: "sankey", month: "2024-01-01", start_date: "2024-01-01", end_date: "2024-01-02" },
       { view: "invalid" }, { include: "invalid" } ].each do |query|
       get "/api/v1/cash_flow", params: query, headers: api_headers(@auth)
       assert_response :unprocessable_entity
+    end
+  end
+
+  test "returns a statement for named periods, custom ranges and all time" do
+    travel_to Time.utc(2024, 3, 15, 12) do
+      get "/api/v1/cash_flow", params: { period: "last_3_months" }, headers: api_headers(@auth)
+      assert_response :success
+      body = response.parsed_body
+      assert_nil body["month"]
+      assert_equal({ "start_date" => "2024-01-01", "end_date" => "2024-03-15" }, body["period"])
+      assert_equal "2023-10-18", body.dig("spending_comparison", "previous_period", "start_date")
+      %w[opening_balance closing_balance other_changes spending_by_category].each { |key| assert body.key?(key), key }
+
+      get "/api/v1/cash_flow", params: { start_date: "2024-03-01", end_date: "2024-12-31" }, headers: api_headers(@auth)
+      assert_response :success
+      assert_equal "2024-03-15", response.parsed_body.dig("period", "end_date"), "a future end is capped at today"
+
+      get "/api/v1/cash_flow", params: { period: "all_time" }, headers: api_headers(@auth)
+      assert_response :success
+      body = response.parsed_body
+      assert_equal [ @user.family.oldest_entry_date, Date.current ].min.iso8601, body.dig("period", "start_date")
+      assert_nil body["spending_comparison"]
+    end
+  end
+
+  test "the month response keeps its shape and gains the statement fields" do
+    get "/api/v1/cash_flow", params: { month: "2024-02-01" }, headers: api_headers(@auth)
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "2024-02-01", body["month"]
+    assert body["spending_comparison"].key?("current")
+    assert body.key?("opening_balance")
+  end
+
+  test "rejects unknown periods, reversed or future ranges, and mixed period forms" do
+    [ { period: "last_90_days" }, { period: "" },
+      { start_date: "2024-02-01", end_date: "2024-01-01" },
+      { start_date: "9999-01-01", end_date: "9999-01-02" },
+      { period: "all_time", month: "2024-01-01" },
+      { period: "last_3_months", start_date: "2024-01-01", end_date: "2024-01-31" } ].each do |query|
+      get "/api/v1/cash_flow", params: query, headers: api_headers(@auth)
+      assert_response :unprocessable_entity, query.inspect
+      assert_equal "invalid_period", response.parsed_body["error"]
     end
   end
 

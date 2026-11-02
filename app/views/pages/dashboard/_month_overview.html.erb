@@ -1,7 +1,7 @@
 <%# locals: (overview:, uncategorized_count:) %>
 <% period = overview.period %>
-<% month_name = l(overview.month, format: "%B") %>
-<% previous_month_name = l(overview.month.prev_month, format: "%B") %>
+<% month_name = month_overview_label(overview) %>
+<% previous_month_name = overview.ranged? ? t(".previous_period") : l(overview.month.prev_month, format: "%B") %>
 <% month_query = { start_date: period.start_date.iso8601, end_date: period.end_date.iso8601 } %>
 
 <div class="flex flex-col gap-10 mb-12">
@@ -10,9 +10,9 @@
     <% grid.with_tile(
          label: t(".spent"),
          value: format_money(overview.spent, precision: 0),
-         sub: if change.positive?
+         sub: if change&.positive?
                 t(".more_than", amount: format_money(change, precision: 0), month: previous_month_name)
-              elsif change.negative?
+              elsif change&.negative?
                 t(".less_than", amount: format_money(change.abs, precision: 0), month: previous_month_name)
               end
        ) %>
@@ -24,6 +24,18 @@
          tone: overview.left_over.negative? ? :out : :default,
          sub: (t(".kept", percent: kept) if kept&.positive?)
        ) %>
+    <%# Money left over carries into the next period: this one opened with the
+        last one's closing balance. %>
+    <% closing = overview.closing_balance %>
+    <% opening = overview.opening_balance %>
+    <% if closing && opening %>
+      <% grid.with_tile(
+           label: t(".balance"),
+           value: format_money(closing, precision: 0),
+           tone: closing.negative? ? :out : :default,
+           sub: t(".opened_with", amount: format_money(opening, precision: 0))
+         ) %>
+    <% end %>
   <% end %>
 
   <% if uncategorized_count.to_i.positive? %>

@@ -3998,11 +3998,17 @@ components:
       - spending
       - net_savings
       - savings_rate
+      - opening_balance
+      - closing_balance
+      - other_changes
+      - spending_by_category
       - spending_comparison
       properties:
         month:
           type: string
           format: date
+          nullable: true
+          description: The requested month; null for period and date-range requests.
         as_of:
           type: string
           format: date
@@ -4025,8 +4031,51 @@ components:
           nullable: true
           description: Percentage points; null when income is nonpositive. May be
             negative.
+        opening_balance:
+          type: string
+          nullable: true
+          description: 'Cash position the day before the period starts: cash and bank
+            accounts minus credit card debt. Null when a balance cannot be converted
+            to the family currency.'
+        closing_balance:
+          type: string
+          nullable: true
+          description: Cash position on the last day of the period. A month closes
+            with the next month's opening balance.
+        other_changes:
+          type: string
+          nullable: true
+          description: 'closing_balance - opening_balance - income + spending: transfers,
+            balance edits and currency moves that are neither income nor spending.'
+        spending_by_category:
+          type: array
+          description: Top-level categories with spending in the period, largest first.
+            A parent includes its subcategories.
+          items:
+            type: object
+            required:
+            - category_id
+            - name
+            - color
+            - amount
+            properties:
+              category_id:
+                type: string
+                format: uuid
+                nullable: true
+                description: Null for uncategorized spending
+              name:
+                type: string
+              color:
+                type: string
+              amount:
+                type: string
         spending_comparison:
           type: object
+          nullable: true
+          description: Null for all-time requests. A month compares with the previous
+            month up to the same day; other ranges with the same-length range before
+            them.
           required:
           - previous_period
           - current_total
@@ -6598,10 +6647,11 @@ paths:
       summary: Show cash flow and optional Sankey graph
       tags:
       - Cash Flow
-      description: Server-calculated income, spending, savings, and daily cumulative
-        comparison in family currency. Uses the authenticated user’s finance accounts
-        and Sure reporting rules. Browser sessions do not authenticate this public
-        API.
+      description: Server-calculated income, spending, savings, opening and closing
+        cash position, spending by category, and daily cumulative comparison in family
+        currency, for a month, a named period or a date range. Uses the authenticated
+        user’s finance accounts and Sure reporting rules. Browser sessions do not
+        authenticate this public API.
       parameters:
       - name: month
         in: query
@@ -6641,22 +6691,35 @@ paths:
         description: 'Requires view=sankey. category: flows through one Cash Flow
           node; account: income categories flow through each account to expense categories
           (basis net_by_account).'
+      - name: period
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - last_3_months
+          - last_6_months
+          - last_12_months
+          - all_time
+        description: Named range instead of month. Last N months are whole calendar
+          months including the current one. all_time starts at the oldest entry, so
+          it opens at zero, and has no comparison. Cannot combine with month or start_date/end_date.
       - name: start_date
         in: query
         required: false
         schema:
           type: string
           format: date
-        description: Inclusive ISO date. Requires end_date and view=sankey; cannot
-          combine with month.
+        description: Inclusive ISO date, no later than today. Requires end_date; cannot
+          combine with month or period.
       - name: end_date
         in: query
         required: false
         schema:
           type: string
           format: date
-        description: Inclusive ISO date at or after start_date. Explicit ranges preserve
-          their bounds, including future dates.
+        description: Inclusive ISO date at or after start_date. A future end is capped
+          at today for the summary; view=sankey keeps the explicit bounds.
       security:
       - apiKeyAuth: []
       responses:
