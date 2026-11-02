@@ -2217,5 +2217,161 @@
   "@activitySearchPeriodHint": {"description": "Search box hint in Activity when a period longer than a month is selected."},
 
   "activityEmptyPeriod": "Nothing here for this period.",
-  "@activityEmptyPeriod": {"description": "Activity empty state when a period longer than a month is selected."}
+  "@activityEmptyPeriod": {"description": "Activity empty state when a period longer than a month is selected."},
+
+  "settingsBankAlertsTitle": "Bank email alerts",
+  "@settingsBankAlertsTitle": {"description": "Settings row that opens the bank email alerts screen."},
+
+  "settingsBankAlertsSubtitle": "Record spending from your bank's alert emails",
+  "@settingsBankAlertsSubtitle": {"description": "Subtitle of the bank email alerts settings row."},
+
+  "bankAlertsTitle": "Bank email alerts",
+  "@bankAlertsTitle": {"description": "Title of the bank email alerts screen."},
+
+  "bankAlertsIntro": "Forward your bank's transaction alert emails to the address below. Hisaab reads each one and adds the transaction for you to check.",
+  "@bankAlertsIntro": {"description": "Intro text on the bank email alerts screen."},
+
+  "bankAlertsOffline": "You're offline. Connect to the internet and try again.",
+  "@bankAlertsOffline": {"description": "Shown when the bank email alerts screen can't reach the server."},
+
+  "bankAlertsUnsupported": "Your server doesn't support bank email alerts yet.",
+  "@bankAlertsUnsupported": {"description": "Shown when the server is too old for bank email alerts."},
+
+  "bankAlertsActionFailed": "That didn't work. Please try again.",
+  "@bankAlertsActionFailed": {"description": "Generic failure for an action on the bank email alerts screen."},
+
+  "bankAlertsAddressHeader": "Your forwarding address",
+  "@bankAlertsAddressHeader": {"description": "Section header above the household's forwarding email address."},
+
+  "bankAlertsCopy": "Copy",
+  "@bankAlertsCopy": {"description": "Button that copies the forwarding address."},
+
+  "bankAlertsShare": "Share",
+  "@bankAlertsShare": {"description": "Button that shares the forwarding address."},
+
+  "bankAlertsCopied": "Address copied",
+  "@bankAlertsCopied": {"description": "Toast after copying the forwarding address."},
+
+  "bankAlertsGmailCode": "Gmail confirmation code",
+  "@bankAlertsGmailCode": {"description": "Label above the Gmail forwarding confirmation code."},
+
+  "bankAlertsGmailOpen": "Open the confirmation link",
+  "@bankAlertsGmailOpen": {"description": "Button that opens Gmail's forwarding confirmation link."},
+
+  "bankAlertsSetupHeader": "How to set it up",
+  "@bankAlertsSetupHeader": {"description": "Section header above the email setup steps."},
+
+  "bankAlertsGmailTitle": "Gmail",
+  "@bankAlertsGmailTitle": {"description": "Expandable heading for Gmail setup steps."},
+
+  "bankAlertsGmailSteps": "1. On a computer, open Gmail, then Settings, then See all settings, then Forwarding and POP/IMAP.\n2. Tap Add a forwarding address and paste the address above.\n3. Gmail sends a confirmation code. It appears on this screen within a minute; enter it in Gmail.\n4. Create a filter: From = your bank's alert address. Choose Forward it to this address.\nOnly emails that match the filter are forwarded.",
+  "@bankAlertsGmailSteps": {"description": "Step-by-step Gmail forwarding instructions. Keep the numbered lines."},
+
+  "bankAlertsOutlookTitle": "Outlook / Hotmail",
+  "@bankAlertsOutlookTitle": {"description": "Expandable heading for Outlook setup steps."},
+
+  "bankAlertsOutlookSteps": "1. Open outlook.com, then Settings, then Mail, then Rules.\n2. Add a new rule: Condition From = your bank's alert address.\n3. Action: Forward to the address above.\n4. Save. Only emails from your bank are forwarded.",
+  "@bankAlertsOutlookSteps": {"description": "Step-by-step Outlook forwarding rule instructions. Keep the numbered lines."},
+
+  "bankAlertsSendersHeader": "Bank senders",
+  "@bankAlertsSendersHeader": {"description": "Section header above the list of allowed sender addresses."},
+
+  "bankAlertsSendersEmpty": "No senders yet. Add your bank's alert address.",
+  "@bankAlertsSendersEmpty": {"description": "Shown when no sender addresses are allowed."},
+
+  "bankAlertsSendersHelp": "Only emails from these addresses are read. Use @bank.com to allow a whole domain.",
+  "@bankAlertsSendersHelp": {"description": "Help text under the sender list."},
+
+  "bankAlertsSenderAdd": "Add",
+  "@bankAlertsSenderAdd": {"description": "Button that adds a sender address."},
+
+  "bankAlertsSenderRemove": "Remove sender",
+  "@bankAlertsSenderRemove": {"description": "Tooltip of the button that removes a sender address."},
+
+  "bankAlertsSenderRequired": "Enter an email address or @domain.",
+  "@bankAlertsSenderRequired": {"description": "Validation message when the sender field is empty."},
+
+  "bankAlertsSenderAdded": "Now reading emails from {sender}",
+  "@bankAlertsSenderAdded": {"description": "Toast after allowing a sender from the recent list.", "placeholders": {"sender": {"type": "String"}}},
+
+  "bankAlertsToReview": "{count, plural, =1{1 to review} other{{count} to review}}",
+  "@bankAlertsToReview": {"description": "Section header above bank alerts waiting for review.", "placeholders": {"count": {"type": "int"}}},
+
+  "bankAlertsNoMatch": "No account ends in {last4}",
+  "@bankAlertsNoMatch": {"description": "Shown on an alert when no account matches its last 4 digits.", "placeholders": {"last4": {"type": "String"}}},
+
+  "bankAlertsKeep": "Keep",
+  "@bankAlertsKeep": {"description": "Button that approves a bank alert transaction."},
+
+  "bankAlertsChooseAccount": "Choose account",
+  "@bankAlertsChooseAccount": {"description": "Button that picks an account for an unmatched alert, then keeps it."},
+
+  "bankAlertsDiscard": "Discard",
+  "@bankAlertsDiscard": {"description": "Button that rejects a bank alert transaction."},
+
+  "bankAlertsKept": "Added to your transactions",
+  "@bankAlertsKept": {"description": "Toast after approving a bank alert."},
+
+  "bankAlertsDiscarded": "Alert discarded",
+  "@bankAlertsDiscarded": {"description": "Toast after rejecting a bank alert."},
+
+  "bankAlertsPickAccount": "Which account is this?",
+  "@bankAlertsPickAccount": {"description": "Title of the account picker for an unmatched alert."},
+
+  "bankAlertsPickAccountHelp": "Hisaab will remember that this account ends in {last4}.",
+  "@bankAlertsPickAccountHelp": {"description": "Help text in the account picker for an unmatched alert.", "placeholders": {"last4": {"type": "String"}}},
+
+  "bankAlertsNoAccounts": "Add a bank account first.",
+  "@bankAlertsNoAccounts": {"description": "Shown in the account picker when there are no bank or card accounts."},
+
+  "bankAlertsRecentHeader": "Recent emails",
+  "@bankAlertsRecentHeader": {"description": "Section header above recently received alert emails."},
+
+  "bankAlertsRecentEmpty": "No emails yet. After you set up forwarding, new alerts appear here.",
+  "@bankAlertsRecentEmpty": {"description": "Shown when no emails have arrived yet."},
+
+  "bankAlertsStatusApproved": "Added",
+  "@bankAlertsStatusApproved": {"description": "Status of an approved alert email."},
+
+  "bankAlertsStatusRejected": "Discarded",
+  "@bankAlertsStatusRejected": {"description": "Status of a rejected alert email."},
+
+  "bankAlertsStatusUnparsed": "Not recognised. Add this one by hand.",
+  "@bankAlertsStatusUnparsed": {"description": "Status of an alert email from an allowed sender that couldn't be read."},
+
+  "bankAlertsStatusIgnored": "Ignored: sender not on your list",
+  "@bankAlertsStatusIgnored": {"description": "Status of an email from a sender that isn't allowed."},
+
+  "bankAlertsAllowSender": "Allow this sender",
+  "@bankAlertsAllowSender": {"description": "Button that adds an ignored email's sender to the allowed list."},
+
+  "bankAlertsRotate": "Get a new address",
+  "@bankAlertsRotate": {"description": "Button that replaces the forwarding address."},
+
+  "bankAlertsRotateTitle": "Get a new address?",
+  "@bankAlertsRotateTitle": {"description": "Title of the dialog confirming a new forwarding address."},
+
+  "bankAlertsRotateBody": "The current address stops working at once. You'll need to update the forwarding in your email account.",
+  "@bankAlertsRotateBody": {"description": "Body of the dialog confirming a new forwarding address."},
+
+  "bankAlertsRotateConfirm": "Get new address",
+  "@bankAlertsRotateConfirm": {"description": "Confirm button of the new address dialog."},
+
+  "bankAlertsRotated": "New address ready. Update your email forwarding.",
+  "@bankAlertsRotated": {"description": "Toast after getting a new forwarding address."},
+
+  "homeBankAlertsPending": "{count, plural, =1{1 bank alert to review} other{{count} bank alerts to review}}",
+  "@homeBankAlertsPending": {"description": "Home banner when forwarded bank alert emails await review.", "placeholders": {"count": {"type": "int"}}},
+
+  "homeBankAlertsPendingDetail": "From your bank's emails",
+  "@homeBankAlertsPendingDetail": {"description": "Second line of the Home banner for bank alerts awaiting review."},
+
+  "accountFormLast4Label": "Last 4 digits of the account or card number (optional)",
+  "@accountFormLast4Label": {"description": "Label of the last-4-digits field on the account form."},
+
+  "accountFormLast4Help": "Used to match your bank's alert emails to this account.",
+  "@accountFormLast4Help": {"description": "Help text under the last-4-digits field."},
+
+  "accountFormLast4Invalid": "Enter exactly 4 digits.",
+  "@accountFormLast4Invalid": {"description": "Validation message for the last-4-digits field."}
 }

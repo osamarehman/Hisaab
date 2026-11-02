@@ -14,6 +14,9 @@ class Account {
   final String? status;
   final String? institutionName;
   final String? institutionDomain;
+
+  /// Last 4 digits of the account number, used to match bank email alerts.
+  final String? numberLast4;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -31,6 +34,7 @@ class Account {
     this.status,
     this.institutionName,
     this.institutionDomain,
+    this.numberLast4,
     this.createdAt,
     this.updatedAt,
   });
@@ -59,6 +63,7 @@ class Account {
       status: JsonParsing.parseString(json['status']),
       institutionName: JsonParsing.parseString(json['institution_name']),
       institutionDomain: JsonParsing.parseString(json['institution_domain']),
+      numberLast4: JsonParsing.parseString(json['number_last4']),
       createdAt: JsonParsing.parseDateTime(json['created_at']),
       updatedAt: JsonParsing.parseDateTime(json['updated_at']),
     );

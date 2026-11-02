@@ -2450,4 +2450,197 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get activityEmptyPeriod => 'اس مدت میں یہاں کچھ نہیں۔';
+
+  @override
+  String get settingsBankAlertsTitle => 'بینک ای میل الرٹس';
+
+  @override
+  String get settingsBankAlertsSubtitle =>
+      'بینک کی الرٹ ای میلز سے خرچ خود درج کریں';
+
+  @override
+  String get bankAlertsTitle => 'بینک ای میل الرٹس';
+
+  @override
+  String get bankAlertsIntro =>
+      'اپنے بینک کی ٹرانزیکشن الرٹ ای میلز نیچے دیے گئے پتے پر فارورڈ کریں۔ حساب ہر ای میل پڑھ کر ٹرانزیکشن شامل کر دے گا، آپ بس اسے چیک کر لیں۔';
+
+  @override
+  String get bankAlertsOffline =>
+      'آپ آف لائن ہیں۔ انٹرنیٹ سے جڑیں اور دوبارہ کوشش کریں۔';
+
+  @override
+  String get bankAlertsUnsupported =>
+      'آپ کا سرور ابھی بینک ای میل الرٹس کی سہولت نہیں دیتا۔';
+
+  @override
+  String get bankAlertsActionFailed => 'یہ کام نہیں ہو سکا۔ دوبارہ کوشش کریں۔';
+
+  @override
+  String get bankAlertsAddressHeader => 'آپ کا فارورڈنگ پتہ';
+
+  @override
+  String get bankAlertsCopy => 'کاپی';
+
+  @override
+  String get bankAlertsShare => 'شیئر';
+
+  @override
+  String get bankAlertsCopied => 'پتہ کاپی ہو گیا';
+
+  @override
+  String get bankAlertsGmailCode => 'Gmail تصدیقی کوڈ';
+
+  @override
+  String get bankAlertsGmailOpen => 'تصدیقی لنک کھولیں';
+
+  @override
+  String get bankAlertsSetupHeader => 'سیٹ اپ کیسے کریں';
+
+  @override
+  String get bankAlertsGmailTitle => 'Gmail';
+
+  @override
+  String get bankAlertsGmailSteps =>
+      '1. کمپیوٹر پر Gmail کھولیں، پھر Settings، پھر See all settings، پھر Forwarding and POP/IMAP۔\n2. Add a forwarding address دبائیں اور اوپر والا پتہ پیسٹ کریں۔\n3. Gmail ایک تصدیقی کوڈ بھیجے گا۔ یہ ایک منٹ میں اسی اسکرین پر آ جائے گا؛ اسے Gmail میں درج کریں۔\n4. ایک فلٹر بنائیں: From میں اپنے بینک کا الرٹ پتہ لکھیں اور Forward it to میں یہ پتہ چنیں۔\nصرف فلٹر سے ملنے والی ای میلز فارورڈ ہوں گی۔';
+
+  @override
+  String get bankAlertsOutlookTitle => 'Outlook / Hotmail';
+
+  @override
+  String get bankAlertsOutlookSteps =>
+      '1. outlook.com کھولیں، پھر Settings، پھر Mail، پھر Rules۔\n2. نیا رول بنائیں: Condition میں From = اپنے بینک کا الرٹ پتہ۔\n3. Action: اوپر والے پتے پر Forward to۔\n4. محفوظ کریں۔ صرف بینک کی ای میلز فارورڈ ہوں گی۔';
+
+  @override
+  String get bankAlertsSendersHeader => 'بینک کے بھیجنے والے';
+
+  @override
+  String get bankAlertsSendersEmpty =>
+      'ابھی کوئی بھیجنے والا نہیں۔ اپنے بینک کا الرٹ پتہ شامل کریں۔';
+
+  @override
+  String get bankAlertsSendersHelp =>
+      'صرف انہی پتوں کی ای میلز پڑھی جاتی ہیں۔ پورے ڈومین کے لیے @bank.com لکھیں۔';
+
+  @override
+  String get bankAlertsSenderAdd => 'شامل کریں';
+
+  @override
+  String get bankAlertsSenderRemove => 'بھیجنے والا ہٹائیں';
+
+  @override
+  String get bankAlertsSenderRequired => 'ای میل پتہ یا @domain لکھیں۔';
+
+  @override
+  String bankAlertsSenderAdded(String sender) {
+    return 'اب $sender کی ای میلز پڑھی جائیں گی';
+  }
+
+  @override
+  String bankAlertsToReview(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count دیکھنا باقی',
+      one: '1 دیکھنا باقی',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bankAlertsNoMatch(String last4) {
+    return 'کوئی اکاؤنٹ $last4 پر ختم نہیں ہوتا';
+  }
+
+  @override
+  String get bankAlertsKeep => 'رکھیں';
+
+  @override
+  String get bankAlertsChooseAccount => 'اکاؤنٹ چنیں';
+
+  @override
+  String get bankAlertsDiscard => 'رد کریں';
+
+  @override
+  String get bankAlertsKept => 'آپ کی ٹرانزیکشنز میں شامل ہو گیا';
+
+  @override
+  String get bankAlertsDiscarded => 'الرٹ رد کر دیا گیا';
+
+  @override
+  String get bankAlertsPickAccount => 'یہ کون سا اکاؤنٹ ہے؟';
+
+  @override
+  String bankAlertsPickAccountHelp(String last4) {
+    return 'حساب یاد رکھے گا کہ یہ اکاؤنٹ $last4 پر ختم ہوتا ہے۔';
+  }
+
+  @override
+  String get bankAlertsNoAccounts => 'پہلے ایک بینک اکاؤنٹ شامل کریں۔';
+
+  @override
+  String get bankAlertsRecentHeader => 'حالیہ ای میلز';
+
+  @override
+  String get bankAlertsRecentEmpty =>
+      'ابھی کوئی ای میل نہیں آئی۔ فارورڈنگ سیٹ کرنے کے بعد نئے الرٹس یہاں نظر آئیں گے۔';
+
+  @override
+  String get bankAlertsStatusApproved => 'شامل';
+
+  @override
+  String get bankAlertsStatusRejected => 'رد';
+
+  @override
+  String get bankAlertsStatusUnparsed =>
+      'پہچانی نہیں جا سکی۔ اسے خود درج کریں۔';
+
+  @override
+  String get bankAlertsStatusIgnored =>
+      'نظرانداز: بھیجنے والا آپ کی فہرست میں نہیں';
+
+  @override
+  String get bankAlertsAllowSender => 'اس بھیجنے والے کی اجازت دیں';
+
+  @override
+  String get bankAlertsRotate => 'نیا پتہ لیں';
+
+  @override
+  String get bankAlertsRotateTitle => 'نیا پتہ لیں؟';
+
+  @override
+  String get bankAlertsRotateBody =>
+      'موجودہ پتہ فوراً کام کرنا بند کر دے گا۔ آپ کو اپنے ای میل اکاؤنٹ میں فارورڈنگ بدلنی ہو گی۔';
+
+  @override
+  String get bankAlertsRotateConfirm => 'نیا پتہ لیں';
+
+  @override
+  String get bankAlertsRotated =>
+      'نیا پتہ تیار ہے۔ اپنی ای میل فارورڈنگ بدل لیں۔';
+
+  @override
+  String homeBankAlertsPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count بینک الرٹس دیکھنا باقی',
+      one: '1 بینک الرٹ دیکھنا باقی',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeBankAlertsPendingDetail => 'آپ کے بینک کی ای میلز سے';
+
+  @override
+  String get accountFormLast4Label =>
+      'اکاؤنٹ یا کارڈ نمبر کے آخری 4 ہندسے (اختیاری)';
+
+  @override
+  String get accountFormLast4Help =>
+      'بینک کی الرٹ ای میلز کو اس اکاؤنٹ سے ملانے کے لیے۔';
+
+  @override
+  String get accountFormLast4Invalid => 'پورے 4 ہندسے لکھیں۔';
 }

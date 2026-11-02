@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/balance_sheet_service.dart';
+import '../services/bank_alerts_service.dart';
 import '../services/cash_flow_service.dart';
 import '../services/insights_service.dart';
 import '../services/log_service.dart';
@@ -18,6 +19,7 @@ import '../utils/money_format.dart';
 import '../widgets/connectivity_banner.dart';
 import '../widgets/ledger/ledger.dart';
 import '../widgets/no_accounts_prompt.dart';
+import 'bank_alerts_screen.dart';
 import 'budgets_screen.dart';
 import 'report_export_screen.dart';
 import 'settings_screen.dart';
@@ -59,6 +61,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   final _cashFlowService = CashFlowService();
   final _balanceSheetService = BalanceSheetService();
   final _insightsService = InsightsService();
+  final _bankAlertsService = BankAlertsService();
   final _log = LogService.instance;
 
   Period _period = Period.thisMonth();
@@ -75,6 +78,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   double? _liabilities;
   String? _currency;
   List<Insight> _insights = const [];
+  int _pendingAlerts = 0;
 
   @override
   void initState() {
@@ -99,6 +103,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     }
 
     _loadInsights(accessToken, token);
+    _loadBankAlerts(accessToken, token);
 
     final period = _period;
     final dates = period.transactionDates();
@@ -184,6 +189,28 @@ class DashboardScreenState extends State<DashboardScreen> {
         });
       }
     }
+  }
+
+  /// Bank alert emails waiting for review. Any failure (including an older
+  /// server) hides the banner.
+  Future<void> _loadBankAlerts(String accessToken, int token) async {
+    final results = await Future.wait([
+      for (final status in [BankAlert.pending, BankAlert.needsAccount])
+        _bankAlertsService.listAlerts(
+            accessToken: accessToken, status: status, perPage: 100),
+    ]);
+    if (!mounted || token != _loadToken) return;
+    setState(() {
+      _pendingAlerts =
+          results.fold(0, (sum, r) => sum + (r.value?.length ?? 0));
+    });
+  }
+
+  Future<void> _openBankAlerts() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const BankAlertsScreen()),
+    );
+    if (mounted) reload();
   }
 
   /// Optional section: any failure (including preview features being off)
@@ -509,6 +536,16 @@ class DashboardScreenState extends State<DashboardScreen> {
       ],
       const SizedBox(height: 28),
 
+      if (_pendingAlerts > 0) ...[
+        _banner(
+          c,
+          key: const ValueKey('home-bank-alerts'),
+          title: l.homeBankAlertsPending(_pendingAlerts),
+          detail: l.homeBankAlertsPendingDetail,
+          onTap: _openBankAlerts,
+        ),
+        const SizedBox(height: 4),
+      ],
       if (_unlabelled > 0) ...[
         _reviewBanner(l, c, sorted),
         const SizedBox(height: 4),
@@ -763,11 +800,27 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   Widget _reviewBanner(AppLocalizations l, LedgerColors c, int? sorted) {
     final period = periodLabel(l, _period);
+    return _banner(
+      c,
+      title: l.homeNeedLabel(_unlabelled),
+      detail: sorted == null ? period : l.homeNeedLabelDetail(period, sorted),
+      onTap: _openReview,
+    );
+  }
+
+  Widget _banner(
+    LedgerColors c, {
+    Key? key,
+    required String title,
+    required String detail,
+    required VoidCallback onTap,
+  }) {
     return Material(
+      key: key,
       color: c.ink,
       borderRadius: BorderRadius.circular(2),
       child: InkWell(
-        onTap: _openReview,
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -777,7 +830,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l.homeNeedLabel(_unlabelled),
+                      title,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -786,9 +839,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      sorted == null
-                          ? period
-                          : l.homeNeedLabelDetail(period, sorted),
+                      detail,
                       style: TextStyle(
                         fontSize: 13,
                         color: c.onInk.withValues(alpha: 0.75),

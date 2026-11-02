@@ -159,4 +159,47 @@ void main() {
       'account': {'balance': '30000'},
     });
   });
+
+  testWidgets('a bank account saves the last 4 digits for email alerts',
+      (tester) async {
+    final h = _Harness();
+    final account = Account(
+      id: 'acc-1',
+      name: 'Meezan Bank',
+      balance: 'Rs 25,000.00',
+      balanceCents: 2500000,
+      currency: 'PKR',
+      classification: 'asset',
+      accountType: 'depository',
+      subtype: 'checking',
+    );
+    await _open(tester, h.app(account: account));
+
+    final field = find.byKey(const ValueKey('account-last4'));
+    await tester.enterText(field, '94');
+    await _save(tester);
+    expect(find.text('Enter exactly 4 digits.'), findsOneWidget);
+    expect(h.requests, isEmpty);
+
+    await tester.enterText(field, '9483');
+    await _save(tester);
+    expect(jsonDecode(h.requests.single.body), {
+      'account': {'number_last4': '9483'},
+    });
+  });
+
+  testWidgets('cash has no account number field', (tester) async {
+    final h = _Harness();
+    final account = Account(
+      id: 'cash',
+      name: 'Cash in hand',
+      balance: 'Rs 0',
+      currency: 'PKR',
+      classification: 'asset',
+      accountType: 'depository',
+      subtype: 'cash',
+    );
+    await _open(tester, h.app(account: account));
+    expect(find.byKey(const ValueKey('account-last4')), findsNothing);
+  });
 }

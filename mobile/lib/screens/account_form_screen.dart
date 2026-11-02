@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
@@ -133,6 +133,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
       TextEditingController(text: widget.account?.name ?? '');
   late final TextEditingController _balance =
       TextEditingController(text: _initialBalance());
+  late final TextEditingController _last4 =
+      TextEditingController(text: widget.account?.numberLast4 ?? '');
 
   AccountKind? _kind;
   String? _kindError;
@@ -142,6 +144,19 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   bool get _editing => widget.account != null;
   bool get _owed =>
       _editing ? widget.account!.isLiability : _kind?.owed == true;
+
+  /// Bank and card accounts get alert emails, so they can carry the last 4
+  /// digits of their number.
+  bool get _hasNumber {
+    if (_editing) {
+      final a = widget.account!;
+      return a.accountType == 'credit_card' ||
+          (a.accountType == 'depository' && a.subtype != 'cash');
+    }
+    return _kind == AccountKind.bank ||
+        _kind == AccountKind.savings ||
+        _kind == AccountKind.creditCard;
+  }
 
   bool _initialKindApplied = false;
 
@@ -159,6 +174,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   void dispose() {
     _name.dispose();
     _balance.dispose();
+    _last4.dispose();
     super.dispose();
   }
 
@@ -201,6 +217,12 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     return null;
   }
 
+  String? _validateLast4(String? value) {
+    final text = (value ?? '').trim();
+    if (text.isEmpty || RegExp(r'^\d{4}$').hasMatch(text)) return null;
+    return AppLocalizations.of(context).accountFormLast4Invalid;
+  }
+
   String _canonicalBalance() {
     final text = _balance.text.trim();
     return text.isEmpty
@@ -236,6 +258,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
 
     final name = _name.text.trim();
     final balance = _canonicalBalance();
+    final last4 = _hasNumber ? _last4.text.trim() : '';
     final Map<String, dynamic> result;
     if (_editing) {
       final account = widget.account!;
@@ -245,6 +268,9 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
         accountId: account.id,
         name: name == account.name ? null : name,
         balance: balanceChanged ? balance : null,
+        numberLast4: _hasNumber && last4 != (account.numberLast4 ?? '')
+            ? last4
+            : null,
       );
     } else {
       final kind = _kind!;
@@ -254,6 +280,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
         accountableType: kind.accountableType,
         subtype: kind.subtype,
         balance: balance,
+        numberLast4: last4,
       );
     }
 
@@ -411,6 +438,25 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
                           : l.accountFormBalanceNewHelp,
                       style: LedgerText.body(size: 13, color: c.muted),
                     ),
+                    if (_hasNumber) ...[
+                      const SizedBox(height: 20),
+                      Text(l.accountFormLast4Label, style: labelStyle),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        key: const ValueKey('account-last4'),
+                        controller: _last4,
+                        keyboardType: TextInputType.number,
+                        maxLength: 4,
+                        textDirection: TextDirection.ltr,
+                        validator: _validateLast4,
+                        style: LedgerText.figures(size: 18, color: c.ink),
+                        decoration: ledgerInputDecoration(context, hint: '1234')
+                            .copyWith(counterText: ''),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(l.accountFormLast4Help,
+                          style: LedgerText.body(size: 13, color: c.muted)),
+                    ],
                     if (_error != null) ...[
                       const SizedBox(height: 12),
                       Text(_error!,

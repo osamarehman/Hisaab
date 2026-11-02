@@ -19,6 +19,7 @@ import '../services/legal_links.dart';
 import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
 import 'ai_key_screen.dart';
+import 'bank_alerts_screen.dart';
 import 'passkeys_screen.dart';
 import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -901,6 +902,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const AiKeyScreen()),
+            ),
+          ),
+          ListTile(
+            key: const Key('settingsBankAlerts'),
+            leading: const Icon(Icons.mark_email_unread_outlined),
+            title: Text(l.settingsBankAlertsTitle),
+            subtitle: Text(l.settingsBankAlertsSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const BankAlertsScreen()),
             ),
           ),
 

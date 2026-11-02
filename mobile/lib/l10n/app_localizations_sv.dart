@@ -2466,4 +2466,196 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get activityEmptyPeriod => 'Nothing here for this period.';
+
+  @override
+  String get settingsBankAlertsTitle => 'Bank email alerts';
+
+  @override
+  String get settingsBankAlertsSubtitle =>
+      'Record spending from your bank\'s alert emails';
+
+  @override
+  String get bankAlertsTitle => 'Bank email alerts';
+
+  @override
+  String get bankAlertsIntro =>
+      'Forward your bank\'s transaction alert emails to the address below. Hisaab reads each one and adds the transaction for you to check.';
+
+  @override
+  String get bankAlertsOffline =>
+      'You\'re offline. Connect to the internet and try again.';
+
+  @override
+  String get bankAlertsUnsupported =>
+      'Your server doesn\'t support bank email alerts yet.';
+
+  @override
+  String get bankAlertsActionFailed => 'That didn\'t work. Please try again.';
+
+  @override
+  String get bankAlertsAddressHeader => 'Your forwarding address';
+
+  @override
+  String get bankAlertsCopy => 'Copy';
+
+  @override
+  String get bankAlertsShare => 'Share';
+
+  @override
+  String get bankAlertsCopied => 'Address copied';
+
+  @override
+  String get bankAlertsGmailCode => 'Gmail confirmation code';
+
+  @override
+  String get bankAlertsGmailOpen => 'Open the confirmation link';
+
+  @override
+  String get bankAlertsSetupHeader => 'How to set it up';
+
+  @override
+  String get bankAlertsGmailTitle => 'Gmail';
+
+  @override
+  String get bankAlertsGmailSteps =>
+      '1. On a computer, open Gmail, then Settings, then See all settings, then Forwarding and POP/IMAP.\n2. Tap Add a forwarding address and paste the address above.\n3. Gmail sends a confirmation code. It appears on this screen within a minute; enter it in Gmail.\n4. Create a filter: From = your bank\'s alert address. Choose Forward it to this address.\nOnly emails that match the filter are forwarded.';
+
+  @override
+  String get bankAlertsOutlookTitle => 'Outlook / Hotmail';
+
+  @override
+  String get bankAlertsOutlookSteps =>
+      '1. Open outlook.com, then Settings, then Mail, then Rules.\n2. Add a new rule: Condition From = your bank\'s alert address.\n3. Action: Forward to the address above.\n4. Save. Only emails from your bank are forwarded.';
+
+  @override
+  String get bankAlertsSendersHeader => 'Bank senders';
+
+  @override
+  String get bankAlertsSendersEmpty =>
+      'No senders yet. Add your bank\'s alert address.';
+
+  @override
+  String get bankAlertsSendersHelp =>
+      'Only emails from these addresses are read. Use @bank.com to allow a whole domain.';
+
+  @override
+  String get bankAlertsSenderAdd => 'Add';
+
+  @override
+  String get bankAlertsSenderRemove => 'Remove sender';
+
+  @override
+  String get bankAlertsSenderRequired => 'Enter an email address or @domain.';
+
+  @override
+  String bankAlertsSenderAdded(String sender) {
+    return 'Now reading emails from $sender';
+  }
+
+  @override
+  String bankAlertsToReview(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count to review',
+      one: '1 to review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bankAlertsNoMatch(String last4) {
+    return 'No account ends in $last4';
+  }
+
+  @override
+  String get bankAlertsKeep => 'Keep';
+
+  @override
+  String get bankAlertsChooseAccount => 'Choose account';
+
+  @override
+  String get bankAlertsDiscard => 'Discard';
+
+  @override
+  String get bankAlertsKept => 'Added to your transactions';
+
+  @override
+  String get bankAlertsDiscarded => 'Alert discarded';
+
+  @override
+  String get bankAlertsPickAccount => 'Which account is this?';
+
+  @override
+  String bankAlertsPickAccountHelp(String last4) {
+    return 'Hisaab will remember that this account ends in $last4.';
+  }
+
+  @override
+  String get bankAlertsNoAccounts => 'Add a bank account first.';
+
+  @override
+  String get bankAlertsRecentHeader => 'Recent emails';
+
+  @override
+  String get bankAlertsRecentEmpty =>
+      'No emails yet. After you set up forwarding, new alerts appear here.';
+
+  @override
+  String get bankAlertsStatusApproved => 'Added';
+
+  @override
+  String get bankAlertsStatusRejected => 'Discarded';
+
+  @override
+  String get bankAlertsStatusUnparsed =>
+      'Not recognised. Add this one by hand.';
+
+  @override
+  String get bankAlertsStatusIgnored => 'Ignored: sender not on your list';
+
+  @override
+  String get bankAlertsAllowSender => 'Allow this sender';
+
+  @override
+  String get bankAlertsRotate => 'Get a new address';
+
+  @override
+  String get bankAlertsRotateTitle => 'Get a new address?';
+
+  @override
+  String get bankAlertsRotateBody =>
+      'The current address stops working at once. You\'ll need to update the forwarding in your email account.';
+
+  @override
+  String get bankAlertsRotateConfirm => 'Get new address';
+
+  @override
+  String get bankAlertsRotated =>
+      'New address ready. Update your email forwarding.';
+
+  @override
+  String homeBankAlertsPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bank alerts to review',
+      one: '1 bank alert to review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeBankAlertsPendingDetail => 'From your bank\'s emails';
+
+  @override
+  String get accountFormLast4Label =>
+      'Last 4 digits of the account or card number (optional)';
+
+  @override
+  String get accountFormLast4Help =>
+      'Used to match your bank\'s alert emails to this account.';
+
+  @override
+  String get accountFormLast4Invalid => 'Enter exactly 4 digits.';
 }

@@ -70,6 +70,7 @@ class AccountsService {
     String? subtype,
     required String balance,
     String? currency,
+    String? numberLast4,
   }) {
     return _write(
       accessToken: accessToken,
@@ -81,17 +82,21 @@ class AccountsService {
         if (subtype != null) 'subtype': subtype,
         'balance': balance,
         if (currency != null) 'currency': currency,
+        if (numberLast4 != null && numberLast4.isNotEmpty)
+          'number_last4': numberLast4,
       },
       fallback: 'Could not add the account',
     );
   }
 
   /// `PATCH /api/v1/accounts/:id`: rename and/or set today's balance.
+  /// [numberLast4] sets the last 4 digits; an empty string clears them.
   Future<Map<String, dynamic>> updateAccount({
     required String accessToken,
     required String accountId,
     String? name,
     String? balance,
+    String? numberLast4,
   }) {
     return _write(
       accessToken: accessToken,
@@ -100,6 +105,8 @@ class AccountsService {
       body: {
         if (name != null) 'name': name,
         if (balance != null) 'balance': balance,
+        if (numberLast4 != null)
+          'number_last4': numberLast4.isEmpty ? null : numberLast4,
       },
       fallback: 'Could not save the account',
     );

@@ -4360,6 +4360,318 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing here for this period.'**
   String get activityEmptyPeriod;
+
+  /// Settings row that opens the bank email alerts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank email alerts'**
+  String get settingsBankAlertsTitle;
+
+  /// Subtitle of the bank email alerts settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'Record spending from your bank\'s alert emails'**
+  String get settingsBankAlertsSubtitle;
+
+  /// Title of the bank email alerts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank email alerts'**
+  String get bankAlertsTitle;
+
+  /// Intro text on the bank email alerts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward your bank\'s transaction alert emails to the address below. Hisaab reads each one and adds the transaction for you to check.'**
+  String get bankAlertsIntro;
+
+  /// Shown when the bank email alerts screen can't reach the server.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Connect to the internet and try again.'**
+  String get bankAlertsOffline;
+
+  /// Shown when the server is too old for bank email alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server doesn\'t support bank email alerts yet.'**
+  String get bankAlertsUnsupported;
+
+  /// Generic failure for an action on the bank email alerts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'That didn\'t work. Please try again.'**
+  String get bankAlertsActionFailed;
+
+  /// Section header above the household's forwarding email address.
+  ///
+  /// In en, this message translates to:
+  /// **'Your forwarding address'**
+  String get bankAlertsAddressHeader;
+
+  /// Button that copies the forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get bankAlertsCopy;
+
+  /// Button that shares the forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get bankAlertsShare;
+
+  /// Toast after copying the forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address copied'**
+  String get bankAlertsCopied;
+
+  /// Label above the Gmail forwarding confirmation code.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail confirmation code'**
+  String get bankAlertsGmailCode;
+
+  /// Button that opens Gmail's forwarding confirmation link.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the confirmation link'**
+  String get bankAlertsGmailOpen;
+
+  /// Section header above the email setup steps.
+  ///
+  /// In en, this message translates to:
+  /// **'How to set it up'**
+  String get bankAlertsSetupHeader;
+
+  /// Expandable heading for Gmail setup steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Gmail'**
+  String get bankAlertsGmailTitle;
+
+  /// Step-by-step Gmail forwarding instructions. Keep the numbered lines.
+  ///
+  /// In en, this message translates to:
+  /// **'1. On a computer, open Gmail, then Settings, then See all settings, then Forwarding and POP/IMAP.\n2. Tap Add a forwarding address and paste the address above.\n3. Gmail sends a confirmation code. It appears on this screen within a minute; enter it in Gmail.\n4. Create a filter: From = your bank\'s alert address. Choose Forward it to this address.\nOnly emails that match the filter are forwarded.'**
+  String get bankAlertsGmailSteps;
+
+  /// Expandable heading for Outlook setup steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Outlook / Hotmail'**
+  String get bankAlertsOutlookTitle;
+
+  /// Step-by-step Outlook forwarding rule instructions. Keep the numbered lines.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Open outlook.com, then Settings, then Mail, then Rules.\n2. Add a new rule: Condition From = your bank\'s alert address.\n3. Action: Forward to the address above.\n4. Save. Only emails from your bank are forwarded.'**
+  String get bankAlertsOutlookSteps;
+
+  /// Section header above the list of allowed sender addresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank senders'**
+  String get bankAlertsSendersHeader;
+
+  /// Shown when no sender addresses are allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'No senders yet. Add your bank\'s alert address.'**
+  String get bankAlertsSendersEmpty;
+
+  /// Help text under the sender list.
+  ///
+  /// In en, this message translates to:
+  /// **'Only emails from these addresses are read. Use @bank.com to allow a whole domain.'**
+  String get bankAlertsSendersHelp;
+
+  /// Button that adds a sender address.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get bankAlertsSenderAdd;
+
+  /// Tooltip of the button that removes a sender address.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove sender'**
+  String get bankAlertsSenderRemove;
+
+  /// Validation message when the sender field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an email address or @domain.'**
+  String get bankAlertsSenderRequired;
+
+  /// Toast after allowing a sender from the recent list.
+  ///
+  /// In en, this message translates to:
+  /// **'Now reading emails from {sender}'**
+  String bankAlertsSenderAdded(String sender);
+
+  /// Section header above bank alerts waiting for review.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 to review} other{{count} to review}}'**
+  String bankAlertsToReview(int count);
+
+  /// Shown on an alert when no account matches its last 4 digits.
+  ///
+  /// In en, this message translates to:
+  /// **'No account ends in {last4}'**
+  String bankAlertsNoMatch(String last4);
+
+  /// Button that approves a bank alert transaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get bankAlertsKeep;
+
+  /// Button that picks an account for an unmatched alert, then keeps it.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose account'**
+  String get bankAlertsChooseAccount;
+
+  /// Button that rejects a bank alert transaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get bankAlertsDiscard;
+
+  /// Toast after approving a bank alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your transactions'**
+  String get bankAlertsKept;
+
+  /// Toast after rejecting a bank alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert discarded'**
+  String get bankAlertsDiscarded;
+
+  /// Title of the account picker for an unmatched alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Which account is this?'**
+  String get bankAlertsPickAccount;
+
+  /// Help text in the account picker for an unmatched alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Hisaab will remember that this account ends in {last4}.'**
+  String bankAlertsPickAccountHelp(String last4);
+
+  /// Shown in the account picker when there are no bank or card accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bank account first.'**
+  String get bankAlertsNoAccounts;
+
+  /// Section header above recently received alert emails.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent emails'**
+  String get bankAlertsRecentHeader;
+
+  /// Shown when no emails have arrived yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No emails yet. After you set up forwarding, new alerts appear here.'**
+  String get bankAlertsRecentEmpty;
+
+  /// Status of an approved alert email.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get bankAlertsStatusApproved;
+
+  /// Status of a rejected alert email.
+  ///
+  /// In en, this message translates to:
+  /// **'Discarded'**
+  String get bankAlertsStatusRejected;
+
+  /// Status of an alert email from an allowed sender that couldn't be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Not recognised. Add this one by hand.'**
+  String get bankAlertsStatusUnparsed;
+
+  /// Status of an email from a sender that isn't allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored: sender not on your list'**
+  String get bankAlertsStatusIgnored;
+
+  /// Button that adds an ignored email's sender to the allowed list.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow this sender'**
+  String get bankAlertsAllowSender;
+
+  /// Button that replaces the forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a new address'**
+  String get bankAlertsRotate;
+
+  /// Title of the dialog confirming a new forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a new address?'**
+  String get bankAlertsRotateTitle;
+
+  /// Body of the dialog confirming a new forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'The current address stops working at once. You\'ll need to update the forwarding in your email account.'**
+  String get bankAlertsRotateBody;
+
+  /// Confirm button of the new address dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Get new address'**
+  String get bankAlertsRotateConfirm;
+
+  /// Toast after getting a new forwarding address.
+  ///
+  /// In en, this message translates to:
+  /// **'New address ready. Update your email forwarding.'**
+  String get bankAlertsRotated;
+
+  /// Home banner when forwarded bank alert emails await review.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 bank alert to review} other{{count} bank alerts to review}}'**
+  String homeBankAlertsPending(int count);
+
+  /// Second line of the Home banner for bank alerts awaiting review.
+  ///
+  /// In en, this message translates to:
+  /// **'From your bank\'s emails'**
+  String get homeBankAlertsPendingDetail;
+
+  /// Label of the last-4-digits field on the account form.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 4 digits of the account or card number (optional)'**
+  String get accountFormLast4Label;
+
+  /// Help text under the last-4-digits field.
+  ///
+  /// In en, this message translates to:
+  /// **'Used to match your bank\'s alert emails to this account.'**
+  String get accountFormLast4Help;
+
+  /// Validation message for the last-4-digits field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter exactly 4 digits.'**
+  String get accountFormLast4Invalid;
 }
 
 class _AppLocalizationsDelegate
