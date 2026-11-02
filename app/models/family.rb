@@ -64,6 +64,9 @@ class Family < ApplicationRecord
   has_many :holdings, through: :accounts
 
   has_many :tags, dependent: :destroy
+  has_one :email_inbox, dependent: :destroy
+  has_many :email_senders, dependent: :destroy
+  has_many :bank_alerts, dependent: :destroy
   has_many :categories, dependent: :destroy
   has_many :categorization_comparisons, dependent: :destroy
   has_many :merchants, dependent: :destroy, class_name: "FamilyMerchant"

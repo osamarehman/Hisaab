@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_181000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -115,6 +115,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
     t.jsonb "locked_attributes", default: {}
     t.string "name"
     t.text "notes"
+    t.string "number_last4"
     t.uuid "owner_id"
     t.uuid "plaid_account_id"
     t.uuid "simplefin_account_id"
@@ -135,6 +136,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
     t.index ["plaid_account_id"], name: "index_accounts_on_plaid_account_id"
     t.index ["simplefin_account_id"], name: "index_accounts_on_simplefin_account_id"
     t.index ["status"], name: "index_accounts_on_status"
+  end
+
+  create_table "action_mailbox_inbound_emails", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "message_checksum", null: false
+    t.string "message_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
   end
 
   create_table "active_storage_attachments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -278,6 +288,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
     t.index ["account_id", "date", "currency"], name: "index_account_balances_on_account_id_date_currency_unique", unique: true
     t.index ["account_id", "date"], name: "index_balances_on_account_id_and_date", order: { date: :desc }
     t.index ["account_id"], name: "index_balances_on_account_id"
+  end
+
+  create_table "bank_alerts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id"
+    t.decimal "amount", precision: 19, scale: 4
+    t.datetime "created_at", null: false
+    t.string "currency"
+    t.string "direction"
+    t.uuid "entry_id"
+    t.string "error"
+    t.uuid "family_id", null: false
+    t.string "from_address"
+    t.uuid "inbound_email_id"
+    t.string "last4"
+    t.string "message_id", null: false
+    t.datetime "occurred_at"
+    t.string "parser"
+    t.string "payee"
+    t.datetime "received_at", null: false
+    t.string "status", null: false
+    t.string "subject"
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_bank_alerts_on_account_id"
+    t.index ["entry_id"], name: "index_bank_alerts_on_entry_id"
+    t.index ["family_id", "message_id"], name: "index_bank_alerts_on_family_id_and_message_id", unique: true
+    t.index ["family_id", "status", "received_at"], name: "index_bank_alerts_on_family_id_and_status_and_received_at"
+    t.index ["family_id"], name: "index_bank_alerts_on_family_id"
+    t.index ["inbound_email_id"], name: "index_bank_alerts_on_inbound_email_id"
   end
 
   create_table "binance_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -639,6 +677,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
     t.jsonb "locked_attributes", default: {}
     t.string "subtype"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "email_inboxes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "confirmation_code"
+    t.datetime "confirmation_received_at"
+    t.string "confirmation_url"
+    t.datetime "created_at", null: false
+    t.uuid "family_id", null: false
+    t.datetime "rotated_at", null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["family_id"], name: "index_email_inboxes_on_family_id", unique: true
+    t.index ["token"], name: "index_email_inboxes_on_token", unique: true
+  end
+
+  create_table "email_senders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "family_id", null: false
+    t.string "pattern", null: false
+    t.datetime "updated_at", null: false
+    t.index ["family_id", "pattern"], name: "index_email_senders_on_family_id_and_pattern", unique: true
+    t.index ["family_id"], name: "index_email_senders_on_family_id"
   end
 
   create_table "enable_banking_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1608,7 +1668,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
     t.integer "term_months"
     t.datetime "updated_at", null: false
     t.jsonb "variable_rate_schedule", default: {}, null: false
-    t.check_constraint "day_count_convention::text = ANY (ARRAY['thirty_360'::character varying, 'actual_365'::character varying, 'actual_actual'::character varying]::text[])", name: "chk_loans_day_count_convention"
+    t.check_constraint "day_count_convention::text = ANY (ARRAY['thirty_360'::character varying::text, 'actual_365'::character varying::text, 'actual_actual'::character varying::text])", name: "chk_loans_day_count_convention"
     t.check_constraint "down_payment IS NULL OR down_payment >= 0::numeric", name: "chk_loans_down_payment_non_negative"
     t.check_constraint "insurance_rate IS NULL OR insurance_rate >= 0::numeric", name: "chk_loans_insurance_rate_non_negative"
     t.check_constraint "insurance_rate_type IS NULL OR (insurance_rate_type::text = ANY (ARRAY['level_term'::character varying::text, 'decreasing_life'::character varying::text]))", name: "chk_loans_insurance_rate_type"
@@ -2001,7 +2061,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
     t.datetime "updated_at", null: false
     t.integer "year_built"
     t.index ["avm_last_synced_on"], name: "index_properties_on_avm_provider_sync", order: "NULLS FIRST", where: "(avm_provider IS NOT NULL)"
-    t.check_constraint "avm_provider IS NULL OR (avm_provider::text = ANY (ARRAY['rentcast'::character varying, 'realie'::character varying, 'chimnie'::character varying]::text[]))", name: "properties_avm_provider_check"
+    t.check_constraint "avm_provider IS NULL OR (avm_provider::text = ANY (ARRAY['rentcast'::character varying::text, 'realie'::character varying::text, 'chimnie'::character varying::text]))", name: "properties_avm_provider_check"
   end
 
   create_table "provider_request_counts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -3010,6 +3070,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
   add_foreign_key "akahu_items", "families"
   add_foreign_key "api_keys", "users"
   add_foreign_key "balances", "accounts", on_delete: :cascade
+  add_foreign_key "bank_alerts", "accounts", on_delete: :nullify
+  add_foreign_key "bank_alerts", "action_mailbox_inbound_emails", column: "inbound_email_id", on_delete: :nullify
+  add_foreign_key "bank_alerts", "entries", on_delete: :nullify
+  add_foreign_key "bank_alerts", "families"
   add_foreign_key "binance_accounts", "binance_items"
   add_foreign_key "binance_items", "families"
   add_foreign_key "brex_accounts", "brex_items"
@@ -3034,6 +3098,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_090000) do
   add_foreign_key "debug_log_entries", "accounts", on_delete: :nullify
   add_foreign_key "debug_log_entries", "families", on_delete: :nullify
   add_foreign_key "debug_log_entries", "users", on_delete: :nullify
+  add_foreign_key "email_inboxes", "families"
+  add_foreign_key "email_senders", "families"
   add_foreign_key "enable_banking_accounts", "enable_banking_items"
   add_foreign_key "enable_banking_items", "families"
   add_foreign_key "entries", "account_statements", column: "reconciled_by_statement_id", on_delete: :nullify

@@ -118,6 +118,11 @@ class Api::V1::AccountsController < Api::V1::BaseController
         raise ActiveRecord::Rollback
       end
 
+      if attrs.key?(:number_last4) && !@account.update(number_last4: attrs[:number_last4])
+        error_message = @account.errors.full_messages.join(", ")
+        raise ActiveRecord::Rollback
+      end
+
       @account.lock_saved_attributes!
       true
     end
@@ -228,11 +233,11 @@ class Api::V1::AccountsController < Api::V1::BaseController
     end
 
     def create_params
-      account_params.permit(:name, :accountable_type, :subtype, :balance, :currency, :opening_balance_date)
+      account_params.permit(:name, :accountable_type, :subtype, :balance, :currency, :opening_balance_date, :number_last4)
     end
 
     def update_params
-      account_params.permit(:name, :balance)
+      account_params.permit(:name, :balance, :number_last4)
     end
 
     def build_create_attributes(family)
@@ -265,7 +270,8 @@ class Api::V1::AccountsController < Api::V1::BaseController
         accountable_type: accountable_type,
         subtype: subtype,
         balance: balance,
-        currency: currency
+        currency: currency,
+        number_last4: attrs[:number_last4]
       }.compact
     end
 

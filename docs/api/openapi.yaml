@@ -672,6 +672,11 @@ components:
         institution_domain:
           type: string
           nullable: true
+        number_last4:
+          type: string
+          nullable: true
+          description: Last four digits of the account number; matches bank alert
+            emails to this account
         created_at:
           type: string
           format: date-time
@@ -717,6 +722,12 @@ components:
               format: date
               description: Date of the opening balance (YYYY-MM-DD, not in the future).
                 Defaults to two years ago.
+            number_last4:
+              type: string
+              nullable: true
+              pattern: "^\\d{4}$"
+              description: Last four digits of the account number, used to match bank
+                alert emails
     AccountUpdateRequest:
       type: object
       required:
@@ -731,6 +742,12 @@ components:
               type: string
               description: New current balance as a decimal string; recorded as today's
                 valuation.
+            number_last4:
+              type: string
+              nullable: true
+              pattern: "^\\d{4}$"
+              description: Last four digits of the account number, null clears it;
+                used to match bank alert emails
     AccountCollection:
       type: object
       required:
@@ -3986,6 +4003,146 @@ components:
           items:
             "$ref": "#/components/schemas/SpendingVsNormalCategory"
           description: Parent categories, largest total first
+    EmailSender:
+      type: object
+      required:
+      - id
+      - pattern
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        pattern:
+          type: string
+          description: An address, or a whole domain written @bank.com
+        created_at:
+          type: string
+          format: date-time
+    BankAlert:
+      type: object
+      required:
+      - id
+      - status
+      - received_at
+      - from
+      - subject
+      - parser
+      - amount
+      - currency
+      - direction
+      - last4
+      - occurred_at
+      - payee
+      - account
+      - transaction_id
+      - error
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - pending
+          - needs_account
+          - unparsed
+          - ignored
+          - approved
+          - rejected
+          description: 'pending: a pending transaction awaits review. needs_account:
+            parsed, no account carries its last four digits. unparsed: allowed sender,
+            not recognised. ignored: sender not allowed; never parsed.'
+        received_at:
+          type: string
+          format: date-time
+        from:
+          type: string
+          nullable: true
+        subject:
+          type: string
+          nullable: true
+        parser:
+          type: string
+          nullable: true
+        amount:
+          type: string
+          nullable: true
+        currency:
+          type: string
+          nullable: true
+        direction:
+          type: string
+          nullable: true
+          enum:
+          - in
+          - out
+          -
+        last4:
+          type: string
+          nullable: true
+        occurred_at:
+          type: string
+          format: date-time
+          nullable: true
+        payee:
+          type: string
+          nullable: true
+        account:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        transaction_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: The entry created for this alert
+        error:
+          type: string
+          nullable: true
+    EmailInbox:
+      type: object
+      required:
+      - address
+      - rotated_at
+      - confirmation
+      - senders
+      - recent
+      properties:
+        address:
+          type: string
+          description: The household's private forwarding address
+        rotated_at:
+          type: string
+          format: date-time
+        confirmation:
+          type: object
+          nullable: true
+          description: Gmail's forwarding confirmation, once received
+          properties:
+            code:
+              type: string
+              nullable: true
+            url:
+              type: string
+              nullable: true
+            received_at:
+              type: string
+              format: date-time
+        senders:
+          type: array
+          items:
+            "$ref": "#/components/schemas/EmailSender"
+        recent:
+          type: array
+          items:
+            "$ref": "#/components/schemas/BankAlert"
+          description: Latest 20 alerts, any status
     CashFlow:
       type: object
       required:
@@ -6428,6 +6585,222 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/email_inbox":
+    get:
+      summary: Show the bank alert inbox
+      tags:
+      - Bank alert emails
+      description: The household's private forwarding address (created on first read),
+        Gmail's forwarding confirmation, allowed senders and the latest alerts.
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: inbox returned
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EmailInbox"
+  "/api/v1/email_inbox/rotate":
+    post:
+      summary: Rotate the forwarding address
+      tags:
+      - Bank alert emails
+      description: Issues a new address; mail to the old one is no longer accepted.
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: inbox with a new address
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EmailInbox"
+  "/api/v1/email_senders":
+    get:
+      summary: List allowed senders
+      tags:
+      - Bank alert emails
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: senders returned
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - senders
+                properties:
+                  senders:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/EmailSender"
+    post:
+      summary: Allow a sender
+      tags:
+      - Bank alert emails
+      description: Mail from any other sender is kept as an ignored alert and never
+        parsed.
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: sender allowed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EmailSender"
+        '422':
+          description: not an address or domain
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - pattern
+              properties:
+                pattern:
+                  type: string
+                  example: "@meezanbank.com"
+  "/api/v1/email_senders/{id}":
+    parameters:
+    - name: id
+      in: path
+      format: uuid
+      required: true
+      schema:
+        type: string
+    delete:
+      summary: Remove an allowed sender
+      tags:
+      - Bank alert emails
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: sender removed
+  "/api/v1/bank_alerts":
+    get:
+      summary: List bank alerts
+      tags:
+      - Bank alert emails
+      description: Alerts parsed from forwarded bank emails, newest first.
+      security:
+      - apiKeyAuth: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - needs_account
+          - unparsed
+          - ignored
+          - approved
+          - rejected
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: alerts returned
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - bank_alerts
+                - pagination
+                properties:
+                  bank_alerts:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/BankAlert"
+                  pagination:
+                    "$ref": "#/components/schemas/Pagination"
+  "/api/v1/bank_alerts/{id}/approve":
+    parameters:
+    - name: id
+      in: path
+      format: uuid
+      required: true
+      schema:
+        type: string
+    post:
+      summary: Approve an alert
+      tags:
+      - Bank alert emails
+      description: Posts a pending alert's transaction, or for needs_account creates
+        it on account_id (and saves that account's last four digits when it has none).
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: alert approved
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BankAlert"
+        '422':
+          description: alert can't be approved as asked
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account_id:
+                  type: string
+                  format: uuid
+                category_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+  "/api/v1/bank_alerts/{id}/reject":
+    parameters:
+    - name: id
+      in: path
+      format: uuid
+      required: true
+      schema:
+        type: string
+    post:
+      summary: Reject an alert
+      tags:
+      - Bank alert emails
+      description: Deletes the alert's pending transaction, if any.
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: alert rejected
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BankAlert"
   "/api/v1/budget_categories":
     get:
       summary: List budget categories
