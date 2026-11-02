@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -620,14 +621,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(l.settingsAppVersion(_appVersion ?? '…')),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(' > ui_layout: ${authProvider.user?.uiLayout}'),
-                Text(' > ai_enabled: ${authProvider.user?.aiEnabled}'),
-              ],
-            ),
+            // Developer diagnostics; hidden from release builds.
+            subtitle: kDebugMode
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'ui_layout: ${authProvider.user?.uiLayout}',
+                        textDirection: TextDirection.ltr,
+                      ),
+                      Text(
+                        'ai_enabled: ${authProvider.user?.aiEnabled}',
+                        textDirection: TextDirection.ltr,
+                      ),
+                    ],
+                  )
+                : null,
           ),
 
           ListTile(

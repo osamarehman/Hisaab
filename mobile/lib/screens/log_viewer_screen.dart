@@ -206,6 +206,8 @@ class _LogViewerScreenState extends State<LogViewerScreen> {
                   ),
                   title: Text(
                     '[${log.tag}] ${log.message}',
+                    textDirection: TextDirection.ltr,
+                    textAlign: TextAlign.left,
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 12,
@@ -214,6 +216,8 @@ class _LogViewerScreenState extends State<LogViewerScreen> {
                   ),
                   subtitle: Text(
                     log.formattedTime,
+                    textDirection: TextDirection.ltr,
+                    textAlign: TextAlign.left,
                     style: const TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 10,
