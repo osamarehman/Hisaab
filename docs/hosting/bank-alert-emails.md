@@ -67,6 +67,12 @@ in.hisaab.shipdeck.dev.  MX  10  mail.runova.dev.
 Postfix rejects mail for a recipient domain with no MX or A record
 (`reject_unknown_recipient_domain`), so nothing arrives before this exists.
 
+An alert is marked `sender_verified` when the mail server's own
+OpenDMARC verdict (its topmost `Authentication-Results` header, authserv-id
+`BANK_ALERTS_AUTHSERV_ID`, default `mail.runova.dev`) is `dmarc=pass` for the
+sender's domain. The app shows unverified alerts with a warning; approval is
+still required either way.
+
 ## 4. Check it
 
 Without DNS, through the queue:

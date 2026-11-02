@@ -26,9 +26,8 @@ class BankAlert::Parsers::Meezan
   end
 
   def parse
-    currency, amount = @text.match(AMOUNT)&.captures
-    direction = direction_near_amount
-    return nil unless amount && direction
+    currency, amount, direction = transaction_amount
+    return nil unless amount
 
     BankAlert::Parser::Parsed.new(
       parser: "meezan",
@@ -42,15 +41,21 @@ class BankAlert::Parsers::Meezan
   end
 
   private
-    # The verb right after the amount says which way the money went; the
-    # disclaimer further down mentions both.
-    def direction_near_amount
-      after_amount = @text[(@text =~ AMOUNT).to_i, 120].to_s
-      out_at = after_amount =~ OUT
-      in_at = after_amount =~ IN
-      return nil unless out_at || in_at
+    # The transaction amount is the first one followed by a direction verb
+    # before the next amount: a balance line or the disclaimer also mention
+    # amounts and both verbs.
+    def transaction_amount
+      matches = @text.to_enum(:scan, AMOUNT).map { Regexp.last_match }
+      matches.each_with_index do |match, i|
+        stop = [ matches[i + 1]&.begin(0) || @text.length, match.end(0) + 120 ].min
+        after = @text[match.end(0)...stop]
+        out_at = after =~ OUT
+        in_at = after =~ IN
+        next unless out_at || in_at
 
-      in_at.nil? || (out_at && out_at < in_at) ? "out" : "in"
+        return [ *match.captures, in_at.nil? || (out_at && out_at < in_at) ? "out" : "in" ]
+      end
+      nil
     end
 
     def payee

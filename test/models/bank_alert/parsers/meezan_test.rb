@@ -36,6 +36,13 @@ class BankAlert::Parsers::MeezanTest < ActiveSupport::TestCase
     assert_equal Date.new(2026, 11, 1), parsed.occurred_at.to_date
   end
 
+  test "skips a balance shown before the transaction amount" do
+    parsed = parse("Available balance PKR 50,000.00. PKR 1,250.00 debited from your account xxx9483.")
+
+    assert_equal BigDecimal("1250"), parsed.amount
+    assert_equal "out", parsed.direction
+  end
+
   test "an email without an amount or direction is not an alert" do
     assert_nil parse("Your Meezan e-statement for October is ready.")
   end

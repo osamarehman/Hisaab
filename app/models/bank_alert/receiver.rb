@@ -25,7 +25,8 @@ class BankAlert::Receiver
 
     alert = family.bank_alerts.new(
       inbound_email: inbound_email, message_id: message_id, from_address: from,
-      subject: mail.subject.to_s.truncate(255), received_at: mail.date || Time.current
+      subject: mail.subject.to_s.truncate(255), received_at: mail.date || Time.current,
+      sender_verified: sender_verified?
     )
 
     unless family.email_senders.any? { |sender| sender.matches?(from) }
@@ -58,6 +59,23 @@ class BankAlert::Receiver
 
     def message_id
       @message_id ||= mail.message_id.presence || Digest::SHA256.hexdigest(mail.to_s)
+    end
+
+    # True when our mail server's DMARC check passed for the From domain, so
+    # the bank itself sent it. Our milter adds its Authentication-Results above
+    # the message's own headers, so only the topmost one with our authserv-id
+    # counts; a sender's forged copy sits below it.
+    # ponytail: trusts the topmost header, which only holds while every inbound
+    # message runs through OpenDMARC (not for authenticated submissions).
+    def sender_verified?
+      authserv_id = ENV["BANK_ALERTS_AUTHSERV_ID"].presence or return false
+      result = mail.header.fields
+        .select { |field| field.name.casecmp?("Authentication-Results") }
+        .map { |field| field.value.to_s.squish }
+        .find { |value| value.start_with?("#{authserv_id};") && value.include?("dmarc=") }
+      return false unless result
+
+      result.match?(/\bdmarc=pass\b/) && result[/\bheader\.from=([^\s;]+)/, 1]&.downcase == from.split("@").last
     end
 
     # Plain text, falling back to the HTML part with its tags stripped.

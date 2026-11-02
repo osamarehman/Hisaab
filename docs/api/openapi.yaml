@@ -4026,6 +4026,7 @@ components:
       - status
       - received_at
       - from
+      - sender_verified
       - subject
       - parser
       - amount
@@ -4062,6 +4063,11 @@ components:
         subject:
           type: string
           nullable: true
+        sender_verified:
+          type: boolean
+          description: The mail server confirmed (DMARC pass) that the sender's domain
+            sent this email. False for forwards that broke the bank's signature, banks
+            without DMARC, and forgeries.
         parser:
           type: string
           nullable: true
