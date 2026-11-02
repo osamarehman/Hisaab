@@ -38,7 +38,7 @@ x-rails-env: &rails_env
   WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-}
   WEBAUTHN_ALLOWED_ORIGINS: ${WEBAUTHN_ALLOWED_ORIGINS:-}
   ANDROID_APP_PACKAGE_NAME: ${ANDROID_APP_PACKAGE_NAME:-}
-  # Bank alert emails: the Cloudflare Email Worker posts raw mail to Action
+  # Bank alert emails: the mail server's pipe script posts raw mail to Action
   # Mailbox's relay ingress with this password (blank = ingress refuses mail).
   RAILS_INBOUND_EMAIL_PASSWORD: ${RAILS_INBOUND_EMAIL_PASSWORD:-}
   BANK_ALERTS_EMAIL_DOMAIN: ${BANK_ALERTS_EMAIL_DOMAIN:-in.hisaab.shipdeck.dev}

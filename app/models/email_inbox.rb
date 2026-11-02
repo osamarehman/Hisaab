@@ -1,7 +1,6 @@
 # A household's private address for forwarded bank alert emails:
-# alerts+<token>@<BANK_ALERTS_EMAIL_DOMAIN>. Cloudflare Email Routing can't
-# catch-all on a subdomain, so one literal rule for alerts@ takes every
-# household's mail and the plus tag says whose it is. The token is the only
+# alerts+<token>@<BANK_ALERTS_EMAIL_DOMAIN>. Every household shares the
+# alerts@ mailbox and the plus tag says whose mail it is. The token is the only
 # secret that ties mail to a household, so it is random, lowercase (mail
 # clients fold case) and can be rotated, which stops the old address at once.
 class EmailInbox < ApplicationRecord

@@ -7,14 +7,15 @@ rejects in the app. Nothing is posted without review: forwarded mail can't be
 authenticated against the bank, so the secret address plus the household's
 allowed-senders list is the only gate.
 
-Mail reaches Rails through Cloudflare Email Routing and a small Email Worker,
-which posts the raw message to Action Mailbox's relay ingress. No mail server
-on the host is involved.
+Mail reaches Rails through the host's docker-mailserver (`mail.runova.dev`,
+config in `/opt/docker-mailserver`), which pipes every message for the
+subdomain to a small script that posts it to Action Mailbox's relay ingress.
+Postfix keeps and retries a message the app can't take, for days.
 
 ```
 bank → user's Gmail/Outlook rule → alerts+<token>@in.hisaab.shipdeck.dev
-     → Cloudflare Email Routing (rule for alerts@, subaddressing on) → Email Worker
-     → POST https://hisaab.shipdeck.dev/rails/action_mailbox/relay/inbound_emails
+     → MX mail.runova.dev (docker-mailserver, Postfix transport "hisaab")
+     → hisaab-ingress.sh → POST https://hisaab.shipdeck.dev/rails/action_mailbox/relay/inbound_emails
      → BankAlertsMailbox → BankAlert::Receiver
 ```
 
@@ -29,65 +30,57 @@ BANK_ALERTS_EMAIL_DOMAIN=in.hisaab.shipdeck.dev
 
 Restart the app. With the password blank the ingress refuses every message.
 
-## 2. Cloudflare Email Routing on the subdomain
+## 2. Mail server
 
-`shipdeck.dev` itself receives mail elsewhere (its MX points at another mail
-server), so Email Routing must be enabled **for the subdomain only**. Don't
-enable it for the apex: that replaces the apex MX records. Catch-all rules
-only exist on the apex, so every household shares one literal address,
-`alerts@`, and subaddressing carries the household's token.
+In `/opt/docker-mailserver/docker-data/dms/config/` (mounted in the container
+at `/tmp/docker-mailserver/`):
 
-In the Cloudflare dashboard for `shipdeck.dev`, **Email → Email Routing → Settings**:
+- `hisaab-ingress.sh` (root, 0755): reads the message on stdin and posts it
+  with `curl`. Exit 75 keeps the message queued for retry; 69 bounces it.
+- `hisaab-ingress.auth` (uid 5000, 0400): one line,
+  `Authorization: Basic <base64 of actionmailbox:PASSWORD>`, so the password
+  never appears in the process list. Rebuild it after changing the password:
 
-1. **Subdomains**: add `in.hisaab`. Cloudflare adds MX records
-   (`route1/2/3.mx.cloudflare.net`) and an SPF `TXT` record for
-   `in.hisaab.shipdeck.dev` only. Check the apex `shipdeck.dev` MX is unchanged.
-2. **Subaddressing**: turn it on, so `alerts+<token>@` matches the `alerts@` rule.
-3. Create the Worker below (**Workers & Pages → Create → Hello World**, then
-   replace the code). Under the Worker's **Settings → Variables and secrets**,
-   add the secrets `INGRESS_URL`
-   (`https://hisaab.shipdeck.dev/rails/action_mailbox/relay/inbound_emails`) and
-   `INGRESS_PASSWORD` (the same value as `RAILS_INBOUND_EMAIL_PASSWORD`).
-4. **Routing rules → Create address**: `alerts@in.hisaab.shipdeck.dev`, action
-   **Send to a Worker**, choose the Worker.
+  ```sh
+  printf 'Authorization: Basic %s\n' "$(printf 'actionmailbox:%s' "$PASSWORD" | base64 -w0)" > hisaab-ingress.auth
+  chown 5000:5000 hisaab-ingress.auth && chmod 0400 hisaab-ingress.auth
+  ```
+- `user-patches.sh` re-applies the Postfix settings on every container start:
+  `relay_domains = in.hisaab.shipdeck.dev`, `transport_maps = inline:{
+  in.hisaab.shipdeck.dev=hisaab: }`, `hisaab_destination_recipient_limit = 1`
+  and the `hisaab` pipe service (`flags=O`, which adds `X-Original-To`, run as
+  user `docker`). One recipient per delivery keeps `X-Original-To` on the
+  household's own address: a forwarded alert's `To` header names the user's
+  mailbox, not ours.
 
-## Worker
+To apply without restarting the mail server, run the same `postconf` lines
+with `docker exec mailserver …`, then `postfix check && postfix reload`.
 
-```js
-// Forwards every message for the bank-alert subdomain to Rails.
-// X-Original-To carries the envelope recipient: a forwarded alert keeps the
-// bank's To header, which names the user's own mailbox, not the household's.
-export default {
-  async email(message, env) {
-    const raw = await new Response(message.raw).arrayBuffer();
-    const header = new TextEncoder().encode(`X-Original-To: ${message.to}\r\n`);
-    const body = new Uint8Array(header.length + raw.byteLength);
-    body.set(header, 0);
-    body.set(new Uint8Array(raw), header.length);
+## 3. DNS
 
-    const response = await fetch(env.INGRESS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "message/rfc822",
-        Authorization: "Basic " + btoa(`actionmailbox:${env.INGRESS_PASSWORD}`),
-      },
-      body,
-    });
+One record in the `shipdeck.dev` zone; the apex's own MX is untouched:
 
-    // A rejection makes the sending server retry or bounce instead of
-    // silently losing the alert.
-    if (!response.ok) message.setReject(`Ingress returned ${response.status}`);
-  },
-};
+```
+in.hisaab.shipdeck.dev.  MX  10  mail.runova.dev.
 ```
 
-## 3. Check it
+Postfix rejects mail for a recipient domain with no MX or A record
+(`reject_unknown_recipient_domain`), so nothing arrives before this exists.
 
-Send a mail to `alerts+test@in.hisaab.shipdeck.dev` from any account. The Worker's
-logs should show a `204` from the ingress, and the app's debug log a
-`bank_alert_email` entry "No household inbox for recipients". A household's
-real address (from `GET /api/v1/email_inbox` or the app's settings) then
-receives alerts from the senders it allows.
+## 4. Check it
+
+Without DNS, through the queue:
+
+```sh
+printf 'Subject: check\n\nhi\n' | docker exec -i mailserver sendmail alerts+test@in.hisaab.shipdeck.dev
+docker exec mailserver grep 'relay=hisaab' /var/log/mail/mail.log | tail -1   # status=sent
+```
+
+With DNS in place, send a mail to `alerts+test@in.hisaab.shipdeck.dev` from
+any outside account. The app's debug log then shows a `bank_alert_email` entry
+"No household inbox for recipients". A household's real address (from
+`GET /api/v1/email_inbox` or the app's settings) receives alerts from the
+senders it allows.
 
 ## Adding a bank
 
