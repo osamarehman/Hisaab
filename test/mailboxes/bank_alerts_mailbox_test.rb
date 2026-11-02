@@ -45,6 +45,23 @@ class BankAlertsMailboxTest < ActionMailbox::TestCase
     assert_equal "O.REHMAN", alert.payee
   end
 
+  test "the mail server's DMARC pass for the bank's domain verifies the sender" do
+    with_env_overrides(BANK_ALERTS_AUTHSERV_ID: "mail.example.test") do
+      assert deliver_raw("mail.example.test; dmarc=pass (p=reject dis=none) header.from=meezanbank.com").sender_verified
+      assert_not deliver_raw("mail.example.test; dmarc=fail (p=reject dis=none) header.from=meezanbank.com").sender_verified
+      assert_not deliver_raw("mail.example.test; dmarc=pass header.from=gmail.com").sender_verified
+      assert_not deliver_raw(nil).sender_verified
+    end
+  end
+
+  test "a forged verdict below the mail server's own is not trusted" do
+    with_env_overrides(BANK_ALERTS_AUTHSERV_ID: "mail.example.test") do
+      alert = deliver_raw("mail.example.test; dmarc=fail header.from=meezanbank.com",
+                          "mail.example.test; dmarc=pass header.from=meezanbank.com")
+      assert_not alert.sender_verified
+    end
+  end
+
   test "no account with those digits leaves the alert waiting for one" do
     @account.update!(number_last4: nil)
 
@@ -96,6 +113,15 @@ class BankAlertsMailboxTest < ActionMailbox::TestCase
   end
 
   private
+    def deliver_raw(*auth_results)
+      headers = auth_results.compact.map { |result| "Authentication-Results: #{result}\r\n" }.join
+      receive_inbound_email_from_source(
+        "#{headers}From: no-reply@meezanbank.com\r\nTo: me@gmail.com\r\nX-Original-To: #{@inbox.address}\r\n" \
+        "Subject: Debit\r\nMessage-ID: <#{SecureRandom.hex(8)}@meezanbank.com>\r\n\r\n#{ALERT}"
+      )
+      @family.bank_alerts.order(:created_at).last
+    end
+
     def deliver(from: "Meezan Bank Alert <no-reply@meezanbank.com>", to: @inbox.address, message_id: nil, footer: "")
       receive_inbound_email_from_mail(
         from: from, to: "me@gmail.com", "X-Original-To": to, subject: "Debit Transaction Alert",

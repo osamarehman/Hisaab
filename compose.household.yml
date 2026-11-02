@@ -42,6 +42,8 @@ x-rails-env: &rails_env
   # Mailbox's relay ingress with this password (blank = ingress refuses mail).
   RAILS_INBOUND_EMAIL_PASSWORD: ${RAILS_INBOUND_EMAIL_PASSWORD:-}
   BANK_ALERTS_EMAIL_DOMAIN: ${BANK_ALERTS_EMAIL_DOMAIN:-in.hisaab.shipdeck.dev}
+  # The mail server whose DMARC verdict marks an alert's sender as verified.
+  BANK_ALERTS_AUTHSERV_ID: ${BANK_ALERTS_AUTHSERV_ID:-mail.runova.dev}
   ANDROID_APP_SHA256_CERT_FINGERPRINTS: ${ANDROID_APP_SHA256_CERT_FINGERPRINTS:-}
   IOS_APP_IDS: ${IOS_APP_IDS:-}
   APPLE_SIGN_IN_CLIENT_IDS: ${APPLE_SIGN_IN_CLIENT_IDS:-dev.shipdeck.hisaab}

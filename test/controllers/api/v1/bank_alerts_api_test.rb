@@ -48,6 +48,7 @@ class Api::V1::BankAlertsApiTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_equal [ waiting.id ], response.parsed_body["bank_alerts"].map { |a| a["id"] }
     assert_equal "10000.0", response.parsed_body["bank_alerts"].first["amount"]
+    assert_equal false, response.parsed_body["bank_alerts"].first["sender_verified"]
 
     post "/api/v1/bank_alerts/#{waiting.id}/approve", params: { account_id: @account.id }, headers: api_headers(@key)
     assert_response :ok

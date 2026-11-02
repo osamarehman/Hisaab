@@ -2133,12 +2133,13 @@ RSpec.configure do |config|
           },
           BankAlert: {
             type: :object,
-            required: %w[id status received_at from subject parser amount currency direction last4 occurred_at payee account transaction_id error],
+            required: %w[id status received_at from sender_verified subject parser amount currency direction last4 occurred_at payee account transaction_id error],
             properties: {
               id: { type: :string, format: :uuid },
               status: { type: :string, enum: %w[pending needs_account unparsed ignored approved rejected], description: 'pending: a pending transaction awaits review. needs_account: parsed, no account carries its last four digits. unparsed: allowed sender, not recognised. ignored: sender not allowed; never parsed.' },
               received_at: { type: :string, format: :'date-time' },
               from: { type: :string, nullable: true }, subject: { type: :string, nullable: true },
+              sender_verified: { type: :boolean, description: 'The mail server confirmed (DMARC pass) that the sender\'s domain sent this email. False for forwards that broke the bank\'s signature, banks without DMARC, and forgeries.' },
               parser: { type: :string, nullable: true },
               amount: { type: :string, nullable: true }, currency: { type: :string, nullable: true },
               direction: { type: :string, nullable: true, enum: [ 'in', 'out', nil ] },

@@ -4,6 +4,7 @@ json.id bank_alert.id
 json.status bank_alert.status
 json.received_at bank_alert.received_at.iso8601
 json.from bank_alert.from_address
+json.sender_verified bank_alert.sender_verified
 json.subject bank_alert.subject
 json.parser bank_alert.parser
 json.amount bank_alert.amount&.to_d&.to_s("F")
