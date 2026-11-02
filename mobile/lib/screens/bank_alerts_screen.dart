@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/accounts_service.dart';
 import '../services/bank_alerts_service.dart';
 import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
@@ -43,6 +44,10 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
   String? _loadError;
   bool _addingSender = false;
   String? _senderError;
+
+  /// Accounts fresh from the server; the offline cache has no subtype or
+  /// last 4 digits, so it can't tell cash from bank accounts.
+  List<Account>? _serverAccounts;
 
   /// Alerts with a request in flight, so their buttons disable.
   final Set<String> _busy = {};
@@ -90,6 +95,7 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
       });
       return;
     }
+    if (widget.accounts == null) _loadAccounts(token);
     final results = await Future.wait([
       _service.getInbox(accessToken: token),
       _service.listAlerts(accessToken: token, perPage: 100),
@@ -108,6 +114,13 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
       final all = alerts.value ?? inbox.value!.recent;
       _toReview = all.where((a) => a.needsReview).toList();
     });
+  }
+
+  Future<void> _loadAccounts(String token) async {
+    final result =
+        await AccountsService().getAccounts(accessToken: token, perPage: 100);
+    if (!mounted || result['success'] != true) return;
+    _serverAccounts = result['accounts'] as List<Account>;
   }
 
   void _toast(String message) {
@@ -215,7 +228,9 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
   }
 
   List<Account> _matchableAccounts() {
-    final all = widget.accounts ?? context.read<AccountsProvider>().accounts;
+    final all = widget.accounts ??
+        _serverAccounts ??
+        context.read<AccountsProvider>().accounts;
     return all
         .where((a) =>
             a.accountType == 'credit_card' ||
@@ -302,8 +317,9 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
     if (!mounted) return;
     setState(() {
       _busy.remove(alert.id);
-      if (result.ok)
+      if (result.ok) {
         _toReview = _toReview.where((a) => a.id != alert.id).toList();
+      }
     });
     _toast(result.ok ? doneMessage : _errorText(l, result.error));
   }
@@ -535,7 +551,7 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
             ),
             const SizedBox(width: 12),
             SizedBox(
-              width: 88,
+              width: 120,
               child: InkButton(
                 key: const Key('bankAlertsSenderAdd'),
                 label: l.bankAlertsSenderAdd,
@@ -547,7 +563,7 @@ class _BankAlertsScreenState extends State<BankAlertsScreen> {
           ],
         ),
         const SizedBox(height: 6),
-        Text(l.bankAlertsSendersHelp,
+        Text(l.bankAlertsSendersHelp(MoneyFormat.ltrIsolate('@bank.com')),
             style: LedgerText.body(size: 13, color: c.muted)),
       ],
     );

@@ -2519,8 +2519,9 @@ class AppLocalizationsUr extends AppLocalizations {
       'ابھی کوئی بھیجنے والا نہیں۔ اپنے بینک کا الرٹ پتہ شامل کریں۔';
 
   @override
-  String get bankAlertsSendersHelp =>
-      'صرف انہی پتوں کی ای میلز پڑھی جاتی ہیں۔ پورے ڈومین کے لیے @bank.com لکھیں۔';
+  String bankAlertsSendersHelp(String example) {
+    return 'صرف انہی پتوں کی ای میلز پڑھی جاتی ہیں۔ پورے ڈومین کے لیے $example لکھیں۔';
+  }
 
   @override
   String get bankAlertsSenderAdd => 'شامل کریں';

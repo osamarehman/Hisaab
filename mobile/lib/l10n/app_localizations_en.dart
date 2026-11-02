@@ -2525,8 +2525,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'No senders yet. Add your bank\'s alert address.';
 
   @override
-  String get bankAlertsSendersHelp =>
-      'Only emails from these addresses are read. Use @bank.com to allow a whole domain.';
+  String bankAlertsSendersHelp(String example) {
+    return 'Only emails from these addresses are read. Use $example to allow a whole domain.';
+  }
 
   @override
   String get bankAlertsSenderAdd => 'Add';

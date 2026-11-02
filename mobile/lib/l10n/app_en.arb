@@ -2279,8 +2279,8 @@
   "bankAlertsSendersEmpty": "No senders yet. Add your bank's alert address.",
   "@bankAlertsSendersEmpty": {"description": "Shown when no sender addresses are allowed."},
 
-  "bankAlertsSendersHelp": "Only emails from these addresses are read. Use @bank.com to allow a whole domain.",
-  "@bankAlertsSendersHelp": {"description": "Help text under the sender list."},
+  "bankAlertsSendersHelp": "Only emails from these addresses are read. Use {example} to allow a whole domain.",
+  "@bankAlertsSendersHelp": {"description": "Help text under the sender list. {example} is a sample domain pattern.", "placeholders": {"example": {"type": "String"}}},
 
   "bankAlertsSenderAdd": "Add",
   "@bankAlertsSenderAdd": {"description": "Button that adds a sender address."},

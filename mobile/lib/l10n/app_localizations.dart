@@ -4481,11 +4481,11 @@ abstract class AppLocalizations {
   /// **'No senders yet. Add your bank\'s alert address.'**
   String get bankAlertsSendersEmpty;
 
-  /// Help text under the sender list.
+  /// Help text under the sender list. {example} is a sample domain pattern.
   ///
   /// In en, this message translates to:
-  /// **'Only emails from these addresses are read. Use @bank.com to allow a whole domain.'**
-  String get bankAlertsSendersHelp;
+  /// **'Only emails from these addresses are read. Use {example} to allow a whole domain.'**
+  String bankAlertsSendersHelp(String example);
 
   /// Button that adds a sender address.
   ///
