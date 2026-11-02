@@ -20,6 +20,10 @@ class BankAlert::Parsers::MeezanTest < ActiveSupport::TestCase
     assert_equal Time.find_zone("Asia/Karachi").parse("2026-11-02 18:05"), parsed.occurred_at
   end
 
+  test "reads the transaction time as Pakistan time" do
+    assert_equal Time.utc(2026, 11, 2, 13, 5), parse(DEBIT).occurred_at
+  end
+
   test "reads a credit alert by the verb next to the amount, not the disclaimer" do
     parsed = parse(<<~TEXT)
       PKR 2,500.50 received in your account xxx9483. Sender Account Title : AHMED KHAN Branch : CLIFTON
@@ -43,6 +47,6 @@ class BankAlert::Parsers::MeezanTest < ActiveSupport::TestCase
 
   private
     def parse(text)
-      BankAlert::Parsers::Meezan.new(text: text, sent_at: Time.current, time_zone: "Asia/Karachi").parse
+      BankAlert::Parsers::Meezan.new(text: text, sent_at: Time.current).parse
     end
 end

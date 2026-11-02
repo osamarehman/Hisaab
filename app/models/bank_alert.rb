@@ -4,6 +4,8 @@
 # rejecting deletes it. Forwarded mail can't be authenticated against the bank,
 # which is why nothing is ever posted without that review.
 class BankAlert < ApplicationRecord
+  # Hisaab households are in Pakistan; most never set a time zone.
+  DEFAULT_TIME_ZONE = "Asia/Karachi".freeze
   STATUSES = %w[pending needs_account unparsed ignored approved rejected].freeze
   DIRECTIONS = %w[in out].freeze
 
@@ -79,7 +81,7 @@ class BankAlert < ApplicationRecord
     # Money out is a positive amount in Sure's sign convention.
     def create_entry!(pending:, on: account)
       on.entries.create!(
-        date: (occurred_at || received_at).in_time_zone(family.timezone.presence || Time.zone).to_date,
+        date: (occurred_at || received_at).in_time_zone(family.timezone.presence || DEFAULT_TIME_ZONE).to_date,
         amount: direction == "out" ? amount : -amount,
         currency: currency.presence || on.currency,
         name: payee.presence || subject.presence || I18n.t("bank_alerts.default_name"),

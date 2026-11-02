@@ -5,8 +5,8 @@ class BankAlert::Parser
 
   PARSERS = [ BankAlert::Parsers::Meezan ].freeze
 
-  def self.parse(from:, text:, sent_at:, time_zone:)
+  def self.parse(from:, text:, sent_at:)
     parser = PARSERS.find { |candidate| candidate.handles?(from) }
-    parser&.new(text: text, sent_at: sent_at, time_zone: time_zone)&.parse
+    parser&.new(text: text, sent_at: sent_at)&.parse
   end
 end

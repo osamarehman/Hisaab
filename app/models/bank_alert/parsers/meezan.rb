@@ -4,6 +4,8 @@
 #   Transaction Time : 18:05
 class BankAlert::Parsers::Meezan
   SENDER_DOMAIN = "@meezanbank.com".freeze
+  # The alert states local bank time, whatever zone the household is set to.
+  TIME_ZONE = "Asia/Karachi".freeze
   AMOUNT = /\b(PKR|USD|EUR|GBP|AED|SAR)\s*([\d,]+(?:\.\d{1,2})?)/i
   OUT = /\b(?:sent|debited|withdrawn|paid|transferred)\b/i
   IN = /\b(?:received|credited|deposited)\b/i
@@ -18,10 +20,9 @@ class BankAlert::Parsers::Meezan
     from.to_s.downcase.end_with?(SENDER_DOMAIN)
   end
 
-  def initialize(text:, sent_at:, time_zone:)
+  def initialize(text:, sent_at:)
     @text = text.to_s.squish
     @sent_at = sent_at
-    @time_zone = time_zone
   end
 
   def parse
@@ -64,8 +65,7 @@ class BankAlert::Parsers::Meezan
       date = @text[DATE, 1]
       return @sent_at unless date
 
-      zone = ActiveSupport::TimeZone[@time_zone.to_s] || Time.zone
-      zone.parse("#{date} #{@text[TIME, 1] || '00:00'}")
+      Time.find_zone!(TIME_ZONE).parse("#{date} #{@text[TIME, 1] || '00:00'}")
     rescue ArgumentError
       @sent_at
     end

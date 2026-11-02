@@ -34,7 +34,7 @@ class BankAlert::Receiver
       return alert
     end
 
-    parsed = BankAlert::Parser.parse(from: from, text: text, sent_at: mail.date, time_zone: family.timezone)
+    parsed = BankAlert::Parser.parse(from: from, text: text, sent_at: mail.date)
     if parsed
       alert.file!(parsed)
     else
