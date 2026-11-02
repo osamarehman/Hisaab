@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/period.dart';
 import '../models/transaction.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
@@ -42,8 +43,8 @@ class DashboardScreen extends StatefulWidget {
     this.onAskAssistant,
   });
 
-  /// Jump to Activity for [month], optionally filtered to a label.
-  final void Function(DateTime month, String? categoryId)? onOpenActivity;
+  /// Jump to Activity for [period], optionally filtered to a label.
+  final void Function(Period period, String? categoryId)? onOpenActivity;
   final VoidCallback? onOpenAccounts;
 
   /// Open the Assistant with [question] as the first message.
@@ -60,13 +61,14 @@ class DashboardScreenState extends State<DashboardScreen> {
   final _insightsService = InsightsService();
   final _log = LogService.instance;
 
-  DateTime _month = MonthSwitcher.firstOf(DateTime.now());
+  Period _period = Period.thisMonth();
   bool _loading = true;
   String? _error;
   int _loadToken = 0;
 
-  MonthCashFlow? _cashFlow;
+  PeriodCashFlow? _cashFlow;
   List<Transaction> _transactions = const [];
+  bool _transactionsSkipped = false;
   int _unlabelled = 0;
   double? _netWorth;
   double? _assets;
@@ -98,19 +100,37 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     _loadInsights(accessToken, token);
 
-    final month = _month;
-    final start = DateFormat('yyyy-MM-dd').format(month);
-    final end = DateFormat('yyyy-MM-dd')
-        .format(DateTime(month.year, month.month + 1, 0));
+    final period = _period;
+    final dates = period.transactionDates();
+    final start = dates['start_date'];
+    final end = dates['end_date'];
 
-    try {
-      final results = await Future.wait<Map<String, dynamic>>([
-        _cashFlowService.getMonth(accessToken: accessToken, month: month),
+    Future<Map<String, dynamic>> allTransactions() =>
         _transactionsService.getAllTransactions(
           accessToken: accessToken,
           startDate: start,
           endDate: end,
-        ),
+        );
+
+    try {
+      final flowFuture =
+          _cashFlowService.getPeriod(accessToken: accessToken, period: period);
+      // Longer periods skip the full transaction download when the server
+      // already sends spending by label.
+      final Future<Map<String, dynamic>> txFuture = period.isMonth
+          ? allTransactions()
+          : flowFuture.then((r) {
+              final flow = r['cash_flow'] as PeriodCashFlow?;
+              if (flow?.byCategory == null) return allTransactions();
+              return <String, dynamic>{
+                'success': true,
+                'transactions': <Transaction>[],
+                'skipped': true,
+              };
+            });
+      final results = await Future.wait<Map<String, dynamic>>([
+        flowFuture,
+        txFuture,
         _transactionsService.getTransactions(
           accessToken: accessToken,
           startDate: start,
@@ -136,10 +156,11 @@ class DashboardScreenState extends State<DashboardScreen> {
       final pagination = uncategorized['pagination'];
 
       setState(() {
-        _cashFlow = results[0]['cash_flow'] as MonthCashFlow?;
+        _cashFlow = results[0]['cash_flow'] as PeriodCashFlow?;
         _transactions = txResult['success'] == true
             ? txResult['transactions'] as List<Transaction>
             : const [];
+        _transactionsSkipped = txResult['skipped'] == true;
         _unlabelled = pagination is Map
             ? int.tryParse(pagination['total_count']?.toString() ?? '') ?? 0
             : (uncategorized['transactions'] as List?)?.length ?? 0;
@@ -192,8 +213,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     await reload();
   }
 
-  void _changeMonth(DateTime month) {
-    setState(() => _month = month);
+  void _changePeriod(Period period) {
+    setState(() => _period = period);
     reload();
   }
 
@@ -222,6 +243,18 @@ class DashboardScreenState extends State<DashboardScreen> {
       for (final c in context.watch<CategoriesProvider>().categories)
         c.id: c.color,
     };
+    final fromServer = _cashFlow?.byCategory;
+    if (fromServer != null) {
+      return [
+        for (final s in fromServer)
+          if (s.amount > 0)
+            _LabelSpend(
+              s.categoryId,
+              s.categoryId == null ? l.homeNoLabel : (s.name ?? l.homeNoLabel),
+              s.color ?? colors[s.categoryId],
+            )..amount = s.amount,
+      ]..sort((a, b) => b.amount.compareTo(a.amount));
+    }
     final groups = <String?, _LabelSpend>{};
     for (final t in _transactions) {
       if (t.isTransfer || !t.isExpense) continue;
@@ -274,8 +307,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => StatementReviewScreen(
-          startDate: _month,
-          endDate: DateTime(_month.year, _month.month + 1, 0),
+          startDate: _period.range().start,
+          endDate: _period.range().end,
         ),
       ),
     );
@@ -286,9 +319,14 @@ class DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final c = LedgerColors.of(context);
-    final monthLong = DateFormat('MMMM', 'en_US').format(_month);
-    final prevMonth = DateFormat('MMMM', 'en_US')
-        .format(DateTime(_month.year, _month.month - 1));
+    final month = _period.anchorMonth();
+    final spentHeading = _period.isMonth
+        ? l.homeSpentIn(DateFormat('MMMM', 'en_US').format(month))
+        : l.homeSpentDuring(periodLabel(l, _period));
+    final compareWith = _period.isMonth
+        ? DateFormat('MMMM', 'en_US')
+            .format(DateTime(month.year, month.month - 1))
+        : l.homePreviousPeriod;
 
     return Scaffold(
       body: SafeArea(
@@ -316,7 +354,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     else if (_error != null)
                       _errorBox(l, c)
                     else
-                      ..._body(l, c, monthLong, prevMonth),
+                      ..._body(l, c, spentHeading, compareWith),
                   ],
                 ),
               ),
@@ -339,17 +377,20 @@ class DashboardScreenState extends State<DashboardScreen> {
   Widget _header(AppLocalizations l, LedgerColors c) {
     return Row(
       children: [
-        Text(
-          l.appTitle,
-          style: LedgerText.display(
-            size: 26,
-            weight: FontWeight.w700,
-            color: c.ink,
-            letterSpacing: -0.8,
+        Expanded(
+          child: Text(
+            l.appTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: LedgerText.display(
+              size: 26,
+              weight: FontWeight.w700,
+              color: c.ink,
+              letterSpacing: -0.8,
+            ),
           ),
         ),
-        const Spacer(),
-        MonthSwitcher(month: _month, onChanged: _changeMonth),
+        PeriodSwitcher(period: _period, onChanged: _changePeriod),
         const SizedBox(width: 4),
         IconButton(
           key: const ValueKey('home-header-report'),
@@ -386,8 +427,8 @@ class DashboardScreenState extends State<DashboardScreen> {
   List<Widget> _body(
     AppLocalizations l,
     LedgerColors c,
-    String monthLong,
-    String prevMonth,
+    String spentHeading,
+    String compareWith,
   ) {
     final currency = _currencyCode;
     final totals = _totals;
@@ -397,24 +438,26 @@ class DashboardScreenState extends State<DashboardScreen> {
     if (delta != null) {
       final amount = MoneyFormat.format(delta.abs(), currency: currency);
       compare = delta > 0
-          ? l.homeMoreThan(amount, prevMonth)
+          ? l.homeMoreThan(amount, compareWith)
           : delta < 0
-              ? l.homeLessThan(amount, prevMonth)
-              : l.homeSameAs(prevMonth);
+              ? l.homeLessThan(amount, compareWith)
+              : l.homeSameAs(compareWith);
     }
     final labels = _byLabel(l);
     final maxLabel = labels.isEmpty ? 0.0 : labels.first.amount;
     final outShare = totals.income <= 0
         ? (totals.spending > 0 ? 1.0 : 0.0)
         : (totals.spending / totals.income).clamp(0.0, 1.0);
-    final sorted = _transactions
-        .where((t) => !t.isTransfer && t.categoryId != null)
-        .length;
+    final sorted = _transactionsSkipped
+        ? null
+        : _transactions
+            .where((t) => !t.isTransfer && t.categoryId != null)
+            .length;
+    final flow = _cashFlow;
 
     return [
-      // Spent this month.
-      Text(l.homeSpentIn(monthLong),
-          style: TextStyle(fontSize: 14, color: c.muted)),
+      // Spent in the period.
+      Text(spentHeading, style: TextStyle(fontSize: 14, color: c.muted)),
       const SizedBox(height: 6),
       HeadlineAmount(totals.spending, currency: currency),
       if (compare != null) ...[
@@ -460,6 +503,10 @@ class DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+      if (flow != null && flow.hasStatement) ...[
+        const SizedBox(height: 20),
+        _statement(l, c, flow, currency),
+      ],
       const SizedBox(height: 28),
 
       if (_unlabelled > 0) ...[
@@ -481,7 +528,8 @@ class DashboardScreenState extends State<DashboardScreen> {
       if (labels.isEmpty)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Text(l.homeNothingSpent,
+          child: Text(
+              _period.isMonth ? l.homeNothingSpent : l.homeNothingSpentPeriod,
               style: TextStyle(fontSize: 15, color: c.muted)),
         )
       else
@@ -554,6 +602,62 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Bank-statement view: opening + in − out ± other = closing, so money
+  /// left at the end of one month visibly carries into the next.
+  Widget _statement(
+    AppLocalizations l,
+    LedgerColors c,
+    PeriodCashFlow flow,
+    String currency,
+  ) {
+    Widget line(String label, double value,
+        {Color? color, bool signed = false, bool total = false}) {
+      return Container(
+        constraints: const BoxConstraints(minHeight: 36),
+        decoration: total
+            ? BoxDecoration(border: Border(top: BorderSide(color: c.ink)))
+            : null,
+        padding: EdgeInsets.only(top: total ? 8 : 0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: LedgerText.body(
+                  size: 14,
+                  color: total ? c.ink : c.muted,
+                  weight: total ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+            RupeeAmount(
+              value,
+              currency: currency,
+              signed: signed,
+              size: 15,
+              weight: total ? FontWeight.w600 : FontWeight.w400,
+              color: color ?? c.ink,
+            ),
+          ],
+        ),
+      );
+    }
+
+    final other = flow.otherChanges ?? 0;
+    return Column(
+      key: const ValueKey('home-statement'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        line(l.homeOpeningBalance, flow.openingBalance!),
+        line(l.homeCameIn, flow.income, color: c.moneyIn, signed: true),
+        line(l.homeWentOut, -flow.spending, color: c.moneyOut, signed: true),
+        if (other.abs() >= 0.005)
+          line(l.homeOtherChanges, other, color: c.muted, signed: true),
+        line(l.homeClosingBalance, flow.closingBalance!, total: true),
+      ],
+    );
+  }
+
   Widget _statementsLink(AppLocalizations l, LedgerColors c) => _linkRow(
         key: const ValueKey('home-statements'),
         icon: Icons.description_outlined,
@@ -574,7 +678,7 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   void _openReport() => Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => ReportExportScreen(month: _month),
+          builder: (_) => ReportExportScreen(month: _period.anchorMonth()),
         ),
       );
 
@@ -657,8 +761,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _reviewBanner(AppLocalizations l, LedgerColors c, int sorted) {
-    final month = DateFormat('MMM yyyy', 'en_US').format(_month);
+  Widget _reviewBanner(AppLocalizations l, LedgerColors c, int? sorted) {
+    final period = periodLabel(l, _period);
     return Material(
       color: c.ink,
       borderRadius: BorderRadius.circular(2),
@@ -682,7 +786,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l.homeNeedLabelDetail(month, sorted),
+                      sorted == null
+                          ? period
+                          : l.homeNeedLabelDetail(period, sorted),
                       style: TextStyle(
                         fontSize: 13,
                         color: c.onInk.withValues(alpha: 0.75),
@@ -712,7 +818,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       onTap: widget.onOpenActivity == null
           ? null
           : () => widget.onOpenActivity!(
-                _month,
+                _period,
                 label.categoryId ?? TransactionsFilter.noLabel,
               ),
       child: Container(

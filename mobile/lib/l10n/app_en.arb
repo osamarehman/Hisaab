@@ -2172,5 +2172,50 @@
   "@aiKeyPrivacyNote": {"description": "Privacy note under the AI key form."},
 
   "assistantUseOwnKey": "Use your own AI key",
-  "@assistantUseOwnKey": {"description": "Button in the assistant consent panel that opens the AI key screen when AI is unavailable."}
+  "@assistantUseOwnKey": {"description": "Button in the assistant consent panel that opens the AI key screen when AI is unavailable."},
+
+  "periodChoose": "Choose period",
+  "@periodChoose": {"description": "Title of the sheet that picks the period Home and Activity show."},
+
+  "periodThisMonth": "This month",
+  "@periodThisMonth": {"description": "Period option: one calendar month, stepped with the arrows."},
+
+  "periodLast3Months": "Last 3 months",
+  "@periodLast3Months": {"description": "Period option ending today."},
+
+  "periodLast6Months": "Last 6 months",
+  "@periodLast6Months": {"description": "Period option ending today."},
+
+  "periodLast12Months": "Last 12 months",
+  "@periodLast12Months": {"description": "Period option ending today."},
+
+  "periodAllTime": "All time",
+  "@periodAllTime": {"description": "Period option covering every entry."},
+
+  "periodCustom": "Custom range…",
+  "@periodCustom": {"description": "Period option that opens a date range picker."},
+
+  "homeSpentDuring": "Spent · {period}",
+  "@homeSpentDuring": {"description": "Heading over the spending total for a period longer than a month.", "placeholders": {"period": {"type": "String"}}},
+
+  "homePreviousPeriod": "the previous period",
+  "@homePreviousPeriod": {"description": "Used in 'Rs 500 more than the previous period'."},
+
+  "homeOpeningBalance": "Opening balance",
+  "@homeOpeningBalance": {"description": "Cash position at the start of the period, like a bank statement."},
+
+  "homeClosingBalance": "Closing balance",
+  "@homeClosingBalance": {"description": "Cash position at the end of the period (or today)."},
+
+  "homeOtherChanges": "Other changes",
+  "@homeOtherChanges": {"description": "Balance changes that are neither income nor spending, such as transfers to savings or loan accounts and balance edits."},
+
+  "homeNothingSpentPeriod": "Nothing spent in this period.",
+  "@homeNothingSpentPeriod": {"description": "Empty state for spending by label when a period longer than a month is selected."},
+
+  "activitySearchPeriodHint": "Search this period",
+  "@activitySearchPeriodHint": {"description": "Search box hint in Activity when a period longer than a month is selected."},
+
+  "activityEmptyPeriod": "Nothing here for this period.",
+  "@activityEmptyPeriod": {"description": "Activity empty state when a period longer than a month is selected."}
 }

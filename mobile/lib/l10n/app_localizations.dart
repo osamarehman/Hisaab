@@ -4270,6 +4270,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use your own AI key'**
   String get assistantUseOwnKey;
+
+  /// Title of the sheet that picks the period Home and Activity show.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose period'**
+  String get periodChoose;
+
+  /// Period option: one calendar month, stepped with the arrows.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get periodThisMonth;
+
+  /// Period option ending today.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 months'**
+  String get periodLast3Months;
+
+  /// Period option ending today.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 6 months'**
+  String get periodLast6Months;
+
+  /// Period option ending today.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 12 months'**
+  String get periodLast12Months;
+
+  /// Period option covering every entry.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get periodAllTime;
+
+  /// Period option that opens a date range picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range…'**
+  String get periodCustom;
+
+  /// Heading over the spending total for a period longer than a month.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent · {period}'**
+  String homeSpentDuring(String period);
+
+  /// Used in 'Rs 500 more than the previous period'.
+  ///
+  /// In en, this message translates to:
+  /// **'the previous period'**
+  String get homePreviousPeriod;
+
+  /// Cash position at the start of the period, like a bank statement.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening balance'**
+  String get homeOpeningBalance;
+
+  /// Cash position at the end of the period (or today).
+  ///
+  /// In en, this message translates to:
+  /// **'Closing balance'**
+  String get homeClosingBalance;
+
+  /// Balance changes that are neither income nor spending, such as transfers to savings or loan accounts and balance edits.
+  ///
+  /// In en, this message translates to:
+  /// **'Other changes'**
+  String get homeOtherChanges;
+
+  /// Empty state for spending by label when a period longer than a month is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing spent in this period.'**
+  String get homeNothingSpentPeriod;
+
+  /// Search box hint in Activity when a period longer than a month is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this period'**
+  String get activitySearchPeriodHint;
+
+  /// Activity empty state when a period longer than a month is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here for this period.'**
+  String get activityEmptyPeriod;
 }
 
 class _AppLocalizationsDelegate

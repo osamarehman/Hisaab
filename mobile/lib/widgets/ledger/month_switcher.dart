@@ -13,6 +13,7 @@ class MonthSwitcher extends StatelessWidget {
     this.now,
     this.label,
     this.canGoNext,
+    this.onLabelTap,
   });
 
   /// Any day in the shown month.
@@ -27,6 +28,9 @@ class MonthSwitcher extends StatelessWidget {
 
   /// Overrides the default "no months after today" limit.
   final bool? canGoNext;
+
+  /// Makes the month label tappable (e.g. to pick another period).
+  final VoidCallback? onLabelTap;
 
   static DateTime firstOf(DateTime d) => DateTime(d.year, d.month);
 
@@ -77,15 +81,22 @@ class MonthSwitcher extends StatelessWidget {
             l.budgetsPreviousMonth,
             () => onChanged(DateTime(current.year, current.month - 1)),
           ),
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 84),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: LedgerText.figures(
-                size: 14,
-                weight: FontWeight.w500,
-                color: c.ink,
+          InkWell(
+            key: const ValueKey('month-switcher-label'),
+            onTap: onLabelTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 84, minHeight: 44),
+              child: Center(
+                widthFactor: 1,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: LedgerText.figures(
+                    size: 14,
+                    weight: FontWeight.w500,
+                    color: c.ink,
+                  ),
+                ),
               ),
             ),
           ),

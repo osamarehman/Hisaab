@@ -2403,4 +2403,51 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get assistantUseOwnKey => 'اپنی AI کلید استعمال کریں';
+
+  @override
+  String get periodChoose => 'مدت منتخب کریں';
+
+  @override
+  String get periodThisMonth => 'یہ مہینہ';
+
+  @override
+  String get periodLast3Months => 'پچھلے 3 مہینے';
+
+  @override
+  String get periodLast6Months => 'پچھلے 6 مہینے';
+
+  @override
+  String get periodLast12Months => 'پچھلے 12 مہینے';
+
+  @override
+  String get periodAllTime => 'شروع سے اب تک';
+
+  @override
+  String get periodCustom => 'اپنی تاریخیں…';
+
+  @override
+  String homeSpentDuring(String period) {
+    return 'خرچ · $period';
+  }
+
+  @override
+  String get homePreviousPeriod => 'پچھلی مدت';
+
+  @override
+  String get homeOpeningBalance => 'ابتدائی بیلنس';
+
+  @override
+  String get homeClosingBalance => 'اختتامی بیلنس';
+
+  @override
+  String get homeOtherChanges => 'دیگر تبدیلیاں';
+
+  @override
+  String get homeNothingSpentPeriod => 'اس مدت میں کوئی خرچ نہیں ہوا۔';
+
+  @override
+  String get activitySearchPeriodHint => 'اس مدت میں تلاش کریں';
+
+  @override
+  String get activityEmptyPeriod => 'اس مدت میں یہاں کچھ نہیں۔';
 }

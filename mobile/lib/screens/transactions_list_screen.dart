@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../models/offline_transaction.dart';
+import '../models/period.dart';
 import '../models/transaction.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/cash_flow_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
 import '../services/transactions_service.dart';
@@ -39,7 +41,7 @@ class _Row {
   bool get pendingDelete => local?.syncStatus == SyncStatus.pendingDelete;
 }
 
-/// Activity: one month of transactions, searchable and filterable by label.
+/// Activity: a period of transactions (one month by default), searchable and filterable by label.
 /// With [account], shows only that account's transactions.
 class TransactionsListScreen extends StatefulWidget {
   const TransactionsListScreen({super.key, this.account});
@@ -55,7 +57,8 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
   final _searchController = TextEditingController();
   final _log = LogService.instance;
 
-  DateTime _month = MonthSwitcher.firstOf(DateTime.now());
+  final _cashFlowService = CashFlowService();
+  Period _period = Period.thisMonth();
   String? _filter; // null = All, a category id, or TransactionsFilter.noLabel
   bool _calendar = false;
   DateTime? _day; // Selected calendar day; null = today when in this month.
@@ -64,6 +67,10 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
   String? _error;
   int _loadToken = 0;
   List<Transaction> _server = const [];
+
+  /// Family-wide totals for periods longer than a month, so the In/Out strip
+  /// stays right even if the list hit its page limit. null = sum the rows.
+  PeriodCashFlow? _flow;
 
   @override
   void initState() {
@@ -78,10 +85,10 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     super.dispose();
   }
 
-  /// Switch to [month] (and optionally a label filter), then load.
-  void showMonth(DateTime month, {String? categoryId}) {
+  /// Switch to [period] (and optionally a label filter), then load.
+  void showPeriod(Period period, {String? categoryId}) {
     setState(() {
-      _month = MonthSwitcher.firstOf(month);
+      _period = period;
       _filter = categoryId;
       _day = null;
       _searchController.clear();
@@ -113,7 +120,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
       accountId: widget.account?.id,
     );
 
-    final month = _month;
+    final period = _period;
     final online = connectivity?.isOnline ?? true;
     if (!online) {
       await localLoad;
@@ -126,13 +133,17 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
       return;
     }
 
+    final dates = period.transactionDates();
+    final flowFuture = period.isMonth || widget.account != null
+        ? null
+        : _cashFlowService.getPeriod(accessToken: accessToken, period: period);
     final result = await _service.getAllTransactions(
       accessToken: accessToken,
       accountId: widget.account?.id,
-      startDate: DateFormat('yyyy-MM-dd').format(month),
-      endDate: DateFormat('yyyy-MM-dd')
-          .format(DateTime(month.year, month.month + 1, 0)),
+      startDate: dates['start_date'],
+      endDate: dates['end_date'],
     );
+    final flowResult = await flowFuture;
     await localLoad;
     if (!mounted || token != _loadToken) return;
     if (result['error'] == 'unauthorized') {
@@ -141,6 +152,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     }
     setState(() {
       _loading = false;
+      _flow = flowResult?['cash_flow'] as PeriodCashFlow?;
       if (result['success'] == true) {
         _server = result['transactions'] as List<Transaction>;
         _offline = false;
@@ -152,14 +164,14 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     });
   }
 
-  bool _inMonth(String date) {
+  bool _inPeriod(String date) {
     final d = DateTime.tryParse(date);
-    return d != null && d.year == _month.year && d.month == _month.month;
+    return d != null && _period.contains(d);
   }
 
   List<_Row> _rows(TransactionsProvider provider) {
     final local = provider.offlineTransactions.where((t) =>
-        _inMonth(t.date) &&
+        _inPeriod(t.date) &&
         (widget.account == null || t.accountId == widget.account!.id));
     final byServerId = {
       for (final t in local)
@@ -289,6 +301,11 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
         moneyOut += r.tx.absAmount;
       }
     }
+    final flow = _flow;
+    if (flow != null && !_offline) {
+      moneyIn = flow.income;
+      moneyOut = flow.spending;
+    }
 
     // Group by day, newest first.
     final days = <String, List<_Row>>{};
@@ -327,16 +344,16 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                           style: LedgerText.title(color: c.ink),
                         ),
                       ),
-                      MonthSwitcher(
-                        month: _month,
-                        onChanged: (m) => showMonth(m, categoryId: _filter),
+                      PeriodSwitcher(
+                        period: _period,
+                        onChanged: (p) => showPeriod(p, categoryId: _filter),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _viewToggle(l, c),
+                      if (_period.isMonth) _viewToggle(l, c),
                       const Spacer(),
                       TextButton(
                         onPressed: _importStatement,
@@ -354,7 +371,9 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                     controller: _searchController,
                     textInputAction: TextInputAction.search,
                     decoration: InputDecoration(
-                      hintText: l.activitySearchHint,
+                      hintText: _period.isMonth
+                          ? l.activitySearchHint
+                          : l.activitySearchPeriodHint,
                       prefixIcon: Icon(Icons.search, color: c.muted),
                       suffixIcon: _searchController.text.isEmpty
                           ? null
@@ -409,14 +428,16 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                       padding: EdgeInsets.only(top: 40),
                       child: Center(child: CircularProgressIndicator()),
                     )
-                  else if (_calendar)
+                  else if (_calendar && _period.isMonth)
                     ..._calendarView(
                         rows, l, c, accountNames, labelColors, currency)
                   else if (rows.isEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 24),
                       child: Text(
-                        l.activityEmpty,
+                        _period.isMonth
+                            ? l.activityEmpty
+                            : l.activityEmptyPeriod,
                         style: TextStyle(fontSize: 15, color: c.muted),
                       ),
                     )
@@ -487,7 +508,8 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     String? currency,
   ) {
     final today = dayOf(DateTime.now());
-    final inMonth = today.year == _month.year && today.month == _month.month;
+    final month = _period.anchorMonth();
+    final inMonth = today.year == month.year && today.month == month.month;
     final day = _day ?? (inMonth ? today : null);
     final live = rows.where((r) => !r.pendingDelete);
     final totals = paymentsByDay(live.map((r) => r.tx));
@@ -501,7 +523,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
 
     return [
       ActivityCalendar(
-        month: _month,
+        month: month,
         totals: totals,
         selected: day,
         onSelect: (d) => setState(() => _day = d),

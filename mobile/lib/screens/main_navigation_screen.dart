@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/period.dart';
 import '../widgets/ledger/ledger.dart';
 import 'accounts_screen.dart';
 import 'chat_list_screen.dart';
@@ -48,8 +49,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _assistantKey.currentState?.ask(question);
   }
 
-  void _openActivity(DateTime month, String? categoryId) {
-    _activityKey.currentState?.showMonth(month, categoryId: categoryId);
+  void _openActivity(Period period, String? categoryId) {
+    _activityKey.currentState?.showPeriod(period, categoryId: categoryId);
     setState(() => _page = 1);
   }
 

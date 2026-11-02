@@ -2419,4 +2419,51 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get assistantUseOwnKey => 'Use your own AI key';
+
+  @override
+  String get periodChoose => 'Choose period';
+
+  @override
+  String get periodThisMonth => 'This month';
+
+  @override
+  String get periodLast3Months => 'Last 3 months';
+
+  @override
+  String get periodLast6Months => 'Last 6 months';
+
+  @override
+  String get periodLast12Months => 'Last 12 months';
+
+  @override
+  String get periodAllTime => 'All time';
+
+  @override
+  String get periodCustom => 'Custom range…';
+
+  @override
+  String homeSpentDuring(String period) {
+    return 'Spent · $period';
+  }
+
+  @override
+  String get homePreviousPeriod => 'the previous period';
+
+  @override
+  String get homeOpeningBalance => 'Opening balance';
+
+  @override
+  String get homeClosingBalance => 'Closing balance';
+
+  @override
+  String get homeOtherChanges => 'Other changes';
+
+  @override
+  String get homeNothingSpentPeriod => 'Nothing spent in this period.';
+
+  @override
+  String get activitySearchPeriodHint => 'Search this period';
+
+  @override
+  String get activityEmptyPeriod => 'Nothing here for this period.';
 }

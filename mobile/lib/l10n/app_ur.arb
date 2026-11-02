@@ -694,5 +694,20 @@
   "aiKeyRemoveFailed": "کلید ہٹائی نہیں جا سکی۔ دوبارہ کوشش کریں۔",
   "aiKeyOffline": "سرور تک رسائی نہیں ہو سکی۔ اپنا کنکشن چیک کر کے دوبارہ کوشش کریں۔",
   "aiKeyPrivacyNote": "آپ کے سوال اور گھرانے کا وہ ڈیٹا جو اسسٹنٹ پڑھتا ہے، آپ کے چنے ہوئے فراہم کنندہ کو بھیجا جاتا ہے۔ مفت پلان انہیں اپنے ماڈل بہتر بنانے کے لیے استعمال کر سکتے ہیں۔",
-  "assistantUseOwnKey": "اپنی AI کلید استعمال کریں"
+  "assistantUseOwnKey": "اپنی AI کلید استعمال کریں",
+  "periodChoose": "مدت منتخب کریں",
+  "periodThisMonth": "یہ مہینہ",
+  "periodLast3Months": "پچھلے 3 مہینے",
+  "periodLast6Months": "پچھلے 6 مہینے",
+  "periodLast12Months": "پچھلے 12 مہینے",
+  "periodAllTime": "شروع سے اب تک",
+  "periodCustom": "اپنی تاریخیں…",
+  "homeSpentDuring": "خرچ · {period}",
+  "homePreviousPeriod": "پچھلی مدت",
+  "homeOpeningBalance": "ابتدائی بیلنس",
+  "homeClosingBalance": "اختتامی بیلنس",
+  "homeOtherChanges": "دیگر تبدیلیاں",
+  "homeNothingSpentPeriod": "اس مدت میں کوئی خرچ نہیں ہوا۔",
+  "activitySearchPeriodHint": "اس مدت میں تلاش کریں",
+  "activityEmptyPeriod": "اس مدت میں یہاں کچھ نہیں۔"
 }

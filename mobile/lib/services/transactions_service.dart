@@ -184,11 +184,12 @@ class TransactionsService {
   }
 
   /// Every transaction in a date range (all pages, newest first), or the
-  /// first page's error map.
+  /// first page's error map. No dates means all time. `complete` is false
+  /// when [maxPages] cut the list short.
   Future<Map<String, dynamic>> getAllTransactions({
     required String accessToken,
-    required String startDate,
-    required String endDate,
+    String? startDate,
+    String? endDate,
     String? accountId,
     int maxPages = 20,
   }) async {
@@ -212,7 +213,11 @@ class TransactionsService {
           : 1;
       page++;
     }
-    return {'success': true, 'transactions': all};
+    return {
+      'success': true,
+      'transactions': all,
+      'complete': page > totalPages
+    };
   }
 
   Future<Map<String, dynamic>> getTransaction({
