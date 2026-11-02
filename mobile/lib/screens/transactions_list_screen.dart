@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/account.dart';
+import '../models/category.dart';
 import '../models/offline_transaction.dart';
 import '../models/period.dart';
 import '../models/transaction.dart';
@@ -199,13 +200,22 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     return rows;
   }
 
-  List<_Row> _applyFilters(List<_Row> rows) {
+  /// [categories] lets a parent label also match its subcategories, like
+  /// the web Activity filter.
+  List<_Row> _applyFilters(List<_Row> rows, List<Category> categories) {
+    final labelIds = _filter == null || _filter == TransactionsFilter.noLabel
+        ? const <String>{}
+        : {
+            _filter!,
+            for (final c in categories)
+              if (c.parent?.id == _filter) c.id,
+          };
     final q = _searchController.text.trim().toLowerCase();
     return rows.where((r) {
       final t = r.tx;
       if (_filter == TransactionsFilter.noLabel) {
         if (t.categoryId != null || t.isTransfer) return false;
-      } else if (_filter != null && t.categoryId != _filter) {
+      } else if (_filter != null && !labelIds.contains(t.categoryId)) {
         return false;
       }
       if (q.isEmpty) return true;
@@ -291,7 +301,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
     final labelColors = {for (final cat in categories) cat.id: cat.color};
 
     final monthRows = _rows(provider);
-    final rows = _applyFilters(monthRows);
+    final rows = _applyFilters(monthRows, categories);
     var moneyIn = 0.0, moneyOut = 0.0;
     for (final r in monthRows) {
       if (r.tx.isTransfer || r.pendingDelete) continue;
