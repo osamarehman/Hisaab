@@ -1,9 +1,12 @@
 # A household's private address for forwarded bank alert emails:
-# <token>@<BANK_ALERTS_EMAIL_DOMAIN>. The token is the only secret that ties
-# mail to a household, so it is random, lowercase (mail clients fold case)
-# and can be rotated, which stops the old address at once.
+# alerts+<token>@<BANK_ALERTS_EMAIL_DOMAIN>. Cloudflare Email Routing can't
+# catch-all on a subdomain, so one literal rule for alerts@ takes every
+# household's mail and the plus tag says whose it is. The token is the only
+# secret that ties mail to a household, so it is random, lowercase (mail
+# clients fold case) and can be rotated, which stops the old address at once.
 class EmailInbox < ApplicationRecord
   TOKEN_LENGTH = 20
+  MAILBOX = "alerts".freeze
   # Gmail asks the new address to confirm a forwarding rule before it forwards.
   GMAIL_CONFIRMATION_SENDER = "forwarding-noreply@google.com".freeze
 
@@ -20,7 +23,8 @@ class EmailInbox < ApplicationRecord
   def self.for_recipients(addresses)
     tokens = Array(addresses).filter_map do |address|
       local, domain = address.to_s.downcase.strip.split("@", 2)
-      local if domain == self.domain && local.present?
+      mailbox, token = local.to_s.split("+", 2)
+      token if domain == self.domain && mailbox == MAILBOX && token.present?
     end
     find_by(token: tokens) if tokens.any?
   end
@@ -30,7 +34,7 @@ class EmailInbox < ApplicationRecord
   end
 
   def address
-    "#{token}@#{self.class.domain}"
+    "#{MAILBOX}+#{token}@#{self.class.domain}"
   end
 
   def rotate!

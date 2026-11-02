@@ -14,7 +14,7 @@ class Api::V1::BankAlertsApiTest < ActionDispatch::IntegrationTest
     get "/api/v1/email_inbox", headers: api_headers(@key)
     assert_response :ok
     address = response.parsed_body["address"]
-    assert_match(/\A[0-9a-z]{20}@#{Regexp.escape(EmailInbox.domain)}\z/, address)
+    assert_match(/\Aalerts\+[0-9a-z]{20}@#{Regexp.escape(EmailInbox.domain)}\z/, address)
     assert_nil response.parsed_body["confirmation"]
     assert_equal [], response.parsed_body["senders"]
 

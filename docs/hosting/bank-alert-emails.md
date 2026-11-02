@@ -1,7 +1,7 @@
 # Bank alert emails
 
 Households forward their bank's alert emails to a private address such as
-`k7f3q9x2m4abc1d0e9fg@in.hisaab.shipdeck.dev`. Each email becomes a **pending**
+`alerts+k7f3q9x2m4abc1d0e9fg@in.hisaab.shipdeck.dev`. Each email becomes a **pending**
 transaction (or an alert waiting for an account), which the user approves or
 rejects in the app. Nothing is posted without review: forwarded mail can't be
 authenticated against the bank, so the secret address plus the household's
@@ -12,8 +12,8 @@ which posts the raw message to Action Mailbox's relay ingress. No mail server
 on the host is involved.
 
 ```
-bank → user's Gmail/Outlook rule → <token>@in.hisaab.shipdeck.dev
-     → Cloudflare Email Routing (catch-all) → Email Worker
+bank → user's Gmail/Outlook rule → alerts+<token>@in.hisaab.shipdeck.dev
+     → Cloudflare Email Routing (rule for alerts@, subaddressing on) → Email Worker
      → POST https://hisaab.shipdeck.dev/rails/action_mailbox/relay/inbound_emails
      → BankAlertsMailbox → BankAlert::Receiver
 ```
@@ -31,20 +31,25 @@ Restart the app. With the password blank the ingress refuses every message.
 
 ## 2. Cloudflare Email Routing on the subdomain
 
-In the Cloudflare dashboard for `shipdeck.dev`:
+`shipdeck.dev` itself receives mail elsewhere (its MX points at another mail
+server), so Email Routing must be enabled **for the subdomain only**. Don't
+enable it for the apex: that replaces the apex MX records. Catch-all rules
+only exist on the apex, so every household shares one literal address,
+`alerts@`, and subaddressing carries the household's token.
 
-1. **Email → Email Routing → Settings → Subdomains**: add `in.hisaab`.
-   Cloudflare adds the MX and SPF (TXT) records for `in.hisaab.shipdeck.dev`.
-   Check they're present under **DNS** (three `MX` records pointing at
-   `route1/2/3.mx.cloudflare.net`, and a `TXT` `v=spf1 include:_spf.mx.cloudflare.net ~all`).
-2. Create the Worker below (**Workers & Pages → Create → Hello World**, then
+In the Cloudflare dashboard for `shipdeck.dev`, **Email → Email Routing → Settings**:
+
+1. **Subdomains**: add `in.hisaab`. Cloudflare adds MX records
+   (`route1/2/3.mx.cloudflare.net`) and an SPF `TXT` record for
+   `in.hisaab.shipdeck.dev` only. Check the apex `shipdeck.dev` MX is unchanged.
+2. **Subaddressing**: turn it on, so `alerts+<token>@` matches the `alerts@` rule.
+3. Create the Worker below (**Workers & Pages → Create → Hello World**, then
    replace the code). Under the Worker's **Settings → Variables and secrets**,
    add the secrets `INGRESS_URL`
    (`https://hisaab.shipdeck.dev/rails/action_mailbox/relay/inbound_emails`) and
    `INGRESS_PASSWORD` (the same value as `RAILS_INBOUND_EMAIL_PASSWORD`).
-3. **Email → Email Routing → Routing rules → Catch-all address** for
-   `in.hisaab.shipdeck.dev`: action **Send to a Worker**, choose the Worker,
-   and enable it.
+4. **Routing rules → Create address**: `alerts@in.hisaab.shipdeck.dev`, action
+   **Send to a Worker**, choose the Worker.
 
 ## Worker
 
@@ -78,7 +83,7 @@ export default {
 
 ## 3. Check it
 
-Send a mail to `anything@in.hisaab.shipdeck.dev` from any account. The Worker's
+Send a mail to `alerts+test@in.hisaab.shipdeck.dev` from any account. The Worker's
 logs should show a `204` from the ingress, and the app's debug log a
 `bank_alert_email` entry "No household inbox for recipients". A household's
 real address (from `GET /api/v1/email_inbox` or the app's settings) then

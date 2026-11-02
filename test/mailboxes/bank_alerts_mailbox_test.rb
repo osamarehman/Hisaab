@@ -37,7 +37,7 @@ class BankAlertsMailboxTest < ActionMailbox::TestCase
       content_transfer_encoding "quoted-printable"
       body html
     end
-    mail.header["X-Original-To"] = "#{@inbox.token}@#{EmailInbox.domain}"
+    mail.header["X-Original-To"] = @inbox.address
     mail.to = "me@gmail.com"
 
     alert = receive_inbound_email_from_source(mail.to_s) && @family.bank_alerts.last
@@ -77,6 +77,8 @@ class BankAlertsMailboxTest < ActionMailbox::TestCase
     assert_no_difference -> { BankAlert.count } do
       deliver(to: old)
       deliver(to: "nobody@#{EmailInbox.domain}")
+      deliver(to: "alerts@#{EmailInbox.domain}")
+      deliver(to: "other+#{@inbox.token}@#{EmailInbox.domain}")
     end
   end
 
