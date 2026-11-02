@@ -233,7 +233,7 @@ class Api::V1::AccountsController < Api::V1::BaseController
     end
 
     def create_params
-      account_params.permit(:name, :accountable_type, :subtype, :balance, :currency, :opening_balance_date)
+      account_params.permit(:name, :accountable_type, :subtype, :balance, :currency, :opening_balance_date, :number_last4)
     end
 
     def update_params
@@ -270,7 +270,8 @@ class Api::V1::AccountsController < Api::V1::BaseController
         accountable_type: accountable_type,
         subtype: subtype,
         balance: balance,
-        currency: currency
+        currency: currency,
+        number_last4: attrs[:number_last4]
       }.compact
     end
 

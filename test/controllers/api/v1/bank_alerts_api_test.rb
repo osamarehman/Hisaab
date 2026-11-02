@@ -87,6 +87,14 @@ class Api::V1::BankAlertsApiTest < ActionDispatch::IntegrationTest
 
     patch "/api/v1/accounts/#{@account.id}", params: { account: { number_last4: "94" } }, headers: api_headers(@key)
     assert_response :unprocessable_entity
+
+    patch "/api/v1/accounts/#{@account.id}", params: { account: { number_last4: nil } }, as: :json, headers: api_headers(@key)
+    assert_response :ok
+    assert_nil response.parsed_body["number_last4"]
+
+    post "/api/v1/accounts", params: { account: { name: "Meezan", accountable_type: "Depository", number_last4: "1234" } }, headers: api_headers(@key)
+    assert_response :created
+    assert_equal "1234", response.parsed_body["number_last4"]
   end
 
   private

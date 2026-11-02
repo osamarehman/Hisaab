@@ -446,7 +446,8 @@ RSpec.configure do |config|
                     type: :string,
                     format: :date,
                     description: 'Date of the opening balance (YYYY-MM-DD, not in the future). Defaults to two years ago.'
-                  }
+                  },
+                  number_last4: { type: :string, nullable: true, pattern: '^\\d{4}$', description: 'Last four digits of the account number, used to match bank alert emails' }
                 }
               }
             }
@@ -462,7 +463,8 @@ RSpec.configure do |config|
                   balance: {
                     type: :string,
                     description: "New current balance as a decimal string; recorded as today's valuation."
-                  }
+                  },
+                  number_last4: { type: :string, nullable: true, pattern: '^\\d{4}$', description: 'Last four digits of the account number, null clears it; used to match bank alert emails' }
                 }
               }
             }
