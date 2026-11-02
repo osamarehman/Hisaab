@@ -2509,7 +2509,7 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get bankAlertsOutlookSteps =>
-      '1. outlook.com کھولیں، پھر Settings، پھر Mail، پھر Rules۔\n2. نیا رول بنائیں: Condition میں From = اپنے بینک کا الرٹ پتہ۔\n3. Action: اوپر والے پتے پر Forward to۔\n4. محفوظ کریں۔ صرف بینک کی ای میلز فارورڈ ہوں گی۔';
+      '1. outlook.com کھولیں، پھر Settings، پھر Mail، پھر Rules۔\n2. نیا رول بنائیں: Condition میں From = اپنے بینک کا الرٹ پتہ۔\n3. Action: اوپر والے پتے پر Redirect to۔ Forward نہیں، Redirect چنیں: Forward سے بینک بھیجنے والے کے طور پر نظر نہیں آتا۔\n4. محفوظ کریں۔ صرف بینک کی ای میلز فارورڈ ہوں گی۔';
 
   @override
   String get bankAlertsSendersHeader => 'بینک کے بھیجنے والے';

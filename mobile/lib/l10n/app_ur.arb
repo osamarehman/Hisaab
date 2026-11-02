@@ -728,7 +728,7 @@
   "bankAlertsGmailTitle": "Gmail",
   "bankAlertsGmailSteps": "1. کمپیوٹر پر Gmail کھولیں، پھر Settings، پھر See all settings، پھر Forwarding and POP/IMAP۔\n2. Add a forwarding address دبائیں اور اوپر والا پتہ پیسٹ کریں۔\n3. Gmail ایک تصدیقی کوڈ بھیجے گا۔ یہ ایک منٹ میں اسی اسکرین پر آ جائے گا؛ اسے Gmail میں درج کریں۔\n4. ایک فلٹر بنائیں: From میں اپنے بینک کا الرٹ پتہ لکھیں اور Forward it to میں یہ پتہ چنیں۔\nصرف فلٹر سے ملنے والی ای میلز فارورڈ ہوں گی۔",
   "bankAlertsOutlookTitle": "Outlook / Hotmail",
-  "bankAlertsOutlookSteps": "1. outlook.com کھولیں، پھر Settings، پھر Mail، پھر Rules۔\n2. نیا رول بنائیں: Condition میں From = اپنے بینک کا الرٹ پتہ۔\n3. Action: اوپر والے پتے پر Forward to۔\n4. محفوظ کریں۔ صرف بینک کی ای میلز فارورڈ ہوں گی۔",
+  "bankAlertsOutlookSteps": "1. outlook.com کھولیں، پھر Settings، پھر Mail، پھر Rules۔\n2. نیا رول بنائیں: Condition میں From = اپنے بینک کا الرٹ پتہ۔\n3. Action: اوپر والے پتے پر Redirect to۔ Forward نہیں، Redirect چنیں: Forward سے بینک بھیجنے والے کے طور پر نظر نہیں آتا۔\n4. محفوظ کریں۔ صرف بینک کی ای میلز فارورڈ ہوں گی۔",
   "bankAlertsSendersHeader": "بینک کے بھیجنے والے",
   "bankAlertsSendersEmpty": "ابھی کوئی بھیجنے والا نہیں۔ اپنے بینک کا الرٹ پتہ شامل کریں۔",
   "bankAlertsSendersHelp": "صرف انہی پتوں کی ای میلز پڑھی جاتی ہیں۔ پورے ڈومین کے لیے {example} لکھیں۔",

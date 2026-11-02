@@ -2515,7 +2515,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bankAlertsOutlookSteps =>
-      '1. Open outlook.com, then Settings, then Mail, then Rules.\n2. Add a new rule: Condition From = your bank\'s alert address.\n3. Action: Forward to the address above.\n4. Save. Only emails from your bank are forwarded.';
+      '1. Open outlook.com, then Settings, then Mail, then Rules.\n2. Add a new rule: Condition From = your bank\'s alert address.\n3. Action: Redirect to the address above. Use Redirect, not Forward: Forward hides the bank as the sender.\n4. Save. Only emails from your bank are sent on.';
 
   @override
   String get bankAlertsSendersHeader => 'Bank senders';
