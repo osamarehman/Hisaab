@@ -116,6 +116,13 @@ and family scoping.
 ## Family defaults
 
 - New families default to `currency: "PKR"`, `country: "PK"`.
+- `GET /api/v1/family_settings` (read scope) returns `currency` and
+  `enabled_currencies`, among other settings.
+- `PATCH /api/v1/family_settings` with `{ "currency": "USD" }` (write scope,
+  family admin only) changes the household currency. Any ISO 4217 code,
+  case-insensitive; the response is the same body as `GET`. `403` for a
+  member or a read-only token, `422 { "error": "validation_failed" }` for an
+  unknown or missing code. Existing accounts keep their own currency.
 - `DISABLE_BANK_SYNC=true` hides bank-provider connection UI and adapters.
 
 ## Accounts

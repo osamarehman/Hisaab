@@ -76,7 +76,58 @@ class Api::V1::FamilySettingsControllerTest < ActionDispatch::IntegrationTest
     api_key_without_read&.destroy
   end
 
+  test "admin changes the family currency" do
+    patch api_v1_family_settings_url, params: { currency: "eur" }, headers: api_headers(write_key_for(@user))
+
+    assert_response :success
+    assert_equal "EUR", JSON.parse(response.body)["currency"]
+    assert_equal "EUR", @family.reload.currency
+  end
+
+  test "rejects an unknown currency" do
+    patch api_v1_family_settings_url, params: { currency: "XYZ" }, headers: api_headers(write_key_for(@user))
+
+    assert_response :unprocessable_entity
+    assert_equal "validation_failed", JSON.parse(response.body)["error"]
+    assert_equal "SGD", @family.reload.currency
+  end
+
+  test "rejects a missing currency" do
+    patch api_v1_family_settings_url, params: {}, headers: api_headers(write_key_for(@user))
+
+    assert_response :unprocessable_entity
+    assert_equal "SGD", @family.reload.currency
+  end
+
+  test "members cannot change the family currency" do
+    member = users(:family_member)
+    assert_equal @family, member.family
+
+    patch api_v1_family_settings_url, params: { currency: "EUR" }, headers: api_headers(write_key_for(member))
+
+    assert_response :forbidden
+    assert_equal "SGD", @family.reload.currency
+  end
+
+  test "changing the currency requires write scope" do
+    patch api_v1_family_settings_url, params: { currency: "EUR" }, headers: api_headers(@api_key)
+
+    assert_response :forbidden
+    assert_equal "SGD", @family.reload.currency
+  end
+
   private
+
+    def write_key_for(user)
+      user.api_keys.active.destroy_all
+      ApiKey.create!(
+        user: user,
+        name: "Test Write Key",
+        scopes: [ "read_write" ],
+        source: "web",
+        display_key: "test_write_#{SecureRandom.hex(8)}"
+      ).tap { |key| Redis.new.del("api_rate_limit:#{key.id}") }
+    end
 
     def api_headers(api_key)
       { "X-Api-Key" => api_key.plain_key }

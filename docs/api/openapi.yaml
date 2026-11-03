@@ -7684,6 +7684,53 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update family settings
+      description: Change the household currency. Family admins only; requires the
+        read_write scope.
+      tags:
+      - Family Settings
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: family settings updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/FamilySettings"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+          description: insufficient scope or not a family admin
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '422':
+          description: unknown currency code
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  type: string
+                  description: ISO 4217 currency code, case-insensitive
+                  example: USD
+              required:
+              - currency
+        required: true
   "/api/v1/financekit/capabilities":
     get:
       summary: Discover FinanceKit background publisher support
