@@ -2701,4 +2701,67 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get homeUpdateDetail => 'Google Play پر اپ ڈیٹ کرنے کے لیے دبائیں';
+
+  @override
+  String get csvMapTitle => 'کالم چیک کریں';
+
+  @override
+  String get csvMapIntro =>
+      'ہم نے آپ کی فائل کے کالم ملا دیے ہیں۔ انہیں اور نمونہ دیکھ لیں، پھر لائنیں شامل کریں۔';
+
+  @override
+  String get csvMapDate => 'تاریخ';
+
+  @override
+  String get csvMapDateFormat => 'تاریخ کا انداز';
+
+  @override
+  String get csvMapDescription => 'تفصیل';
+
+  @override
+  String get csvMapSeparate => 'جانے والی اور آنے والی رقم الگ کالموں میں ہے';
+
+  @override
+  String get csvMapMoneyOut => 'جانے والی رقم (ڈیبٹ)';
+
+  @override
+  String get csvMapMoneyIn => 'آنے والی رقم (کریڈٹ)';
+
+  @override
+  String get csvMapAmount => 'رقم';
+
+  @override
+  String get csvMapOutNegative => 'جانے والی رقم منفی عدد میں لکھی ہے';
+
+  @override
+  String get csvMapNone => 'کوئی نہیں';
+
+  @override
+  String get csvMapPreview => 'نمونہ';
+
+  @override
+  String get csvMapNoLines =>
+      'ان کالموں سے کوئی لائن نہیں پڑھی جا سکی۔ تاریخ کا کالم اور اس کا انداز چیک کریں۔';
+
+  @override
+  String csvMapSummary(int count, String moneyIn, String moneyOut) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count لائنیں',
+      one: '1 لائن',
+    );
+    return '$_temp0 · آئے $moneyIn · گئے $moneyOut';
+  }
+
+  @override
+  String csvMapConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'یہ کالم استعمال کریں ($count لائنیں)',
+      one: 'یہ کالم استعمال کریں (1 لائن)',
+    );
+    return '$_temp0';
+  }
 }

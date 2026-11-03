@@ -4768,6 +4768,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to update on Google Play'**
   String get homeUpdateDetail;
+
+  /// Title of the screen confirming a statement CSV's columns.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the columns'**
+  String get csvMapTitle;
+
+  /// Intro on the CSV column screen.
+  ///
+  /// In en, this message translates to:
+  /// **'We matched your file\'s columns. Check them and the preview, then add the lines.'**
+  String get csvMapIntro;
+
+  /// Label of the date column picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get csvMapDate;
+
+  /// Label of the date format picker; options show a sample date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get csvMapDateFormat;
+
+  /// Label of the description column picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get csvMapDescription;
+
+  /// Switch between separate debit/credit columns and one amount column.
+  ///
+  /// In en, this message translates to:
+  /// **'Money out and money in are separate columns'**
+  String get csvMapSeparate;
+
+  /// Label of the debit column picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Money out (debit)'**
+  String get csvMapMoneyOut;
+
+  /// Label of the credit column picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Money in (credit)'**
+  String get csvMapMoneyIn;
+
+  /// Label of the single amount column picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get csvMapAmount;
+
+  /// Switch for a single amount column: whether spending is negative.
+  ///
+  /// In en, this message translates to:
+  /// **'Money out is shown as a negative number'**
+  String get csvMapOutNegative;
+
+  /// Dropdown option for no column.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get csvMapNone;
+
+  /// Section header above the first statement lines.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get csvMapPreview;
+
+  /// Shown when the chosen columns produce no lines.
+  ///
+  /// In en, this message translates to:
+  /// **'No lines could be read with these columns. Check the date column and its format.'**
+  String get csvMapNoLines;
+
+  /// Summary of the lines the chosen columns produce.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line} other{{count} lines}} · in {moneyIn} · out {moneyOut}'**
+  String csvMapSummary(int count, String moneyIn, String moneyOut);
+
+  /// Button that confirms the columns and uploads the statement.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Use these columns (1 line)} other{Use these columns ({count} lines)}}'**
+  String csvMapConfirm(int count);
 }
 
 class _AppLocalizationsDelegate

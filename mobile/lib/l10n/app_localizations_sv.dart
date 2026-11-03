@@ -2718,4 +2718,67 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get homeUpdateDetail => 'Tap to update on Google Play';
+
+  @override
+  String get csvMapTitle => 'Check the columns';
+
+  @override
+  String get csvMapIntro =>
+      'We matched your file\'s columns. Check them and the preview, then add the lines.';
+
+  @override
+  String get csvMapDate => 'Date';
+
+  @override
+  String get csvMapDateFormat => 'Date format';
+
+  @override
+  String get csvMapDescription => 'Description';
+
+  @override
+  String get csvMapSeparate => 'Money out and money in are separate columns';
+
+  @override
+  String get csvMapMoneyOut => 'Money out (debit)';
+
+  @override
+  String get csvMapMoneyIn => 'Money in (credit)';
+
+  @override
+  String get csvMapAmount => 'Amount';
+
+  @override
+  String get csvMapOutNegative => 'Money out is shown as a negative number';
+
+  @override
+  String get csvMapNone => 'None';
+
+  @override
+  String get csvMapPreview => 'Preview';
+
+  @override
+  String get csvMapNoLines =>
+      'No lines could be read with these columns. Check the date column and its format.';
+
+  @override
+  String csvMapSummary(int count, String moneyIn, String moneyOut) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines',
+      one: '1 line',
+    );
+    return '$_temp0 · in $moneyIn · out $moneyOut';
+  }
+
+  @override
+  String csvMapConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Use these columns ($count lines)',
+      one: 'Use these columns (1 line)',
+    );
+    return '$_temp0';
+  }
 }

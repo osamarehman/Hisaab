@@ -781,5 +781,21 @@
   "currencySaveFailed": "کرنسی نہیں بدلی جا سکی۔ دوبارہ کوشش کریں۔",
 
   "homeUpdateTitle": "حساب کا نیا ورژن آ گیا ہے",
-  "homeUpdateDetail": "Google Play پر اپ ڈیٹ کرنے کے لیے دبائیں"
+  "homeUpdateDetail": "Google Play پر اپ ڈیٹ کرنے کے لیے دبائیں",
+
+  "csvMapTitle": "کالم چیک کریں",
+  "csvMapIntro": "ہم نے آپ کی فائل کے کالم ملا دیے ہیں۔ انہیں اور نمونہ دیکھ لیں، پھر لائنیں شامل کریں۔",
+  "csvMapDate": "تاریخ",
+  "csvMapDateFormat": "تاریخ کا انداز",
+  "csvMapDescription": "تفصیل",
+  "csvMapSeparate": "جانے والی اور آنے والی رقم الگ کالموں میں ہے",
+  "csvMapMoneyOut": "جانے والی رقم (ڈیبٹ)",
+  "csvMapMoneyIn": "آنے والی رقم (کریڈٹ)",
+  "csvMapAmount": "رقم",
+  "csvMapOutNegative": "جانے والی رقم منفی عدد میں لکھی ہے",
+  "csvMapNone": "کوئی نہیں",
+  "csvMapPreview": "نمونہ",
+  "csvMapNoLines": "ان کالموں سے کوئی لائن نہیں پڑھی جا سکی۔ تاریخ کا کالم اور اس کا انداز چیک کریں۔",
+  "csvMapSummary": "{count, plural, =1{1 لائن} other{{count} لائنیں}} · آئے {moneyIn} · گئے {moneyOut}",
+  "csvMapConfirm": "{count, plural, =1{یہ کالم استعمال کریں (1 لائن)} other{یہ کالم استعمال کریں ({count} لائنیں)}}"
 }

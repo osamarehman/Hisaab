@@ -70,12 +70,26 @@ class ImportsService {
     }
   }
 
-  /// Uploads a statement file for [accountId].
+  /// Column settings for a CSV made by `StatementCsv.toImportCsv`, so the
+  /// server needs no column matching.
+  static const normalizedCsvConfig = {
+    'date_col_label': 'date',
+    'name_col_label': 'name',
+    'amount_col_label': 'amount',
+    'date_format': '%Y-%m-%d',
+    'number_format': '1,234.56',
+    'signage_convention': 'inflows_positive',
+    'col_sep': ',',
+  };
+
+  /// Uploads a statement file for [accountId]. [config] adds CSV column
+  /// settings such as [normalizedCsvConfig].
   Future<Map<String, dynamic>> uploadStatement({
     required String accessToken,
     required String accountId,
     required String fileName,
     required Uint8List bytes,
+    Map<String, String> config = const {},
   }) async {
     final kind = fileKind(fileName);
     if (kind == null) {
@@ -91,7 +105,7 @@ class ImportsService {
       ..headers['Content-Type'] = 'multipart/form-data; boundary=$boundary'
       ..bodyBytes = buildMultipartBody(
         boundary: boundary,
-        fields: {'type': kind.type, 'account_id': accountId},
+        fields: {'type': kind.type, 'account_id': accountId, ...config},
         fileField: 'file',
         fileName: fileName,
         fileContentType: kind.mime,

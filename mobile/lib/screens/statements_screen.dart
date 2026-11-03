@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,9 @@ import '../services/transactions_service.dart';
 import '../theme/sure_tokens.dart';
 import '../widgets/ledger/ledger.dart';
 import '../widgets/no_accounts_prompt.dart';
+import '../utils/statement_csv.dart';
 import 'account_form_screen.dart';
+import 'csv_mapping_screen.dart';
 import 'statement_review_screen.dart';
 
 /// Statements tab: pick an account, upload a PDF/CSV statement, watch the
@@ -211,6 +215,23 @@ class _StatementsScreenState extends State<StatementsScreen> {
       return;
     }
 
+    // CSVs: the app matches the columns and the user confirms them, so the
+    // server gets a plain date,name,amount file it imports as is.
+    var upload = bytes;
+    var config = const <String, String>{};
+    if (file.name.toLowerCase().endsWith('.csv')) {
+      final csv = StatementCsv.parse(utf8.decode(bytes, allowMalformed: true));
+      final normalized = await Navigator.of(context).push<String>(
+        MaterialPageRoute(
+          builder: (_) =>
+              CsvMappingScreen(csv: csv, currency: _account?.currency),
+        ),
+      );
+      if (normalized == null || !mounted) return;
+      upload = Uint8List.fromList(utf8.encode(normalized));
+      config = ImportsService.normalizedCsvConfig;
+    }
+
     final token = await _token();
     if (token == null || !mounted) return;
     setState(() {
@@ -222,7 +243,8 @@ class _StatementsScreenState extends State<StatementsScreen> {
       accessToken: token,
       accountId: accountId,
       fileName: file.name,
-      bytes: bytes,
+      bytes: upload,
+      config: config,
     );
     if (!mounted) return;
     setState(() => _uploading = false);
@@ -605,15 +627,12 @@ class _StatementsScreenState extends State<StatementsScreen> {
       ));
       gap();
       children.add(Text(
-        _published
-            ? l.statementsAddingLines
-            : l.statementsReading,
+        _published ? l.statementsAddingLines : l.statementsReading,
         style: LedgerText.body(size: 14, color: c.muted),
       ));
     } else if (job.status == ImportStatus.pending) {
       gap();
-      children
-          .add(_stat(c, '${job.rowsCount}', l.statementsLinesFound, c.ink));
+      children.add(_stat(c, '${job.rowsCount}', l.statementsLinesFound, c.ink));
       gap();
       if (job.publishable == false) {
         children.add(Text(
@@ -640,10 +659,8 @@ class _StatementsScreenState extends State<StatementsScreen> {
             Expanded(
                 child: _stat(
                     c, '${job.rowsCount}', l.statementsLinesFound, c.ink)),
-            Expanded(
-                child: _stat(c, '$auto', l.statementsAutoLabelled, c.ink)),
-            Expanded(
-                child: _stat(c, '$need', l.statementsNeedYou, c.moneyOut)),
+            Expanded(child: _stat(c, '$auto', l.statementsAutoLabelled, c.ink)),
+            Expanded(child: _stat(c, '$need', l.statementsNeedYou, c.moneyOut)),
           ],
         ));
         if (auto + need > 0) {
