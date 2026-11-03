@@ -68,6 +68,13 @@ void main() {
     expect(find.text('No currency matches your search.'), findsOneWidget);
   });
 
+  testWidgets('lists the household currency first', (tester) async {
+    await pumpScreen(tester);
+    final first = find.byType(ListTile).first;
+    expect(
+        find.descendant(of: first, matching: find.text('PKR')), findsOneWidget);
+  });
+
   testWidgets('changes the currency after confirming', (tester) async {
     await pumpScreen(tester);
     await search(tester, 'USD');

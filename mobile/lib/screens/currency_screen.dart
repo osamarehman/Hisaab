@@ -122,7 +122,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
 
   List<CurrencyInfo> _matches() {
     final query = _search.text.trim().toLowerCase();
-    if (query.isEmpty) return kCurrencies;
+    if (query.isEmpty) {
+      // The household's currency first, so it's visible without searching.
+      final current = kCurrencies.where((c) => c.code == _current);
+      return [...current, ...kCurrencies.where((c) => c.code != _current)];
+    }
     return kCurrencies
         .where((c) =>
             c.code.toLowerCase().contains(query) ||
