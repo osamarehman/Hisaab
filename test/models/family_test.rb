@@ -30,6 +30,14 @@ class FamilyTest < ActiveSupport::TestCase
     end
   end
 
+  test "changing the currency syncs the household to import exchange rates" do
+    family = families(:dylan_family)
+
+    family.expects(:sync_later).once
+    family.update!(currency: "EUR")
+    family.update!(name: "Renamed")
+  end
+
   test "local_date is the date in the family's zone" do
     family = families(:dylan_family)
     evening_utc = Time.utc(2026, 1, 15, 19, 0, 0)
