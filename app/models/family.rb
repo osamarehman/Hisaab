@@ -306,6 +306,8 @@ class Family < ApplicationRecord
 
   before_validation :normalize_enabled_currencies!
   after_create_commit :add_classifier_rules
+  # A new reporting currency needs exchange rates, which a sync imports.
+  after_update_commit :sync_later, if: :saved_change_to_currency?
 
   def primary_currency_code
     self.class.normalize_currency_code(currency) || "PKR"
