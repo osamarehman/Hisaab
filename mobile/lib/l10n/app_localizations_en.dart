@@ -2702,4 +2702,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get currencySaveFailed =>
       'Couldn\'t change the currency. Please try again.';
+
+  @override
+  String get homeUpdateTitle => 'A new version of Hisaab is ready';
+
+  @override
+  String get homeUpdateDetail => 'Tap to update on Google Play';
 }

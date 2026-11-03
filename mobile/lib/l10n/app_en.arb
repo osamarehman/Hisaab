@@ -2403,5 +2403,10 @@
   "currencyOffline": "You're offline. Connect to the internet and try again.",
   "@currencyOffline": {"description": "Shown when the currency screen can't reach the server."},
   "currencySaveFailed": "Couldn't change the currency. Please try again.",
-  "@currencySaveFailed": {"description": "Generic failure when changing the currency."}
+  "@currencySaveFailed": {"description": "Generic failure when changing the currency."},
+
+  "homeUpdateTitle": "A new version of Hisaab is ready",
+  "@homeUpdateTitle": {"description": "Home banner title when Google Play has a newer version of the app."},
+  "homeUpdateDetail": "Tap to update on Google Play",
+  "@homeUpdateDetail": {"description": "Second line of the Home update banner; tapping opens the Play Store."}
 }

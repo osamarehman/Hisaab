@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/balance_sheet_service.dart';
+import '../services/app_update_service.dart';
 import '../services/bank_alerts_service.dart';
 import '../services/cash_flow_service.dart';
 import '../services/insights_service.dart';
@@ -62,6 +63,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   final _balanceSheetService = BalanceSheetService();
   final _insightsService = InsightsService();
   final _bankAlertsService = BankAlertsService();
+  final _updateService = AppUpdateService();
   final _log = LogService.instance;
 
   Period _period = Period.thisMonth();
@@ -79,6 +81,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   String? _currency;
   List<Insight> _insights = const [];
   int _pendingAlerts = 0;
+  bool _updateAvailable = false;
 
   @override
   void initState() {
@@ -104,6 +107,7 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     _loadInsights(accessToken, token);
     _loadBankAlerts(accessToken, token);
+    _checkForUpdate();
 
     final period = _period;
     final dates = period.transactionDates();
@@ -204,6 +208,14 @@ class DashboardScreenState extends State<DashboardScreen> {
       _pendingAlerts =
           results.fold(0, (sum, r) => sum + (r.value?.length ?? 0));
     });
+  }
+
+  /// Play has a newer build for this user; shows the update banner.
+  Future<void> _checkForUpdate() async {
+    final available = await _updateService.updateAvailable();
+    if (mounted && available != _updateAvailable) {
+      setState(() => _updateAvailable = available);
+    }
   }
 
   Future<void> _openBankAlerts() async {
@@ -369,6 +381,16 @@ class DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     _header(l, c),
                     const SizedBox(height: 28),
+                    if (_updateAvailable) ...[
+                      _banner(
+                        c,
+                        key: const ValueKey('home-update'),
+                        title: l.homeUpdateTitle,
+                        detail: l.homeUpdateDetail,
+                        onTap: _updateService.openStore,
+                      ),
+                      const SizedBox(height: 28),
+                    ],
                     if (_noAccounts(context)) ...[
                       NoAccountsPrompt(onCreated: (_) => reload()),
                       const SizedBox(height: 28),

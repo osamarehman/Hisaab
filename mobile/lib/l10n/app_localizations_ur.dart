@@ -2695,4 +2695,10 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get currencySaveFailed => 'کرنسی نہیں بدلی جا سکی۔ دوبارہ کوشش کریں۔';
+
+  @override
+  String get homeUpdateTitle => 'حساب کا نیا ورژن آ گیا ہے';
+
+  @override
+  String get homeUpdateDetail => 'Google Play پر اپ ڈیٹ کرنے کے لیے دبائیں';
 }

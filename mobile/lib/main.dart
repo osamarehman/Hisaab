@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
@@ -308,11 +309,15 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
         if (authProvider.isAuthenticated) {
           return Stack(
             children: [
-              UpgradeAlert(
-                upgrader: _upgrader,
-                showIgnore: false,
-                child: const MainNavigationScreen(),
-              ),
+              // Android shows Play's own update banner on Home instead.
+              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+                const MainNavigationScreen()
+              else
+                UpgradeAlert(
+                  upgrader: _upgrader,
+                  showIgnore: false,
+                  child: const MainNavigationScreen(),
+                ),
               if (_isLocked)
                 BiometricLockScreen(
                   onUnlocked: _onUnlocked,

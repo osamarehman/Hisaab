@@ -778,5 +778,8 @@
   "currencySaved": "گھر کی کرنسی اب {code} ہے",
   "currencyAdminOnly": "صرف گھر کا ایڈمن کرنسی بدل سکتا ہے۔",
   "currencyOffline": "آپ آف لائن ہیں۔ انٹرنیٹ سے جڑیں اور دوبارہ کوشش کریں۔",
-  "currencySaveFailed": "کرنسی نہیں بدلی جا سکی۔ دوبارہ کوشش کریں۔"
+  "currencySaveFailed": "کرنسی نہیں بدلی جا سکی۔ دوبارہ کوشش کریں۔",
+
+  "homeUpdateTitle": "حساب کا نیا ورژن آ گیا ہے",
+  "homeUpdateDetail": "Google Play پر اپ ڈیٹ کرنے کے لیے دبائیں"
 }

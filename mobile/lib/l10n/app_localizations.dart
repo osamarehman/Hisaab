@@ -4756,6 +4756,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t change the currency. Please try again.'**
   String get currencySaveFailed;
+
+  /// Home banner title when Google Play has a newer version of the app.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of Hisaab is ready'**
+  String get homeUpdateTitle;
+
+  /// Second line of the Home update banner; tapping opens the Play Store.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to update on Google Play'**
+  String get homeUpdateDetail;
 }
 
 class _AppLocalizationsDelegate

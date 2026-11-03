@@ -12,6 +12,7 @@ import '../providers/tags_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/privacy_provider.dart';
+import '../services/app_update_service.dart';
 import '../services/offline_storage_service.dart';
 import '../services/log_service.dart';
 import '../services/biometric_service.dart';
@@ -77,6 +78,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _checkForUpdate() async {
     if (_isCheckingForUpdate) return;
     setState(() => _isCheckingForUpdate = true);
+    // On Android ask Play itself: it also knows about testing-track releases,
+    // which the public store page that upgrader reads doesn't show.
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      final updates = AppUpdateService();
+      final available = await updates.updateAvailable();
+      if (!mounted) return;
+      setState(() => _isCheckingForUpdate = false);
+      if (available) {
+        await updates.openStore();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(AppLocalizations.of(context).settingsNoUpdateAvailable)));
+      }
+      return;
+    }
     try {
       await _manualUpgrader.initialize();
       if (!mounted) {
