@@ -141,7 +141,7 @@ class RedbarkAccount::Transactions::Processor
       return nil if amount.nil?
 
       # Redbark returns CDR pre-signed amounts: positive = credit (money in),
-      # negative = debit (money out). Sure expects the opposite (positive =
+      # negative = debit (money out). Hisaab expects the opposite (positive =
       # money out), so negate.
       -amount
     end

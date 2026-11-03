@@ -356,7 +356,7 @@ module QifParser
   # Splits a section into an array of field-code => value hashes.
   # Single-letter codes with no value (e.g. "I", "E", "T") are stored with nil.
   # Split transactions (multiple S/$/E lines) are flagged and retain ordered
-  # split line data so Quicken splits can be imported as Sure splits.
+  # split line data so Quicken splits can be imported as Hisaab splits.
   def self.parse_records(section_content)
     records = []
     current = {}

@@ -1,10 +1,10 @@
 # LLM Configuration Guide
 
-This document explains how Sure uses Large Language Models (LLMs) for AI features and how to configure them for your deployment.
+This document explains how Hisaab uses Large Language Models (LLMs) for AI features and how to configure them for your deployment.
 
 ## Overview
 
-Sure includes an AI assistant that can help users understand their financial data by answering questions about accounts, transactions, income, expenses, net worth, and more. The assistant uses LLMs to process natural language queries and provide insights based on the user's financial data.
+Hisaab includes an AI assistant that can help users understand their financial data by answering questions about accounts, transactions, income, expenses, net worth, and more. The assistant uses LLMs to process natural language queries and provide insights based on the user's financial data.
 
 > [!CAUTION]
 > Only `gpt-4.1` was ever supported prior to `v0.6.5-alpha*` builds!
@@ -13,14 +13,14 @@ Sure includes an AI assistant that can help users understand their financial dat
 
 ## Architecture: Two AI Pipelines
 
-Sure has **two separate AI systems** that operate independently. Understanding this is important because they have different configuration requirements.
+Hisaab has **two separate AI systems** that operate independently. Understanding this is important because they have different configuration requirements.
 
 ### 1. Chat Assistant (conversational)
 
 The interactive chat where users ask questions about their finances. Routes through one of two backends, or is turned off:
 
-- **Builtin** (default): Uses the LLM provider selected by `LLM_PROVIDER`: the OpenAI-compatible provider (`OPENAI_ACCESS_TOKEN` / `OPENAI_URI_BASE` / `OPENAI_MODEL`, the default) or the [native Anthropic provider](#anthropic-native). Calls Sure's function tools directly (get_accounts, get_transactions, etc.).
-- **External**: Delegates the entire conversation to a remote AI agent. The agent calls back to Sure via MCP to access financial data. Set `ASSISTANT_TYPE=external` as a global override, or configure each family's assistant type in Settings.
+- **Builtin** (default): Uses the LLM provider selected by `LLM_PROVIDER`: the OpenAI-compatible provider (`OPENAI_ACCESS_TOKEN` / `OPENAI_URI_BASE` / `OPENAI_MODEL`, the default) or the [native Anthropic provider](#anthropic-native). Calls Hisaab's function tools directly (get_accounts, get_transactions, etc.).
+- **External**: Delegates the entire conversation to a remote AI agent. The agent calls back to Hisaab via MCP to access financial data. Set `ASSISTANT_TYPE=external` as a global override, or configure each family's assistant type in Settings.
 - **None in app** (`mcp_only`): Removes the in-app chat for the household: the right-hand chat sidebar and its toggle, the mobile Assistant tab, and the buttons that start a chat. Bring your own agent and connect it through [MCP](mcp.md), which keeps working. Set `ASSISTANT_TYPE=mcp_only` to remove the chat for every family.
 
 ### 2. Auto-Categorization and Merchant Detection (background)
@@ -37,7 +37,7 @@ Background jobs that classify transactions and detect merchants. These use the L
 
 If you use an external agent for chat, you still need an LLM provider configured (`OPENAI_ACCESS_TOKEN` or `ANTHROPIC_API_KEY`) for auto-categorization and merchant detection to work. The two systems are fully independent.
 
-With `mcp_only`, Sure also skips the features that need a user's AI consent: the bills AI shortcuts (review, smart fill, smart configuration). Insights never use AI: their text comes from templates.
+With `mcp_only`, Hisaab also skips the features that need a user's AI consent: the bills AI shortcuts (review, smart fill, smart configuration). Insights never use AI: their text comes from templates.
 
 ### Where AI jobs run (Sidekiq lanes)
 
@@ -56,20 +56,20 @@ AI work runs in the Sidekiq `worker`, in its own capsule ("lane"), so a slow mod
 - **The worker must load `config/sidekiq.yml`,** as `bundle exec sidekiq` does by default. A worker started with its own queue list (`sidekiq -q …`, a custom Helm `worker.command`) doesn't get the AI lane. If no worker polls `ai_high_priority` and `ai_low_priority`, **System health** (`/admin/system_health`) and the site-wide banner report "No worker is processing the AI queues", and the chat page warns that responses may not be delivered. Keep `-C config/sidekiq.yml`; adding `-q ai_high_priority -q ai_low_priority` also works, but AI jobs then share that worker's threads, and the chat reservation doesn't hold them, since a chat can usually take another thread.
 - **System health:** AI backlog doesn't count towards "queue backed up" (a large merchant-detection run can queue for hours), but "Oldest job age" still includes it. Check the queue table or `/sidekiq` to see which queue is waiting.
 - **Upgrading:** AI jobs moved from `high_priority` (chat), `medium_priority` and `scheduled` to the AI queues. Jobs already queued under the old names still run once, in the default lane.
-- **Large batches:** Sure doesn't limit `LLM_MAX_ITEMS_PER_CALL`. OpenAI-compatible providers split a batch that doesn't fit the context window; with the native Anthropic provider, raise `ANTHROPIC_MAX_TOKENS` (default `4096`) along with it, or replies are cut off.
+- **Large batches:** Hisaab doesn't limit `LLM_MAX_ITEMS_PER_CALL`. OpenAI-compatible providers split a batch that doesn't fit the context window; with the native Anthropic provider, raise `ANTHROPIC_MAX_TOKENS` (default `4096`) along with it, or replies are cut off.
 
 ## Quickstart: OpenAI Token
 
-The easiest way to get started with AI features in Sure is to use OpenAI:
+The easiest way to get started with AI features in Hisaab is to use OpenAI:
 
 1. Get an API key from [OpenAI](https://platform.openai.com/api-keys)
 2. Set the environment variable:
    ```bash
    OPENAI_ACCESS_TOKEN=sk-proj-...your-key-here...
    ```
-3. (Re-)Start Sure (both `web` and `worker` services!) and the AI assistant will be available to use after you agree/allow via UI option
+3. (Re-)Start Hisaab (both `web` and `worker` services!) and the AI assistant will be available to use after you agree/allow via UI option
 
-That's it! Sure will use OpenAI's with a default model (currently `gpt-4.1`) for all AI operations.
+That's it! Hisaab will use OpenAI's with a default model (currently `gpt-4.1`) for all AI operations.
 
 ## Bring your own key (per household)
 
@@ -155,7 +155,7 @@ The amount of VRAM (GPU memory) you need depends on the model size:
 
 ## Cloud Providers
 
-Sure supports any OpenAI-compatible API endpoint. Here are tested providers:
+Hisaab supports any OpenAI-compatible API endpoint. Here are tested providers:
 
 ### OpenAI (Primary Support)
 
@@ -194,7 +194,7 @@ reasoning models; the default 2048-token context is intended for small local mod
 
 ### Anthropic (native)
 
-Sure talks to Anthropic's Messages API directly. It serves chat (streamed), auto-categorization, merchant detection and enhancement, bill setup suggestions, and PDF imports (Claude reads the PDF itself; no vision setting needed).
+Hisaab talks to Anthropic's Messages API directly. It serves chat (streamed), auto-categorization, merchant detection and enhancement, bill setup suggestions, and PDF imports (Claude reads the PDF itself; no vision setting needed).
 
 ```bash
 LLM_PROVIDER=anthropic
@@ -211,7 +211,7 @@ Or in the UI: **Settings** → **Self-Hosting** → **AI Provider** → **Anthro
 
 | Variable | Default | What it does |
 |----------|---------|--------------|
-| `LLM_PROVIDER` | `openai` | `anthropic` selects this provider. If the selected provider has no key, Sure uses the other one. While a custom OpenAI-compatible provider is configured (`OPENAI_URI_BASE` with an access token and model), chat still goes to it, so remove those settings when switching. |
+| `LLM_PROVIDER` | `openai` | `anthropic` selects this provider. If the selected provider has no key, Hisaab uses the other one. While a custom OpenAI-compatible provider is configured (`OPENAI_URI_BASE` with an access token and model), chat still goes to it, so remove those settings when switching. |
 | `ANTHROPIC_API_KEY` | — | API key. `ANTHROPIC_ACCESS_TOKEN` also works and wins if both are set. |
 | `ANTHROPIC_MODEL` | `claude-sonnet-4-6` | Model for chat and all background jobs. Must start with `claude` unless a base URL is set. |
 | `ANTHROPIC_MAX_TOKENS` | `4096` | Reply limit, sent with every request (the Messages API requires one). |
@@ -228,7 +228,7 @@ How it differs from the OpenAI-compatible provider:
 - **Batch size.** Auto-categorization, merchant detection and merchant enhancement send `LLM_MAX_ITEMS_PER_CALL` items per request (default `25`), with no splitting to fit the context window. Raise `ANTHROPIC_MAX_TOKENS` along with it, or replies are cut off (see [Where AI jobs run](#where-ai-jobs-run-sidekiq-lanes)).
 - **Its own timeout.** `ANTHROPIC_REQUEST_TIMEOUT` replaces `OPENAI_REQUEST_TIMEOUT`. `AI_RESPONSE_TIMEOUT` still covers the whole chat turn. `OPENAI_EXTRA_HEADERS`, `LLM_JSON_MODE` and `OPENAI_SUPPORTS_*` don't apply.
 
-**Bedrock, Vertex and proxies:** `ANTHROPIC_BASE_URL` can point at any endpoint that speaks the Anthropic Messages API, such as a gateway in front of AWS Bedrock or Google Vertex AI. Set `ANTHROPIC_MODEL` to that endpoint's model ID (for Bedrock, e.g. `anthropic.claude-sonnet-4-5-20250929-v1:0`); the `claude` prefix check is skipped. Sure sends the key as an Anthropic API key (`x-api-key`) and doesn't sign AWS or Google requests itself.
+**Bedrock, Vertex and proxies:** `ANTHROPIC_BASE_URL` can point at any endpoint that speaks the Anthropic Messages API, such as a gateway in front of AWS Bedrock or Google Vertex AI. Set `ANTHROPIC_MODEL` to that endpoint's model ID (for Bedrock, e.g. `anthropic.claude-sonnet-4-5-20250929-v1:0`); the `claude` prefix check is skipped. Hisaab sends the key as an Anthropic API key (`x-api-key`) and doesn't sign AWS or Google requests itself.
 
 ### Google Gemini
 
@@ -355,7 +355,7 @@ Behavior:
 
 ### Configuration
 
-Configure Sure to use Ollama:
+Configure Hisaab to use Ollama:
 
 ```bash
 # Dummy token (Ollama doesn't need authentication)
@@ -496,12 +496,12 @@ For self-hosted deployments, you can configure AI settings through the web inter
 
 ## External AI Assistant
 
-Instead of using the built-in LLM (which calls OpenAI or a local model directly), you can delegate chat to an **external AI agent**. The agent receives the conversation, can call back to Sure's financial data via MCP, and streams a response.
+Instead of using the built-in LLM (which calls OpenAI or a local model directly), you can delegate chat to an **external AI agent**. The agent receives the conversation, can call back to Hisaab's financial data via MCP, and streams a response.
 
 This is useful when:
 - You have a custom AI agent with domain knowledge, memory, or personality
 - You want to use a non-OpenAI-compatible model (the agent translates)
-- You want to keep LLM credentials and logic outside Sure entirely
+- You want to keep LLM credentials and logic outside Hisaab entirely
 
 > [!IMPORTANT]
 > **Set `ASSISTANT_TYPE=external` to route all users to the external agent.** Without it, routing falls back to each family's `assistant_type` DB column (configurable per-family in the Settings UI), then defaults to `"builtin"`. If you want a global override that applies to every family regardless of their UI setting, set the env var. If you only want specific families to use the external agent, skip the env var and configure it per-family in Settings.
@@ -511,11 +511,11 @@ This is useful when:
 
 ### How It Works
 
-1. User sends a message in the Sure chat UI
-2. Sure sends the conversation to your agent's API endpoint (OpenAI chat completions format)
+1. User sends a message in the Hisaab chat UI
+2. Hisaab sends the conversation to your agent's API endpoint (OpenAI chat completions format)
 3. Your agent processes it using whatever LLM, tools, or context it needs
-4. Your agent can call Sure's `/mcp` endpoint for financial data and actions (accounts, transactions, balance sheet, budgets, file search, statement import, goals)
-5. Your agent streams the response back to Sure via Server-Sent Events (SSE)
+4. Your agent can call Hisaab's `/mcp` endpoint for financial data and actions (accounts, transactions, balance sheet, budgets, file search, statement import, goals)
+5. Your agent streams the response back to Hisaab via Server-Sent Events (SSE)
 
 The agent's API must be **OpenAI chat completions compatible**: accept `POST` with a `messages` array, return SSE with `delta.content` chunks.
 
@@ -543,13 +543,13 @@ When environment variables are set, the corresponding UI fields are disabled (en
 
 ### MCP Callback Endpoint
 
-Sure exposes a [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) endpoint at `/mcp` so your external agent can call back and query financial data. This is how the agent accesses accounts, transactions, balance sheets, and other user data.
+Hisaab exposes a [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) endpoint at `/mcp` so your external agent can call back and query financial data. This is how the agent accesses accounts, transactions, balance sheets, and other user data.
 
 **Protocol:** JSON-RPC 2.0 over HTTP POST
 
 **Authentication:** Bearer token via `Authorization` header
 
-Sure supports both:
+Hisaab supports both:
 
 - OAuth bearer tokens issued through its discovery and registration endpoints (`/.well-known/oauth-protected-resource`, `/.well-known/oauth-authorization-server`, `POST /register`)
 - Static bearer tokens configured with `MCP_API_TOKEN` and `MCP_USER_EMAIL`
@@ -557,7 +557,7 @@ Sure supports both:
 **Static-token environment variables:**
 ```bash
 MCP_API_TOKEN=your-secret-token    # Bearer token the agent sends to authenticate
-MCP_USER_EMAIL=user@example.com    # Email of the Sure user the agent acts as
+MCP_USER_EMAIL=user@example.com    # Email of the Hisaab user the agent acts as
 ```
 
 The agent must send requests to `https://your-sure-instance/mcp` with:
@@ -609,7 +609,7 @@ EXTERNAL_ASSISTANT_AGENT_ID=your-agent-name
 
 **OpenClaw setup requirements:**
 - The gateway must have `chatCompletions.enabled: true` in its config
-- The agent's MCP config must point to Sure's `/mcp` endpoint with the correct `MCP_API_TOKEN`
+- The agent's MCP config must point to Hisaab's `/mcp` endpoint with the correct `MCP_API_TOKEN`
 - The URL format is always `/v1/chat/completions` (OpenAI-compatible)
 
 **Kubernetes in-cluster example** (agent in a different namespace):
@@ -624,8 +624,8 @@ An external agent can do more than answer questions about the current balance:
 with its own repository behind it, it can maintain a document-backed history of
 a family's wealth, where every figure traces back to the statement it came from.
 
-That is a two-install shape — Sure as the system of record, the agent harness as
-the model and the compiler — rather than a feature inside Sure. Sure exposes a
+That is a two-install shape — Hisaab as the system of record, the agent harness as
+the model and the compiler — rather than a feature inside Hisaab. Hisaab exposes a
 set of preview MCP tools for it (the Statement Vault, coverage gaps, and
 valuations that require a source citation).
 
@@ -635,10 +635,10 @@ it implements.
 
 ### Security with Pipelock
 
-When [Pipelock](https://github.com/luckyPipewrench/pipelock) is enabled (`pipelock.enabled=true` in Helm, or the `pipelock` service in Docker Compose), Sure configures two mediated routes:
+When [Pipelock](https://github.com/luckyPipewrench/pipelock) is enabled (`pipelock.enabled=true` in Helm, or the `pipelock` service in Docker Compose), Hisaab configures two mediated routes:
 
-- **Outbound** (Sure -> agent): routed through Pipelock's forward proxy via `HTTPS_PROXY`
-- **Inbound** (agent -> Sure /mcp): routed through Pipelock's MCP reverse proxy (port 8889)
+- **Outbound** (Hisaab -> agent): routed through Pipelock's forward proxy via `HTTPS_PROXY`
+- **Inbound** (agent -> Hisaab /mcp): routed through Pipelock's MCP reverse proxy (port 8889)
 
 The MCP reverse proxy scans readable MCP traffic for prompt injection, DLP violations, and tool poisoning. The forward proxy applies tunnel-level controls to HTTPS, but the default examples don't enable TLS interception and can't scan encrypted bodies. The external agent doesn't need Pipelock installed.
 
@@ -664,14 +664,14 @@ See the [Pipelock documentation](https://github.com/luckyPipewrench/pipelock) fo
 
 ### Network Policies (Kubernetes)
 
-If you use Kubernetes NetworkPolicies (and you should), both Sure and the agent's namespace need rules to allow traffic in both directions.
+If you use Kubernetes NetworkPolicies (and you should), both Hisaab and the agent's namespace need rules to allow traffic in both directions.
 
 > [!WARNING]
 > **Port number gotcha:** Kubernetes network policies evaluate **after** kube-proxy DNAT. This means egress rules must use the pod's `targetPort`, not the service port. If your agent's Service maps port 18789 to targetPort 18790, the network policy must allow port **18790**.
 
-**Sure namespace egress** (Sure calling the agent):
+**Hisaab namespace egress** (Hisaab calling the agent):
 ```yaml
-# Allow Sure -> agent namespace
+# Allow Hisaab -> agent namespace
 - to:
     - namespaceSelector:
         matchLabels:
@@ -681,9 +681,9 @@ If you use Kubernetes NetworkPolicies (and you should), both Sure and the agent'
       port: 18790  # targetPort, not service port!
 ```
 
-**Sure namespace ingress** (agent calling Sure's pipelock MCP reverse proxy):
+**Hisaab namespace ingress** (agent calling Hisaab's pipelock MCP reverse proxy):
 ```yaml
-# Allow agent -> Sure pipelock MCP reverse proxy
+# Allow agent -> Hisaab pipelock MCP reverse proxy
 - from:
     - namespaceSelector:
         matchLabels:
@@ -693,7 +693,7 @@ If you use Kubernetes NetworkPolicies (and you should), both Sure and the agent'
       port: 8889
 ```
 
-**Agent namespace** needs the reverse: egress to Sure on port 8889, ingress from Sure on its listening port.
+**Agent namespace** needs the reverse: egress to Hisaab on port 8889, ingress from Hisaab on its listening port.
 
 ### Access Control
 
@@ -714,11 +714,11 @@ Or configure the assistant via the Settings UI after startup (MCP env vars are s
 
 ## Assistant Architecture
 
-Sure's AI assistant system uses a modular architecture that allows different assistant implementations to be plugged in based on configuration. This section explains the architecture for contributors who want to understand or extend the system.
+Hisaab's AI assistant system uses a modular architecture that allows different assistant implementations to be plugged in based on configuration. This section explains the architecture for contributors who want to understand or extend the system.
 
 ### Overview
 
-The assistant system evolved from a monolithic class to a module-based architecture with a registry pattern. This allows Sure to support multiple assistant types (builtin, external) and makes it easy to add new implementations.
+The assistant system evolved from a monolithic class to a module-based architecture with a registry pattern. This allows Hisaab to support multiple assistant types (builtin, external) and makes it easy to add new implementations.
 
 **Key benefits:**
 - **Extensible:** Add new assistant types without modifying existing code
@@ -795,7 +795,7 @@ Implementation for delegating chat to a remote AI agent. Located in `app/models/
 
 **Features:**
 - Sends conversation to external agent via OpenAI-compatible API
-- Agent calls back to Sure's `/mcp` endpoint for financial data
+- Agent calls back to Hisaab's `/mcp` endpoint for financial data
 - Supports access control via email allowlist
 - Streams responses from the agent
 
@@ -940,8 +940,8 @@ family.update(assistant_type: "my_custom")
 #### Pipelock Integration
 
 For external assistants, Pipelock can scan traffic:
-- **Outbound:** Sure -> agent (via `HTTPS_PROXY`)
-- **Inbound:** Agent -> Sure /mcp (via MCP reverse proxy on port 8889)
+- **Outbound:** Hisaab -> agent (via `HTTPS_PROXY`)
+- **Inbound:** Agent -> Hisaab /mcp (via MCP reverse proxy on port 8889)
 
 See the [External AI Assistant](#external-ai-assistant) and [Pipelock](pipelock.md) documentation for configuration.
 
@@ -965,11 +965,11 @@ Register it in the `REGISTRY` and add to `Family::ASSISTANT_TYPES` to activate.
 
 ## AI Cache Management
 
-Sure caches AI-generated results (like auto-categorization and merchant detection) to avoid redundant API calls and costs. However, there are situations where you may want to clear this cache.
+Hisaab caches AI-generated results (like auto-categorization and merchant detection) to avoid redundant API calls and costs. However, there are situations where you may want to clear this cache.
 
 ### What is the AI Cache?
 
-When AI rules process transactions, Sure stores:
+When AI rules process transactions, Hisaab stores:
 - **Enrichment records**: Which attributes were set by AI (category, merchant, etc.)
 - **Attribute locks**: Prevents rules from re-processing already-handled transactions
 
@@ -1028,7 +1028,7 @@ Before resetting the cache, consider:
 
 ## Observability with Langfuse
 
-Sure includes built-in support for [Langfuse](https://langfuse.com/), an open-source LLM observability platform.
+Hisaab includes built-in support for [Langfuse](https://langfuse.com/), an open-source LLM observability platform.
 
 ### What is Langfuse?
 
@@ -1046,16 +1046,16 @@ Langfuse helps you:
 
 2. Get your API keys from the Langfuse dashboard
 
-3. Configure Sure:
+3. Configure Hisaab:
    ```bash
    LANGFUSE_PUBLIC_KEY=pk-lf-...
    LANGFUSE_SECRET_KEY=sk-lf-...
    LANGFUSE_HOST=https://cloud.langfuse.com  # or your self-hosted URL
    ```
 
-4. Restart Sure
+4. Restart Hisaab
 
-Sure sends completed observations through Langfuse's v4 OpenTelemetry ingestion path. Existing keys and host settings still apply. See the [Langfuse migration and validation notes](langfuse.md#langfuse-v4) before upgrading an existing project.
+Hisaab sends completed observations through Langfuse's v4 OpenTelemetry ingestion path. Existing keys and host settings still apply. See the [Langfuse migration and validation notes](langfuse.md#langfuse-v4) before upgrading an existing project.
 
 All LLM operations will now be logged to Langfuse, including:
 - Chat messages and responses
@@ -1064,7 +1064,7 @@ All LLM operations will now be logged to Langfuse, including:
 - Token usage and costs
 - Response times
 
-### Langfuse Features in Sure
+### Langfuse Features in Hisaab
 
 - **Automatic tracing:** Every LLM call is automatically traced
 - **Session tracking:** Chat sessions are tracked with a unique session ID
@@ -1105,7 +1105,7 @@ All LLM operations will now be logged to Langfuse, including:
 
 Test your AI configuration:
 
-1. Go to the Chat interface in Sure
+1. Go to the Chat interface in Hisaab
 2. Try these test prompts:
    - "Show me my total spending this month"
    - "What are my top 5 spending categories?"
@@ -1118,7 +1118,7 @@ Test your AI configuration:
 
 ### Automated Evaluation
 
-Sure doesn't currently include automated evals, but you can build them using Langfuse:
+Hisaab doesn't currently include automated evals, but you can build them using Langfuse:
 
 1. **Collect baseline responses:** Run test prompts and save responses
 2. **Create evaluation dataset:** Use Langfuse datasets feature
@@ -1184,8 +1184,8 @@ Rates are USD per million tokens at the Standard tier. The source coverage is:
 | GPT-5.6 Sol | $4 / $20 | August 21, 2026: price reduction; promotion available at least through November 21, 2026 |
 | GPT-5.6 Terra | $2 / $12 | July 30, 2026: price reduction |
 | GPT-5.6 Luna | $0.20 / $1.20 | July 30, 2026: price reduction |
-| Claude Opus 4.7 | $5 / $25 | April 16, 2026: published launch rate; corrects Sure's erroneous $15 / $75 |
-| Claude Opus 4.6 | $5 / $25 | February 5, 2026: published base launch rate; corrects Sure's erroneous $15 / $75 |
+| Claude Opus 4.7 | $5 / $25 | April 16, 2026: published launch rate; corrects Hisaab's erroneous $15 / $75 |
+| Claude Opus 4.6 | $5 / $25 | February 5, 2026: published base launch rate; corrects Hisaab's erroneous $15 / $75 |
 
 Dates above come from the [OpenAI changelog](https://developers.openai.com/api/docs/changelog),
 the [Gemini API documentation](https://ai.google.dev/gemini-api/docs/pricing),
@@ -1212,7 +1212,7 @@ Gemini 3.1 Flash-Lite is $0.25 / $1.50, Gemini 3 Flash is $0.50 / $3.00,
 and Gemini 2.5 Flash remains $0.30 / $2.50.
 Claude 4.6/4.7 use standard rates throughout their context window.
 
-Sure estimates individual requests using these tiers. Aggregate categorization
+Hisaab estimates individual requests using these tiers. Aggregate categorization
 previews assume short requests. Saved usage costs are historical estimates and
 are not recalculated by this update. Estimates exclude regional premiums,
 alternative service tiers, tool charges and audio-specific rates. Anthropic
@@ -1268,7 +1268,7 @@ CHAT_PROVIDER=openai
 CHAT_MODEL=gpt-4.1
 ```
 
-**Note:** Sure currently uses a single provider for all operations, but this could be customized.
+**Note:** Hisaab currently uses a single provider for all operations, but this could be customized.
 
 ## Troubleshooting
 
@@ -1330,7 +1330,7 @@ sends your accounts, transactions, and holdings in every tool call.
 Fixed prompt tokens (2108) exceed context budget (1280)
 ```
 
-**Cause:** Sure computes the usable prompt budget as:
+**Cause:** Hisaab computes the usable prompt budget as:
 
 ```text
 context_window - max_response_tokens - system_prompt_reserve
@@ -1341,7 +1341,7 @@ The defaults are conservative:
 - `LLM_MAX_RESPONSE_TOKENS=512`
 - `LLM_SYSTEM_PROMPT_RESERVE=256`
 
-That leaves `1280` input tokens. On local or custom models, the fixed prompt can already exceed that budget once you include Sure's instructions, category taxonomy, and schema payloads.
+That leaves `1280` input tokens. On local or custom models, the fixed prompt can already exceed that budget once you include Hisaab's instructions, category taxonomy, and schema payloads.
 
 **Fix:**
 ```bash
@@ -1408,7 +1408,7 @@ Restart `web` and `worker` after changing the environment variables, and make su
 **Fix:**
 1. Check `OPENAI_ACCESS_TOKEN` is set
 2. For custom providers, verify `OPENAI_URI_BASE` and `OPENAI_MODEL`
-3. Restart Sure after changing environment variables
+3. Restart Hisaab after changing environment variables
 4. Check logs for specific error messages
 
 ### "Failed to generate response" with External Assistant
@@ -1417,14 +1417,14 @@ Restart `web` and `worker` after changing the environment variables, and make su
 
 **Check in order:**
 
-1. **Is external routing active?** Sure uses external mode when `ASSISTANT_TYPE=external` is set as an env var, OR when the family's `assistant_type` is set to "external" in Settings. Check what the pod sees:
+1. **Is external routing active?** Hisaab uses external mode when `ASSISTANT_TYPE=external` is set as an env var, OR when the family's `assistant_type` is set to "external" in Settings. Check what the pod sees:
    ```bash
    kubectl exec deploy/sure-web -c rails -- env | grep ASSISTANT_TYPE
    kubectl exec deploy/sure-worker -c sidekiq -- env | grep ASSISTANT_TYPE
    ```
    If the env var is unset, check the family setting in the database or Settings UI.
 
-2. **Can Sure reach the agent?** Test from inside the worker pod (use `sh -c` so the env var expands inside the pod, not locally):
+2. **Can Hisaab reach the agent?** Test from inside the worker pod (use `sh -c` so the env var expands inside the pod, not locally):
    ```bash
    kubectl exec deploy/sure-worker -c sidekiq -- \
      sh -c 'curl -s -o /dev/null -w "%{http_code}" \
@@ -1434,7 +1434,7 @@ Restart `web` and `worker` after changing the environment variables, and make su
      $EXTERNAL_ASSISTANT_URL'
    ```
    - **Exit code 7 (connection refused):** Network policy is blocking. Check egress rules, and remember to use the `targetPort`, not the service port.
-   - **HTTP 401/403:** Token mismatch between Sure's `EXTERNAL_ASSISTANT_TOKEN` and the agent's expected token.
+   - **HTTP 401/403:** Token mismatch between Hisaab's `EXTERNAL_ASSISTANT_TOKEN` and the agent's expected token.
    - **HTTP 404:** Wrong URL path. Must be `/v1/chat/completions`.
 
 3. **Check worker logs** for the actual error:
@@ -1512,7 +1512,7 @@ family's prompt does not change them.
 
 Custom OpenAI-compatible endpoints need a little more care. The categorizer and
 merchant parsers look for a `{"categorizations": [...]}` or `{"merchants": [...]}`
-wrapper key, but Sure also asks for that key in a per-request message your
+wrapper key, but Hisaab also asks for that key in a per-request message your
 override does not replace, so rewording or dropping the example JSON is safe on
 its own. Parsing breaks when an override *contradicts* the output format:
 asking for reasoning before the answer, a different wrapper key, YAML, or tags
@@ -1569,7 +1569,7 @@ These are defined in `app/models/assistant/function/`. Preview tools
 
 ### Vector Store (Document Search)
 
-Sure's AI assistant can search documents that have been uploaded to a family's vault. Under the hood, documents are indexed in a **vector store** so the assistant can retrieve relevant passages when answering questions (Retrieval-Augmented Generation).
+Hisaab's AI assistant can search documents that have been uploaded to a family's vault. Under the hood, documents are indexed in a **vector store** so the assistant can retrieve relevant passages when answering questions (Retrieval-Augmented Generation).
 
 #### How It Works
 
@@ -1616,7 +1616,7 @@ EMBEDDING_URI_BASE=http://ollama:11434/v1 # Falls back to OPENAI_URI_BASE if not
 EMBEDDING_ACCESS_TOKEN=                   # Falls back to OPENAI_ACCESS_TOKEN if not set
 ```
 
-Sure enables the `vector` extension when it first provisions the chunks table,
+Hisaab enables the `vector` extension when it first provisions the chunks table,
 provided the database user has permission. If the AI status page reports that
 the extension is available but not enabled and automatic provisioning cannot
 enable it, connect as the PostgreSQL superuser and run:
@@ -1642,8 +1642,8 @@ docker compose exec ollama ollama pull mxbai-embed-large
 > Do not change `EMBEDDING_MODEL` for an existing pgvector index without
 > rebuilding it. Vectors created by different models are not comparable, even
 > when they have the same dimensions. Back up the database and the source
-> documents, then remove the existing documents from Sure. If the new model has
-> different dimensions, drop the now-empty chunks table so Sure can recreate it
+> documents, then remove the existing documents from Hisaab. If the new model has
+> different dimensions, drop the now-empty chunks table so Hisaab can recreate it
 > with the new vector size:
 >
 > ```bash
@@ -1651,7 +1651,7 @@ docker compose exec ollama ollama pull mxbai-embed-large
 >   'ActiveRecord::Base.connection_pool.with_connection { |connection| connection.drop_table(VectorStore::Pgvector::TABLE_NAME, if_exists: true) }'
 > ```
 >
-> Change the embedding settings and restart Sure. Confirm that **System health
+> Change the embedding settings and restart Hisaab. Confirm that **System health
 > → AI status** reports the new model and dimensions, then upload the source
 > documents again. This recreates every embedding with only the new model.
 
@@ -1805,8 +1805,8 @@ EMBEDDING_DIMENSIONS=3072
 Changing only `EMBEDDING_DIMENSIONS` does not reshape an existing pgvector
 column. If `vector_store_chunks` was already created with a different size,
 back up the database and source documents, remove the indexed documents from
-Sure, then alter or recreate the `embedding` column/table before uploading the
-documents again. Dropping the empty chunks table lets Sure recreate it with the
+Hisaab, then alter or recreate the `embedding` column/table before uploading the
+documents again. Dropping the empty chunks table lets Hisaab recreate it with the
 new vector size:
 
 ```bash
@@ -1814,7 +1814,7 @@ docker compose -f compose.example.ai.yml exec web bin/rails runner \
   'ActiveRecord::Base.connection_pool.with_connection { |connection| connection.drop_table(VectorStore::Pgvector::TABLE_NAME, if_exists: true) }'
 ```
 
-Restart Sure after changing environment values so the new settings are present
+Restart Hisaab after changing environment values so the new settings are present
 in both web and worker processes. If the embedding live check times out, raise
 the health-check probe timeout in the service environment:
 
@@ -1884,13 +1884,13 @@ EXTERNAL_ASSISTANT_MODEL=openclaw/main
 
 Configuration behavior:
 
-- `EXTERNAL_ASSISTANT_URL` is the full chat-completions endpoint. Sure sends requests to this URL verbatim; it does not append `/v1/chat/completions`.
-- The Settings form requires an agent selection. After the URL and token are saved, Sure requests the sibling `/v1/models` endpoint and shows the returned entries as agent choices. If you change the endpoint or token and the previously selected agent is not offered there, Sure saves the new connection and asks you to pick an agent again.
+- `EXTERNAL_ASSISTANT_URL` is the full chat-completions endpoint. Hisaab sends requests to this URL verbatim; it does not append `/v1/chat/completions`.
+- The Settings form requires an agent selection. After the URL and token are saved, Hisaab requests the sibling `/v1/models` endpoint and shows the returned entries as agent choices. If you change the endpoint or token and the previously selected agent is not offered there, Hisaab saves the new connection and asks you to pick an agent again.
 - The selected value is sent as the OpenAI-compatible `model` routing value, such as `openclaw/main`. This selects an external agent. It does not select or change the LLM configured behind that agent.
 - The gateway must return standard streaming chat-completion events (`choices[0].delta.content`) followed by `data: [DONE]`.
-- An authentication, endpoint, or agent-selection failure comes from the external gateway. Check the gateway's response and logs when Sure reports an HTTP error.
+- An authentication, endpoint, or agent-selection failure comes from the external gateway. Check the gateway's response and logs when Hisaab reports an HTTP error.
 
-Upgrading: deployments that set only the URL and token keep working. When no agent is selected, Sure uses `openclaw/main`, which matches the previous implicit `main` agent. `EXTERNAL_ASSISTANT_AGENT_ID` is still read for existing deployments and maps to `openclaw/<id>` until an agent is selected. Once a model is selected in Settings or with `EXTERNAL_ASSISTANT_MODEL`, the agent routing header always follows that model. New configurations should use `EXTERNAL_ASSISTANT_MODEL`.
+Upgrading: deployments that set only the URL and token keep working. When no agent is selected, Hisaab uses `openclaw/main`, which matches the previous implicit `main` agent. `EXTERNAL_ASSISTANT_AGENT_ID` is still read for existing deployments and maps to `openclaw/<id>` until an agent is selected. Once a model is selected in Settings or with `EXTERNAL_ASSISTANT_MODEL`, the agent routing header always follows that model. New configurations should use `EXTERNAL_ASSISTANT_MODEL`.
 
 ## Resources
 
@@ -1898,13 +1898,13 @@ Upgrading: deployments that set only the URL and token keep working. When no age
 - [Ollama Documentation](https://github.com/ollama/ollama)
 - [OpenRouter Documentation](https://openrouter.ai/docs)
 - [Langfuse Documentation](https://langfuse.com/docs)
-- [Sure GitHub Repository](https://github.com/we-promise/sure)
+- [Hisaab GitHub Repository](https://github.com/osamarehman/Hisaab)
 
 ## Support
 
 For issues with AI features:
 1. Check this documentation first
-2. Search [existing GitHub issues](https://github.com/we-promise/sure/issues)
+2. Search [existing GitHub issues](https://github.com/osamarehman/Hisaab/issues)
 3. Open a new issue with:
    - Your configuration (redact API keys!)
    - Error messages

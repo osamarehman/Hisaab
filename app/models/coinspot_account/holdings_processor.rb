@@ -14,7 +14,7 @@ class CoinspotAccount::HoldingsProcessor
   # Imports every non-AUD asset in the account's latest balance snapshot as a
   # holding, then zeroes out any previously-imported holding whose security
   # is absent from that snapshot (sold/transferred away entirely). No-op for
-  # accounts not yet linked to a Crypto Sure account. Returns structured
+  # accounts not yet linked to a Crypto Hisaab account. Returns structured
   # failures so the parent sync cannot report a partial import as successful.
   def process
     return unless account&.accountable_type == "Crypto"
@@ -47,7 +47,7 @@ class CoinspotAccount::HoldingsProcessor
       coinspot_account.coinspot_item&.family&.currency
     end
 
-    # The linked Sure account holdings are imported into.
+    # The linked Hisaab account holdings are imported into.
     def account
       coinspot_account.current_account
     end

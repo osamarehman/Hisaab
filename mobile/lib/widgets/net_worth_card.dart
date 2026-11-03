@@ -44,7 +44,7 @@ class NetWorthCard extends StatelessWidget {
       key: const ValueKey('netWorthCardChrome'),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        // Align the hero card with the Sure card chrome (mirrors SureCard /
+        // Align the hero card with the Hisaab card chrome (mirrors SureCard /
         // AccountCard): tokenized container fill, hairline border, the subtle
         // DS shadow, and the canonical radius — instead of Material's
         // surfaceContainerHighest/outline.

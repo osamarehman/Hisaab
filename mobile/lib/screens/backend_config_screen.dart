@@ -90,7 +90,7 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
       // test reflects what the user is about to save. Restored in `finally`.
       ApiConfig.setCustomProxyHeaders(_customHeaders);
 
-      // Check /sessions/new page to verify it's a Sure backend
+      // Check /sessions/new page to verify it's a Hisaab backend
       final sessionsUrl = Uri.parse('$normalizedUrl/sessions/new');
       final sessionsResponse =
           await http.get(sessionsUrl, headers: ApiConfig.htmlHeaders()).timeout(

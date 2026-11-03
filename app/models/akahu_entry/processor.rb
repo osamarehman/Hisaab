@@ -157,7 +157,7 @@ class AkahuEntry::Processor
       end
 
       # Akahu uses banking convention: negative is money out, positive is money in.
-      # Sure stores expenses as positive and income as negative.
+      # Hisaab stores expenses as positive and income as negative.
       -parsed_amount
     rescue ArgumentError => e
       Rails.logger.error "Failed to parse Akahu transaction amount: #{e.class}"

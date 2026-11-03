@@ -1,11 +1,11 @@
 class MonobankAccount < ApplicationRecord
   include CurrencyNormalizable, IsoNumericCurrency, Encryptable
 
-  # Monobank card types (and jars) mapped onto Sure accountable types/subtypes.
+  # Monobank card types (and jars) mapped onto Hisaab accountable types/subtypes.
   # Everything Monobank exposes on the personal API is a current account holding the
   # client's own money, so all of them land on Depository. A card with a credit limit is
   # still Depository rather than CreditCard: the limit is subtracted out of the balance
-  # (see #upsert_monobank_snapshot!), leaving own funds, which is what Sure tracks for a
+  # (see #upsert_monobank_snapshot!), leaving own funds, which is what Hisaab tracks for a
   # cash account.
   MONOBANK_ACCOUNT_TYPE_MAP = {
     "black" => { accountable_type: "Depository", subtype: "checking" },
@@ -38,12 +38,12 @@ class MonobankAccount < ApplicationRecord
   validates :name, :currency, presence: true
   validates :account_id, uniqueness: { scope: :monobank_item_id, allow_nil: true }
 
-  # Monobank accounts with no linked Sure account.
+  # Monobank accounts with no linked Hisaab account.
   scope :unlinked, -> { left_joins(:account_provider).where(account_providers: { id: nil }) }
   # Unlinked accounts that still need a setup decision (i.e. not explicitly skipped).
   scope :needs_setup, -> { unlinked.where(ignored: false) }
 
-  # The linked Sure account, if any.
+  # The linked Hisaab account, if any.
   def current_account
     account
   end
@@ -61,13 +61,13 @@ class MonobankAccount < ApplicationRecord
     card_type_label(account_type)
   end
 
-  # Suggested Sure accountable type for this account, or nil when the card type is
+  # Suggested Hisaab accountable type for this account, or nil when the card type is
   # unrecognized (a new Monobank product), in which case setup asks the user.
   def suggested_account_type
     type_mapping&.fetch(:accountable_type, nil)
   end
 
-  # Suggested Sure subtype (checking for cards, savings for jars), or nil.
+  # Suggested Hisaab subtype (checking for cards, savings for jars), or nil.
   def suggested_subtype
     type_mapping&.[](:subtype)
   end

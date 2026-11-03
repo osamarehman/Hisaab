@@ -111,7 +111,7 @@ class TradeRepublicItem::Importer
       portfolio_capped | cash_capped
     end
 
-    # Crypto gets its own account because Sure has a Crypto account type.
+    # Crypto gets its own account because Hisaab has a Crypto account type.
     # It reads its positions and trades from the portfolio payloads, so only
     # its balance is stored here. Created once the portfolio holds or traded
     # crypto; it stays unlinked until the user sets it up.

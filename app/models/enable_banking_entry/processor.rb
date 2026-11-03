@@ -404,13 +404,13 @@ class EnableBankingEntry::Processor
           BigDecimal("0")
         end
 
-        # Sure convention: positive = outflow (expense/debit from account), negative = inflow (income/credit)
+        # Hisaab convention: positive = outflow (expense/debit from account), negative = inflow (income/credit)
         # Enable Banking: DBIT = debit from account (outflow), CRDT = credit to account (inflow)
         # Therefore: DBIT → +absolute_amount, CRDT → -absolute_amount
         #
         # For unidentified card authorization holds, the ASPSP
         # erroneously returns credit_debit_indicator: "CRDT" for an authorization hold on an outflow.
-        # Force these holds to positive (outflow/expense in Sure) so they appear as pending expenses
+        # Force these holds to positive (outflow/expense in Hisaab) so they appear as pending expenses
         # and match the settled expense when it arrives.
         if unidentified_hold?
           absolute_amount
@@ -617,7 +617,7 @@ class EnableBankingEntry::Processor
     end
 
     def amount
-      # Sure convention: positive = outflow (debit/expense), negative = inflow (credit/income)
+      # Hisaab convention: positive = outflow (debit/expense), negative = inflow (credit/income)
       # amount_value already applies this: DBIT → +absolute, CRDT → -absolute
       amount_value
     end

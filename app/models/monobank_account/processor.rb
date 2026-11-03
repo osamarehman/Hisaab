@@ -11,7 +11,7 @@ class MonobankAccount::Processor
   end
 
   # Sync the linked account's balance and process its transactions. No-op when
-  # the Monobank account isn't linked to a Sure account.
+  # the Monobank account isn't linked to a Hisaab account.
   def process
     unless monobank_account.current_account.present?
       Rails.logger.info "MonobankAccount::Processor - No linked account for monobank_account #{monobank_account.id}, skipping processing"
@@ -28,7 +28,7 @@ class MonobankAccount::Processor
 
   private
 
-    # Update the linked Sure account's balance/currency from the Monobank snapshot.
+    # Update the linked Hisaab account's balance/currency from the Monobank snapshot.
     def process_account!
       account = monobank_account.current_account
       # Own funds: MonobankAccount already subtracted the card's credit limit out of the

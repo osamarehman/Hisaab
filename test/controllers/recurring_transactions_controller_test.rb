@@ -1627,7 +1627,7 @@ class RecurringTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", confirm_recurring_transaction_path(income), text: I18n.t("recurring_transactions.new.covered_income_confirm")
   end
 
-  # A suggestion is a bill Sure found and is waiting on. Saving a separate one
+  # A suggestion is a bill Hisaab found and is waiting on. Saving a separate one
   # now would only become a duplicate when the suggestion is confirmed, so the
   # dialog offers the confirm instead, with the separate bill still behind it.
   test "new from a transaction a suggested bill covers offers to confirm it" do

@@ -33,7 +33,7 @@ class TradeRepublicAccountHoldingsProcessorTest < ActiveSupport::TestCase
     assert_equal BigDecimal("183.94"), holding.price
 
     # qty keeps 8 fractional digits; the amount column stores scale-4
-    # (Sure-wide convention), so compare against the same rounding.
+    # (Hisaab-wide convention), so compare against the same rounding.
     expected_amount = (BigDecimal("13.439945") * BigDecimal("183.94")).round(4)
     assert_equal expected_amount, holding.amount
   end

@@ -6,11 +6,11 @@ class QuestradeAccount::ActivitiesProcessor
   # Questrade groups activities by `type` (category) and `action` (sub-action,
   # e.g. Buy/Sell/CON/FCH). We route on `type`, then use `action` for direction.
   #
-  # Sign convention: Questrade `netAmount` is +money-in / -money-out, but Sure
+  # Sign convention: Questrade `netAmount` is +money-in / -money-out, but Hisaab
   # stores transactions as -inflow / +outflow, so cash signed_amount = -netAmount.
   TRADE_TYPE = "Trades"
 
-  # Questrade `type` -> Sure investment activity label (cash transactions)
+  # Questrade `type` -> Hisaab investment activity label (cash transactions)
   CASH_TYPE_TO_LABEL = {
     "Deposits"         => "Contribution",
     "Withdrawals"      => "Withdrawal",
@@ -108,7 +108,7 @@ class QuestradeAccount::ActivitiesProcessor
 
       sell = data[:action].to_s.casecmp("Sell").zero?
       signed_quantity = sell ? -quantity.abs : quantity.abs
-      # Buy => positive cost, Sell => negative (matches Sure's trade convention).
+      # Buy => positive cost, Sell => negative (matches Hisaab's trade convention).
       amount = price ? signed_quantity * price : parse_decimal(data[:netAmount])&.abs
       return if amount.nil?
 

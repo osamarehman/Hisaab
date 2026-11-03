@@ -1,4 +1,4 @@
-# Translates ISO 4217 numeric currency codes into the alphabetic codes Sure stores.
+# Translates ISO 4217 numeric currency codes into the alphabetic codes Hisaab stores.
 #
 # Most providers report currencies as "UAH"/"USD", which CurrencyNormalizable handles
 # directly. Some (Monobank) report the numeric code instead (980, 840), so those values
@@ -9,7 +9,7 @@ module IsoNumericCurrency
   extend ActiveSupport::Concern
 
   class << self
-    # Memoized { "980" => "UAH" } map built from Sure's currency table. Built lazily so
+    # Memoized { "980" => "UAH" } map built from Hisaab's currency table. Built lazily so
     # the YAML is only read when a provider actually needs a numeric lookup.
     def alpha_by_numeric
       @alpha_by_numeric ||= Money::Currency.all.each_value.with_object({}) do |currency_data, map|

@@ -1,17 +1,17 @@
-# Deploy handoff: Sure household edition
+# Deploy handoff: Hisaab household edition
 
 For the agent (or person) launching this on the server. Read fully before
 running anything.
 
 ## What this is
 
-A fork of [we-promise/sure](https://github.com/we-promise/sure) adapted for one
+Hisaab, the household finance app, first deployed for one
 Pakistani household: PKR default, manual expenses with receipt photos,
 bank-statement import (PDF via AI, CSV) with labelling, no bank sync, an AI
 assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 
 - Repo: `github.com/osamarehman/Hisaab` (private), branch
-  `redesign/household-pkr`. `upstream` remote = we-promise/sure.
+  `redesign/household-pkr`.
 - API contract the app uses: `docs/redesign/household-api.md`.
 - AI setup and model choice: `docs/redesign/openrouter.md`.
 - Server stack: `compose.household.yml` (builds this repo's `Dockerfile`;
@@ -22,14 +22,14 @@ assistant via OpenRouter, and a redesigned Flutter app (`mobile/`).
 
 - A VPS you control that may already run other apps — do not touch their
   containers, volumes, ports or proxy config beyond adding a new site.
-- Hostname: `sure.shipdeck.dev` (the APK defaults to it; the DNS A record
+- Hostname: `hisaab.shipdeck.dev` (the APK defaults to it; the DNS A record
   must point at the VPS before TLS can issue).
 
 ## Steps
 
 1. **Recon (read-only):** `docker ps`, `ss -ltnp`, `free -h`, `df -h /`.
    Find how SureCaller is exposed (Caddy / nginx / Traefik / other) and which
-   host ports are taken. Pick a free port for `PORT` (default 3010). Sure
+   host ports are taken. Pick a free port for `PORT` (default 3010). Hisaab
    needs about 1.5 GB RAM for web + worker; stop and report if the box is
    short.
 2. **Code:** `git clone -b redesign/household-pkr git@github.com:osamarehman/Hisaab.git /root/Hisaab`
@@ -68,10 +68,10 @@ cd /root/Hisaab && git pull && docker compose -f compose.household.yml -f compos
 
 `compose.server.yml` exists only on the server (git-ignored). The web container
 joins Caddy's shared network, where the name `db` resolves to another app's
-Postgres, so the override points Sure at its own database and Redis. Keep it in
+Postgres, so the override points Hisaab at its own database and Redis. Keep it in
 every compose command.
 
-Live deployment: `https://sure.shipdeck.dev`, app in `/root/Hisaab`,
+Live deployment: `https://hisaab.shipdeck.dev`, app in `/root/Hisaab`,
 port 3010, nightly database + storage backups kept for 14 days.
 
 ## Mobile app
@@ -79,7 +79,7 @@ port 3010, nightly database + storage backups kept for 14 days.
 - APK is built locally from `mobile/` (`flutter build apk --release`); it is
   signed with the build machine's debug key, so later updates must be built on
   the same machine (or set up a release keystore via `mobile/android/key.properties`).
-- The app defaults to `https://sure.shipdeck.dev`. For another host, use the server
+- The app defaults to `https://hisaab.shipdeck.dev`. For another host, use the server
   settings on the sign-in screen. To ship a build
   that already points at the server, change `_defaultBaseUrl` in
   `mobile/lib/services/api_config.dart` before building.

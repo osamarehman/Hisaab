@@ -1,11 +1,11 @@
 // Injected into every page loaded in the main window (local onboarding + the
-// remote Sure site). Adds native-titlebar chrome, drags the window, forwards
+// remote Hisaab site). Adds native-titlebar chrome, drags the window, forwards
 // notifications/badge to Rust, intercepts SSO into the system browser, and
 // navigates on server switches.
 (() => {
   const tauri = (window as any).__TAURI__;
 
-  // Diagnostics — visible in DevTools console. On the remote Sure page, IPC only
+  // Diagnostics — visible in DevTools console. On the remote Hisaab page, IPC only
   // works if withGlobalTauri is set AND a capability's remote.urls matches.
   // eslint-disable-next-line no-console
   console.log("[sure] bridge loaded", {
@@ -19,7 +19,7 @@
   // Native titlebar chrome — offset the left icon rail so its logo clears the
   // traffic lights, and make the top ~34px band drag the window. Using a
   // document-level mousedown (rather than a fixed overlay strip) means dragging
-  // works on every page regardless of Sure's own sticky headers, while its
+  // works on every page regardless of Hisaab's own sticky headers, while its
   // interactive controls in that band stay clickable. Main content is not
   // pushed down.
   if (!(window as any).__sureChrome) {
@@ -106,7 +106,7 @@
     });
   }
 
-  // Sync-complete + alert toasts: Sure renders flash/notification nodes.
+  // Sync-complete + alert toasts: Hisaab renders flash/notification nodes.
   const seen = new WeakSet<Element>();
   const scan = () => {
     document.querySelectorAll("[data-notification], .flash, [role='alert']").forEach((node) => {

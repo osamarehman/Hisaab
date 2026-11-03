@@ -27,13 +27,13 @@ class CoinspotAccount::Processor
   attr_reader :coinspot_account
 
   # Initializes with the CoinspotAccount whose latest synced snapshot
-  # (balances + transaction history) will be turned into a Sure account's
+  # (balances + transaction history) will be turned into a Hisaab account's
   # balance, holdings, and activity.
   def initialize(coinspot_account)
     @coinspot_account = coinspot_account
   end
 
-  # Updates the linked Sure account's balance and imports every kind of
+  # Updates the linked Hisaab account's balance and imports every kind of
   # activity CoinSpot reports for it: holdings, orders, sends/receives, and
   # AUD deposits/withdrawals. No-op until the account is actually linked.
   def process
@@ -61,7 +61,7 @@ class CoinspotAccount::Processor
       coinspot_account.coinspot_item&.family&.currency
     end
 
-    # The linked Sure account activity is imported into.
+    # The linked Hisaab account activity is imported into.
     def account
       coinspot_account.current_account
     end

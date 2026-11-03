@@ -148,7 +148,7 @@ class SimplefinAccount::Investments::HoldingsProcessorTest < ActiveSupport::Test
   test "cost_basis from Charles Schwab is divided by qty (#2626)" do
     # Schwab reports `cost_basis` as the total position cost, not per-share,
     # in violation of the SimpleFIN spec — same failure mode as Vanguard
-    # (#1182) and Fidelity (#1718). Observed on two independent Sure
+    # (#1182) and Fidelity (#1718). Observed on two independent Hisaab
     # instances via raw SimpleFIN payloads, e.g.:
     #   { "shares" => "651.00", "cost_basis" => "30162.36", "purchase_price" => "46.33235" }
     # Left uncorrected, Holding#calculate_trend later multiplies this

@@ -10,13 +10,13 @@ RSpec.configure do |config|
     'openapi.yaml' => {
       openapi: '3.0.3',
       info: {
-        title: 'Sure API',
+        title: 'Hisaab API',
         version: 'v1',
         description: 'OpenAPI documentation generated from executable request specs.'
       },
       servers: [
         {
-          url: 'https://app.sure.am',
+          url: 'https://hisaab.shipdeck.dev',
           description: 'Production'
         },
         {

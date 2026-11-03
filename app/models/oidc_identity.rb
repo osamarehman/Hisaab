@@ -25,8 +25,8 @@ class OidcIdentity < ApplicationRecord
       groups: groups
     })
 
-    # Sync name to user only when Sure has nothing on file (first link, or an
-    # admin blanked the field). Edits made inside Sure must survive subsequent
+    # Sync name to user only when Hisaab has nothing on file (first link, or an
+    # admin blanked the field). Edits made inside Hisaab must survive subsequent
     # SSO logins — previously the IdP value won unconditionally and clobbered
     # any manually-edited name on every login (#1103).
     user.update!(

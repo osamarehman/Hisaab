@@ -36,7 +36,7 @@ it:
       files_hint: PDF, CSV o XLSX. Max %{max_size}MB per file.
       files_label: File estratti conto
       inbox_upload: Carica
-      period_hint: "Sure legge il periodo dal PDF, se lo riporta, o da una data nel nome del file (es. 2026-04). Puoi anche impostarlo nell’estratto conto."
+      period_hint: "Hisaab legge il periodo dal PDF, se lo riporta, o da una data nel nome del file (es. 2026-04). Puoi anche impostarlo nell’estratto conto."
     index:
       account_label: Conto
       confidence: "Corrispondenza %{confidence}"
@@ -76,7 +76,7 @@ it:
       difference: Differenza
       download: Scarica
       institution_name_hint: Suggerimento istituzione
-      ledger_amount: Libro contabile Sure
+      ledger_amount: Libro contabile Hisaab
       linked_to: Collegato a %{account}.
       linking_title: Collegamento conto
       link_suggestion: Suggerimento collegamento
@@ -86,7 +86,7 @@ it:
       period_end_on: Fine periodo
       period_start_on: Inizio periodo
       reconciliation_title: Riconciliazione
-      reconciliation_unavailable: Aggiungi un periodo e il saldo iniziale o finale dell'estratto, poi assicurati che Sure abbia la cronologia saldi per quelle date.
+      reconciliation_unavailable: Aggiungi un periodo e il saldo iniziale o finale dell'estratto, poi assicurati che Hisaab abbia la cronologia saldi per quelle date.
       reject: Rifiuta
       save: Salva estratto conto
       statement_amount: Estratto conto

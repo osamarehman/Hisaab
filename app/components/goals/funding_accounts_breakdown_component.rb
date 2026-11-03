@@ -70,7 +70,7 @@ class Goals::FundingAccountsBreakdownComponent < ApplicationComponent
     end
 
     # Per-account net inflow for both windows in one pass over the 90-day
-    # entries set. Entry amount sign in Sure: inflow is negative; flip and
+    # entries set. Entry amount sign in Hisaab: inflow is negative; flip and
     # clamp ≥ 0. Converted at today's rate, like Goal#pace.
     def inflow_totals_map
       @inflow_totals_map ||= begin

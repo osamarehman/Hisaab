@@ -7,7 +7,7 @@ class FioAccount::Transactions::Processor
     @fio_account = fio_account
   end
 
-  # Process each stored movement into a Sure entry and return a stats hash. The whole
+  # Process each stored movement into a Hisaab entry and return a stats hash. The whole
   # stored payload is replayed every sync: entries are matched on Fio's movement id, so
   # re-processing a movement updates the entry it already produced.
   def process

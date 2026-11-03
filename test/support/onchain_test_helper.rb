@@ -135,7 +135,7 @@ module OnchainTestHelper
     OnchainWalletItem.create!({ family: family, name: "Wallets" }.merge(attrs))
   end
 
-  # Links a tracked asset to a real Sure account, the way the linking flow does.
+  # Links a tracked asset to a real Hisaab account, the way the linking flow does.
   def link_onchain_wallet_account!(onchain_wallet_account)
     account = Account.create_from_onchain_wallet_account(onchain_wallet_account)
     onchain_wallet_account.ensure_account_provider!(account)

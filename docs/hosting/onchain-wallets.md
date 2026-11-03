@@ -1,6 +1,6 @@
 # On-chain (self-custody) wallets
 
-Sure can track wallets you hold the keys to — Bitcoin, six EVM networks,
+Hisaab can track wallets you hold the keys to — Bitcoin, six EVM networks,
 Solana, Polkadot and the Cosmos Hub — from their **public addresses only**. Nothing is signed, no key or seed
 phrase is ever entered, and no API key is required for any chain.
 
@@ -9,11 +9,11 @@ limits you will hit, and how to diagnose a wallet that looks wrong.
 
 ## What gets tracked
 
-One Sure account is created per **asset**, per **address**, per **network**. A
+One Hisaab account is created per **asset**, per **address**, per **network**. A
 wallet holding ETH and USDC on Ethereum becomes two accounts, both Crypto
 accounts with the "wallet" subtype.
 
-For each asset Sure records:
+For each asset Hisaab records:
 
 - the **quantity** held, read from the chain;
 - a **holding** valued at the current price, or at zero when no price is
@@ -30,7 +30,7 @@ pointless: the next sync overwrites them.
 
 ## Prices need two settings, not one (read this first)
 
-On-chain data sources report **quantities, not values**. Prices come from Sure's
+On-chain data sources report **quantities, not values**. Prices come from Hisaab's
 market data providers, and the only provider that can quote bare crypto symbols
 is **Binance public** (keyless).
 
@@ -51,7 +51,7 @@ offered.
 ### And an exchange rate, if your currency is not USD
 
 The crypto provider quotes in USD, so valuing a wallet in any other family
-currency needs one conversion — and Sure's default exchange rate provider
+currency needs one conversion — and Hisaab's default exchange rate provider
 (`twelve_data`) requires an API key. With no key and a non-USD family, there is no
 FX at all and every on-chain wallet is valued at zero for that second, separate
 reason.
@@ -165,7 +165,7 @@ whole flow; you can still pick it by hand.
    you know which one you want.
 2. If the address format belongs to several networks — every `0x` address is
    valid on all six EVM networks, and Bitcoin's Base58 shape overlaps Solana's —
-   Sure probes each and asks you to choose, marking the ones where it found
+   Hisaab probes each and asks you to choose, marking the ones where it found
    activity.
 3. Pick the assets to track. The native coin and assets the data source treats
    as notable are ticked; everything else is listed unticked. "Notable" means a
@@ -216,7 +216,7 @@ POL, XDAI) and large-cap tokens are the well-covered case.
 Pricing by contract address instead of by symbol would close most of the gap, and
 the data is already close at hand — the EVM indexer returns an exchange rate per
 token and Jupiter returns a USD price per mint, neither of which this version
-uses for valuation. That change belongs to how crypto enters Sure's price
+uses for valuation. That change belongs to how crypto enters Hisaab's price
 pipeline rather than to this feature, so it is not something you can configure
 your way out of today.
 
@@ -262,7 +262,7 @@ transfer rather than recorded separately. On Solana, native balance changes belo
 on two networks is one Security rather than two.
 
 **Prices are daily and USD-quoted.** Values are converted into your family
-currency using Sure's exchange rates. A transfer whose day has no price becomes a
+currency using Hisaab's exchange rates. A transfer whose day has no price becomes a
 zero-amount excluded entry rather than a trade.
 
 **NFTs are not tracked.** They are filtered out by token standard, so an NFT is
@@ -302,7 +302,7 @@ point `SOLANA_RPC_URL` at a real node.
 automatically. Use **Review tokens** and tick it.
 
 **A Solana token shows as `SPL:abcd…wxyz`.** The token list does not vouch for
-that mint, so Sure will not name or price it. Tick it anyway to track the
+that mint, so Hisaab will not name or price it. Tick it anyway to track the
 quantity.
 
 **Transfers appear with a value of 0 and are excluded from totals.** No price was

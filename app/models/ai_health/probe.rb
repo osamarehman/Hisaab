@@ -5,7 +5,7 @@ require "timeout"
 
 class AiHealth
   # Performs bounded, non-destructive checks against the exact services used
-  # by Sure. Results are cached briefly because this runs in an admin request,
+  # by Hisaab. Results are cached briefly because this runs in an admin request,
   # and a failed check is recorded once per cache fill in both operator-facing
   # debug logs and the application log.
   class Probe

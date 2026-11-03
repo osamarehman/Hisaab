@@ -1,12 +1,12 @@
-# Sure Mobile
+# Hisaab Mobile
 
-A Flutter mobile application for [Sure](https://github.com/we-promise/sure) personal finance management system. This is the mobile client that connects to the Sure backend server.
+A Flutter mobile application for [Hisaab](https://github.com/osamarehman/Hisaab) personal finance management system. This is the mobile client that connects to the Hisaab backend server.
 
 ## About
 
-This app is a mobile companion to the [Sure personal finance management system](https://github.com/we-promise/sure). It provides basic functionality to:
+This app is a mobile companion to the [Hisaab personal finance management system](https://github.com/osamarehman/Hisaab). It provides basic functionality to:
 
-- **Login** - Authenticate with your Sure Finances server
+- **Login** - Authenticate with your Hisaab server
 - **View Balance** - See all your accounts and their balances
 
 For more detailed technical documentation, see [docs/TECHNICAL_GUIDE.md](docs/TECHNICAL_GUIDE.md).
@@ -54,7 +54,7 @@ This step generates the app icons for all platforms based on the source icon in 
 
 ### 4. Configure API Endpoint
 
-Edit `lib/services/api_config.dart` to point to your Sure Finances server:
+Edit `lib/services/api_config.dart` to point to your Hisaab server:
 
 ```dart
 // For local development with Android emulator
@@ -113,7 +113,7 @@ flutter run -d chrome
 
 ## API Integration
 
-This app integrates with the Sure Finances Rails API:
+This app integrates with the Hisaab Rails API:
 
 ### Authentication
 - `POST /api/v1/auth/login` - User authentication

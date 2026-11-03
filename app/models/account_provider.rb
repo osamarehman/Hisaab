@@ -19,7 +19,7 @@ class AccountProvider < ApplicationRecord
   # unlink it stops syncing, because the syncer only reads linked rows, while
   # its partial unique index still holds the (item, chain, address, asset) slot
   # — so linking that same asset again would collide with a row nothing shows.
-  # The Sure account and its holdings are untouched and carry on as manual.
+  # The Hisaab account and its holdings are untouched and carry on as manual.
   after_destroy :destroy_onchain_provider_account, if: :onchain_provider?
 
   # Returns the provider adapter for this connection

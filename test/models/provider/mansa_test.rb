@@ -50,7 +50,7 @@ class Provider::MansaTest < ActiveSupport::TestCase
   end
 
   test "search_securities always scopes to NGX even with no MIC given, matching the real controller call" do
-    # Sure's actual trade-form combobox never passes exchange_operating_mic on
+    # Hisaab's actual trade-form combobox never passes exchange_operating_mic on
     # search (see app/views/trades/_form.html.erb) — this test calls the
     # provider exactly that way, which the original PR's only search test
     # didn't (it passed exchange_operating_mic: "XNSA" explicitly and so

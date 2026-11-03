@@ -24,7 +24,7 @@ class FioAccount::ProcessorTest < ActiveSupport::TestCase
     assert_equal "CZK", account.currency
   end
 
-  # Fio reports a drawn overdraft, loan or mortgage as a negative balance; Sure holds a
+  # Fio reports a drawn overdraft, loan or mortgage as a negative balance; Hisaab holds a
   # liability as a positive one, so the same number would otherwise show as a debt of
   # minus several hundred thousand crowns.
   test "stores a loan's negative balance as a positive liability" do

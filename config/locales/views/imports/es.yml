@@ -100,7 +100,7 @@ es:
         account_label: Cuenta
         name_label: Nombre
         note_label: Nota
-        no_security_provider_warning: El proveedor de precios de valores no está configurado. Tus importaciones de operaciones funcionarán, pero Sure no rellenará el histórico de precios. Ve a tus ajustes para configurarlo.
+        no_security_provider_warning: El proveedor de precios de valores no está configurado. Tus importaciones de operaciones funcionarán, pero Hisaab no rellenará el histórico de precios. Ve a tus ajustes para configurarlo.
         date_format_label: Formato de fecha
         apply_configuration: Aplicar configuración
       category_import:

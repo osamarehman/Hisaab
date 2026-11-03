@@ -339,7 +339,7 @@ class TradeRepublicAccount::ActivitiesProcessor
       end
       return false unless amount && !amount.zero?
 
-      # Sure trade amounts are cash impact: buys spend cash, sells return it.
+      # Hisaab trade amounts are cash impact: buys spend cash, sells return it.
       signed_amount = is_buy ? amount.abs : -amount.abs
       if price.nil?
         # Provider totals include costs: buy total = gross + costs, sell total =
@@ -496,7 +496,7 @@ class TradeRepublicAccount::ActivitiesProcessor
 
     # The portfolio account holds no cash: Trade Republic settles every trade
     # on the cash account. Each trade still moves the portfolio's cash in
-    # Sure, so book the opposite leg there and link both legs as a transfer.
+    # Hisaab, so book the opposite leg there and link both legs as a transfer.
     # The portfolio's cash then nets to zero per trade, and the settlement
     # shows which account the money went to. Without the portfolio trade the
     # counterpart would itself leave cash on the portfolio, so it waits for
@@ -577,7 +577,7 @@ class TradeRepublicAccount::ActivitiesProcessor
 
     # Cash-account deposits and withdrawals are imported as standard
     # transactions; automatic transfer matching turns them into a transfer
-    # when the counterpart account is in Sure, whatever the payment type.
+    # when the counterpart account is in Hisaab, whatever the payment type.
     # Earlier syncs stored deposits as investment contributions (with the
     # category and label the adapter assigned with that kind) and payment
     # events as funds movements. Reset those rows unless the user edited them

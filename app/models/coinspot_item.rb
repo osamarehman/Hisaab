@@ -98,7 +98,7 @@ class CoinspotItem < ApplicationRecord
     update!(raw_payload: payload)
   end
 
-  # True once at least one CoinSpot account has been imported as a Sure account.
+  # True once at least one CoinSpot account has been imported as a Hisaab account.
   def has_completed_initial_setup?
     accounts.any?
   end
@@ -119,7 +119,7 @@ class CoinspotItem < ApplicationRecord
     end
   end
 
-  # Number of CoinSpot accounts already linked to a Sure account.
+  # Number of CoinSpot accounts already linked to a Hisaab account.
   def linked_accounts_count
     coinspot_accounts.joins(:account_provider).count
   end

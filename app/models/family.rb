@@ -86,7 +86,7 @@ class Family < ApplicationRecord
   # Foreign-currency goals are excluded from this KPI until FX conversion is
   # added.
   #
-  # Entry amount convention in Sure: inflow is negative, so flip the sign.
+  # Entry amount convention in Hisaab: inflow is negative, so flip the sign.
   # Result is allowed to go negative (net outflow last 30d) so the headline
   # reflects reality; the controller decides how to render.
   def savings_inflow_velocity(range: 30.days.ago.to_date..Date.current, account_ids: nil)

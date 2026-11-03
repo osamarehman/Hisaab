@@ -59,7 +59,7 @@ class DeliverInsightNotificationJobTest < ActiveJob::TestCase
     client.expects(:deliver).with(
       token: @subscription.token,
       title: "Neue Finanzanalyse",
-      body: "Öffne Sure, um deine neueste KI-Analyse anzusehen.",
+      body: "Öffne Hisaab, um deine neueste KI-Analyse anzusehen.",
       insight_id: @insight.id
     ).returns(response)
 

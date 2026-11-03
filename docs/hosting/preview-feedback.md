@@ -14,7 +14,7 @@ current browser client and event allowlist are still specific to Sankey.
 
 | Deployment | Feedback destination | Configuration |
 | --- | --- | --- |
-| Sure app | Its existing `[app] sure-app` PostHog project | Existing `POSTHOG_KEY` / `POSTHOG_HOST`, plus the feature's survey ID |
+| Hisaab app | Its existing `[app] sure-app` PostHog project | Existing `POSTHOG_KEY` / `POSTHOG_HOST`, plus the feature's survey ID |
 | Demo | Its existing `[app] sure-demo` PostHog project | Existing `POSTHOG_KEY` / `POSTHOG_HOST`, plus the feature's survey ID |
 | Production self-hosted | Shared `[app] self-hosted` project | Bundled public project token and feature survey ID; no operator setup |
 
@@ -45,7 +45,7 @@ release and installation upgrades; older versions retain the old token. See the
 
 ## Survey behavior
 
-Use a PostHog **API survey** with Sure's own accessible dialog. The application
+Use a PostHog **API survey** with Hisaab's own accessible dialog. The application
 controls when the survey is offered and validates the configured survey and its
 question IDs. Answers use question UUIDs rather than positional indexes. Changing
 question types or accepted choices requires a corresponding client update.

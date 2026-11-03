@@ -85,7 +85,7 @@ de:
         format_label: Format
         leave_empty: Leer lassen
         name_label: Name
-        no_security_provider_warning: Der Anbieter für Wertpapierkurse ist nicht eingerichtet. Deine Trade-Importe funktionieren trotzdem, Sure ergänzt aber keine Kurshistorie. Richte den Anbieter in den Einstellungen ein.
+        no_security_provider_warning: Der Anbieter für Wertpapierkurse ist nicht eingerichtet. Deine Trade-Importe funktionieren trotzdem, Hisaab ergänzt aber keine Kurshistorie. Richte den Anbieter in den Einstellungen ein.
         note_label: Notiz
         price_label: Kurs
         quantity_label: Stückzahl

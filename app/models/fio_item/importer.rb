@@ -179,7 +179,7 @@ class FioItem::Importer
 
     # A connection stands for one token, and a token for one account, so a statement
     # naming a different account than the one already stored means the token was
-    # replaced with one for another account. Reusing the row would hand the linked Sure
+    # replaced with one for another account. Reusing the row would hand the linked Hisaab
     # account someone else's balance and movements, so the sync refuses instead; the
     # user gets a second connection for the second account.
     def reject_foreign_account!(info)
@@ -205,7 +205,7 @@ class FioItem::Importer
     end
 
     # Creates the account row on first sight, updates the header afterwards. Discovery
-    # never creates a Sure account: linking is the user's decision, made in setup.
+    # never creates a Hisaab account: linking is the user's decision, made in setup.
     def upsert_account!(info)
       account_number = info[:accountId].presence&.to_s
       account = fio_item.fio_accounts.find_by(fio_account_id: account_number) ||

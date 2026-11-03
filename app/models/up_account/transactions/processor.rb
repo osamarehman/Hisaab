@@ -6,7 +6,7 @@ class UpAccount::Transactions::Processor
     @up_account = up_account
   end
 
-  # Process each stored raw transaction into a Sure entry, prune stale pending
+  # Process each stored raw transaction into a Hisaab entry, prune stale pending
   # entries, and return a stats hash (total/imported/failed/pruned/errors).
   def process
     unless up_account.raw_transactions_payload.present?
@@ -66,7 +66,7 @@ class UpAccount::Transactions::Processor
 
     # The family's existing categories. Importing transactions is intentionally
     # non-destructive with respect to the family's category structure: we do NOT
-    # bootstrap Sure's defaults here. A family that has no categories (deliberately
+    # bootstrap Hisaab's defaults here. A family that has no categories (deliberately
     # cleared, or pre-onboarding) simply gets uncategorised transactions, and matching
     # resumes once the user sets up categories through the normal UI flow. Returns []
     # when the account isn't linked (each entry is skipped before the matcher is used).

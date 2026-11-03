@@ -185,7 +185,7 @@ class Provider::Plaid
       [ transactions, securities ]
     end
 
-    # The primary Plaid product to request for a given Sure account type.
+    # The primary Plaid product to request for a given Hisaab account type.
     # Investments map to the `investments` product, liability accounts
     # (CreditCard/Loan) to `liabilities`, everything else to `transactions`.
     def get_primary_product(accountable_type)

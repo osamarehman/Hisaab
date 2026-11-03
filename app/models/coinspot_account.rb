@@ -17,12 +17,12 @@ class CoinspotAccount < ApplicationRecord
 
   validates :name, :account_id, :account_type, :currency, presence: true
 
-  # The linked Sure account this CoinSpot account is imported into, if any.
+  # The linked Hisaab account this CoinSpot account is imported into, if any.
   def current_account
     account
   end
 
-  # Links this CoinSpot account to a Sure account via an AccountProvider,
+  # Links this CoinSpot account to a Hisaab account via an AccountProvider,
   # creating or updating the join record. Defaults to the already-linked
   # account when no target is given. Returns nil (rather than raising) on
   # failure so a single bad link doesn't abort a broader sync/import loop.

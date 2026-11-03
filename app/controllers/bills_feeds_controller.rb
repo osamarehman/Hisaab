@@ -62,7 +62,7 @@ class BillsFeedsController < ApplicationController
       <<~ICAL
         BEGIN:VCALENDAR
         VERSION:2.0
-        PRODID:-//Sure//Bills//EN
+        PRODID:-//Hisaab//Bills//EN
         X-WR-CALNAME:#{escape_ical(I18n.t("bills.feed.calendar_name"))}
         #{events.join}
         END:VCALENDAR

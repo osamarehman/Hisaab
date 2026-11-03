@@ -6,7 +6,7 @@ import '../models/rule.dart';
 import 'api_config.dart';
 import 'response_list_parser.dart';
 
-/// Auto-label keywords (Sure rules). See docs/redesign/household-api.md.
+/// Auto-label keywords (Hisaab rules). See docs/redesign/household-api.md.
 class RulesService {
   RulesService({http.Client? client}) : _client = client ?? http.Client();
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# DeleteTransaction — a Sure Assistant MCP tool that permanently deletes a
+# DeleteTransaction — a Hisaab Assistant MCP tool that permanently deletes a
 # transaction, mirroring the native Api::V1::TransactionsController#destroy.
 #
 # ID contract: takes the SAME id that create_transaction returns, which is the

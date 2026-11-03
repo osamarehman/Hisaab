@@ -759,7 +759,7 @@ class Goal < ApplicationRecord
   # into linked savings) net positive, which is the behaviour we want: the
   # user records a pledge, the transfer arrives, balance goes up, pace
   # goes up, status flips off "behind". Excludes user-flagged-excluded
-  # entries. Entry amount sign convention in Sure: inflow is negative.
+  # entries. Entry amount sign convention in Hisaab: inflow is negative.
   #
   # NOTE: pace is whole-account inflow by design in this phase, even for an
   # earmarked goal whose current_balance is only a slice — so runway/status

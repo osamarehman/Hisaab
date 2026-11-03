@@ -53,8 +53,8 @@ class PushNotificationTestTest < ActiveJob::TestCase
     @user.update!(locale: "de")
     @test.request!
     Apns::Client.any_instance.expects(:deliver_test).with(
-      token: @subscription.token, title: "Sure-Testbenachrichtigung",
-      body: "Dies ist eine Testbenachrichtigung für dein Sure-Konto.", request_id: @test.latest[:id]
+      token: @subscription.token, title: "Hisaab-Testbenachrichtigung",
+      body: "Dies ist eine Testbenachrichtigung für dein Hisaab-Konto.", request_id: @test.latest[:id]
     ).returns(stub(ok?: true))
     deliver
     assert_equal "accepted", result_status

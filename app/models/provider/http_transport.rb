@@ -6,7 +6,7 @@
 # something that is not JSON is the data source being unavailable — the same
 # thing as a 5xx, and nothing a caller can act on differently. Left
 # untranslated they escape as unexpected exceptions, so the chain adapters
-# cannot recognise them and the user is told something went wrong with Sure
+# cannot recognise them and the user is told something went wrong with Hisaab
 # rather than with a public explorer.
 #
 # The message deliberately carries only the error class: a transport error's

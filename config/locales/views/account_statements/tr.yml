@@ -37,7 +37,7 @@ tr:
       files_hint: PDF, CSV veya XLSX. Dosya başına en fazla %{max_size}MB.
       files_label: Ekstre dosyaları
       inbox_upload: Yükle
-      period_hint: "Sure dönemi, belirtilmişse PDF’ten veya dosya adındaki bir tarihten (ör. 2026-04) okur. Dönemi ekstre üzerinde de ayarlayabilirsiniz."
+      period_hint: "Hisaab dönemi, belirtilmişse PDF’ten veya dosya adındaki bir tarihten (ör. 2026-04) okur. Dönemi ekstre üzerinde de ayarlayabilirsiniz."
     index:
       account_label: Hesap
       confidence: "%{confidence} eşleşme"
@@ -78,7 +78,7 @@ tr:
       difference: Fark
       download: İndir
       institution_name_hint: Kurum ipucu
-      ledger_amount: Sure defteri
+      ledger_amount: Hisaab defteri
       link_suggestion: Bağlama önerisi
       linked_to: "%{account} hesabına bağlandı."
       linking_title: Hesap bağlantısı
@@ -89,7 +89,7 @@ tr:
       period_start_on: Dönem başlangıcı
       reconciliation_title: Mutabakat
       reconciliation_unavailable: Bir ekstre dönemi ile açılış veya kapanış bakiyesi
-        ekleyin, ardından Sure'un bu tarihler için bakiye geçmişine sahip olduğundan
+        ekleyin, ardından Hisaab'un bu tarihler için bakiye geçmişine sahip olduğundan
         emin olun.
       reject: Reddet
       save: Ekstreyi kaydet

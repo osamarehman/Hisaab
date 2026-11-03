@@ -5,7 +5,7 @@ import '../theme/sure_colors.dart';
 import '../theme/sure_spacing.dart';
 import '../theme/sure_tokens.dart';
 
-/// Sure design-system text field — a tokenized [TextFormField] wrapper mirroring
+/// Hisaab design-system text field — a tokenized [TextFormField] wrapper mirroring
 /// the web DS form field: an optional label above a filled `bg-container` input
 /// with a hairline border, rounded corners, a `textSubdued` placeholder, a
 /// stronger border on focus, and the destructive token for errors.

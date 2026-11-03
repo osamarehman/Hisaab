@@ -306,7 +306,7 @@ class Trading212ActivitiesProcessorTest < ActiveSupport::TestCase
     assert_not_nil entry
     assert_equal "Transaction", entry.entryable_type
     assert_equal "Dividend", entry.entryable.investment_activity_label
-    # Dividends are negative in Sure (inflow)
+    # Dividends are negative in Hisaab (inflow)
     assert entry.amount.negative?
   end
 
@@ -362,7 +362,7 @@ class Trading212ActivitiesProcessorTest < ActiveSupport::TestCase
     entry = @account.entries.find_by(external_id: "trading212_transaction_txn_001")
     assert_not_nil entry
     assert_equal "Contribution", entry.entryable.investment_activity_label
-    # Deposits are negative in Sure (inflow)
+    # Deposits are negative in Hisaab (inflow)
     assert entry.amount.negative?
   end
 

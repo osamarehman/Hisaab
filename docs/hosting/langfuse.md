@@ -39,7 +39,7 @@ After starting the app with the variables set, visit your Langfuse dashboard to 
 
 ## Langfuse v4
 
-Sure uses the native Ruby OpenTelemetry SDK and OTLP exporter. The existing keys and `LANGFUSE_HOST` remain unchanged; Sure sends completed observations to `/api/public/otel/v1/traces` with `x-langfuse-ingestion-version: 4`. Request and response data live on the root observation, with operation-specific data on its children. No separate trace input/output is written.
+Hisaab uses the native Ruby OpenTelemetry SDK and OTLP exporter. The existing keys and `LANGFUSE_HOST` remain unchanged; Hisaab sends completed observations to `/api/public/otel/v1/traces` with `x-langfuse-ingestion-version: 4`. Request and response data live on the root observation, with operation-specific data on its children. No separate trace input/output is written.
 
 Observations are buffered in memory and exported in batches. The exporter retries transient failures; failed batches and overflowing buffers can lose observations. Normal process exit flushes pending observations with a 30-second timeout. Forced termination can lose buffered data. Tracing failures are reported through OpenTelemetry logging and do not change LLM results. This is best-effort telemetry, not durable delivery.
 
@@ -47,7 +47,7 @@ Observations are buffered in memory and exported in batches. The exporter retrie
 
 ## Production cutover
 
-Follow the [project migration workflow](https://raw.githubusercontent.com/langfuse/skills/main/skills/langfuse/references/v4-project-migration.md) and inspect the [Cloud migration status](https://cloud.langfuse.com/v4-migration). Langfuse Cloud manages its own server upgrade; only Sure needs redeploying. Cloud removes legacy ingestion on November 16, 2026.
+Follow the [project migration workflow](https://raw.githubusercontent.com/langfuse/skills/main/skills/langfuse/references/v4-project-migration.md) and inspect the [Cloud migration status](https://cloud.langfuse.com/v4-migration). Langfuse Cloud manages its own server upgrade; only Hisaab needs redeploying. Cloud removes legacy ingestion on November 16, 2026.
 
 Before deploying to production, configure a separate non-production project and exercise chat, a batched provider operation, a failed request, document search, and a dataset experiment. Inspect hierarchy, root input/output, model/usage, session IDs on every cost-bearing generation, session costs, and experiment scores. Repository tests verify the exported format and HTTP contract; they do not verify Cloud ingestion or project configuration.
 
@@ -55,4 +55,4 @@ Inspect active Legacy rules in [Evaluators](https://cloud.langfuse.com/project/~
 
 Inspect Project Settings > Integrations for blob-storage, Mixpanel, PostHog, or other exports. Confirm downstream consumers support enriched observations before changing export sources. Preserve existing credentials, schedules, and formats.
 
-Keep the prior Sure image available during rollout. Reverting to it restores legacy ingestion only while Cloud still accepts that ingestion path. After the Cloud cutoff, fix forward or temporarily disable tracing by removing its keys; rolling back Sure cannot restore a removed Cloud API.
+Keep the prior Hisaab image available during rollout. Reverting to it restores legacy ingestion only while Cloud still accepts that ingestion path. After the Cloud cutoff, fix forward or temporarily disable tracing by removing its keys; rolling back Hisaab cannot restore a removed Cloud API.

@@ -1,8 +1,8 @@
 # Operating the FinanceKit device publisher
 
-This guide covers Sure's server-side ingestion of FinanceKit uploads. It applies to foreground "Sync now" in alpha builds and to optional background delivery by the iOS client. Both use the same enrollment, upload, receipt, and repair protocol; background delivery is not required to begin alpha testing.
+This guide covers Hisaab's server-side ingestion of FinanceKit uploads. It applies to foreground "Sync now" in alpha builds and to optional background delivery by the iOS client. Both use the same enrollment, upload, receipt, and repair protocol; background delivery is not required to begin alpha testing.
 
-Sure's server-side worker and scheduled inbox sweep are required for either delivery mode. They apply accepted batches, retry processing, complete downstream account updates, and remove expired payload bytes. These server jobs are separate from the iOS app's ability to run in the background.
+Hisaab's server-side worker and scheduled inbox sweep are required for either delivery mode. They apply accepted batches, retry processing, complete downstream account updates, and remove expired payload bytes. These server jobs are separate from the iOS app's ability to run in the background.
 
 FinanceKit needs no server-side configuration to switch on. There is no feature
 flag and no family allowlist: any deployment running this code serves the
@@ -20,7 +20,7 @@ Nothing beyond admin gates it. The mapped accounts are further confined to those
 the enrolling user may write, so an admin cannot publish into an account they
 have no access to.
 
-No Apple Wallet entitlement, private key, or FinanceKit framework is installed on the server. Sure never receives the user's Apple credentials. The iOS app obtains Wallet authorization directly from Apple and uploads only the accounts the user selected and consented to share.
+No Apple Wallet entitlement, private key, or FinanceKit framework is installed on the server. Hisaab never receives the user's Apple credentials. The iOS app obtains Wallet authorization directly from Apple and uploads only the accounts the user selected and consented to share.
 
 ## Deployment
 
@@ -110,7 +110,7 @@ by family, level, or source. Events share `connection_id`, `publisher_id`,
 `generation`, `stream_id`, and `next_sequence`. Accepted batches also include
 `batch_id`, `capture_id`, sequence/chunk information, payload size, and event count.
 
-- `upload_accepted` means Sure stored the upload; it does not mean ledger import
+- `upload_accepted` means Hisaab stored the upload; it does not mean ledger import
   has completed. An accepted sequence ahead of `next_sequence` is waiting for its
   predecessor; a multi-chunk capture waits for all its chunks.
 - `upload_rejected` records a typed protocol error and HTTP status when an
@@ -164,4 +164,4 @@ simulate imported data; no iOS device is required.
 
 Protocol 2 limits each publisher to 20 selected accounts, 500 events per batch, 1 MiB of JSON, and 100 accepted/processing batches. Each capture is limited to 100 chunks so the complete capture fits in the inbox. A client can upload larger histories using multiple consecutive captures.
 
-Exact payload bytes are retained for seven days after apply, permanent failure, or revocation for response-loss recovery and operational investigation. Canonical financial data and source identity records follow Sure's normal family retention and deletion behavior, except where a client disconnects with `disposition=discard` (see [Disconnect dispositions](#disconnect-dispositions)), which removes them for that connection. Family financial-data reset removes FinanceKit connections, lineages, observations, identities, conflicts, and batch receipts for that family.
+Exact payload bytes are retained for seven days after apply, permanent failure, or revocation for response-loss recovery and operational investigation. Canonical financial data and source identity records follow Hisaab's normal family retention and deletion behavior, except where a client disconnects with `disposition=discard` (see [Disconnect dispositions](#disconnect-dispositions)), which removes them for that connection. Family financial-data reset removes FinanceKit connections, lineages, observations, identities, conflicts, and batch receipts for that family.

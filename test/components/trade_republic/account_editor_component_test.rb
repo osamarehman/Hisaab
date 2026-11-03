@@ -4,7 +4,7 @@ class TradeRepublic::AccountEditorComponentTest < ViewComponent::TestCase
   include TradeRepublicSessionTestHelper
 
   # The account fixtures ship unlinked (no account_providers rows); pairing
-  # each with a Sure account puts an item into the fully set up state.
+  # each with a Hisaab account puts an item into the fully set up state.
   def link_all_accounts(item)
     sure_accounts = accounts(:investment, :depository, :credit_card)
     item.trade_republic_accounts.each_with_index do |provider_account, index|

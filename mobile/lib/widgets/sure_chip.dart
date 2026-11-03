@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/sure_colors.dart';
 import '../theme/sure_spacing.dart';
 
-/// Sure design-system filter chip — a tokenized selectable pill mirroring the web
+/// Hisaab design-system filter chip — a tokenized selectable pill mirroring the web
 /// DS pill: a rounded-full chip that reads as bordered/neutral when unselected
 /// and filled (neutral `buttonPrimary` + inverse label) when selected.
 ///

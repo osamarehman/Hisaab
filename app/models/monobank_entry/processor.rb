@@ -39,7 +39,7 @@ class MonobankEntry::Processor
   # Build a processor for a single raw Monobank transaction tied to +monobank_account+.
   #
   # category_matcher (optional) maps the transaction's MCC onto one of the family's
-  # existing Sure categories. It is injected by MonobankAccount::Transactions::Processor
+  # existing Hisaab categories. It is injected by MonobankAccount::Transactions::Processor
   # so a single matcher (built once per account) is reused across the account's
   # transactions.
   def initialize(monobank_transaction, monobank_account:, category_matcher: nil)
@@ -48,7 +48,7 @@ class MonobankEntry::Processor
     @category_matcher = category_matcher
   end
 
-  # Import the transaction into the linked Sure account via the import adapter.
+  # Import the transaction into the linked Hisaab account via the import adapter.
   # Returns nil when the account isn't linked; re-raises on validation/save errors.
   def process
     unless account.present?
@@ -84,12 +84,12 @@ class MonobankEntry::Processor
 
     attr_reader :monobank_transaction, :monobank_account
 
-    # Memoized adapter that writes provider transactions into the Sure account.
+    # Memoized adapter that writes provider transactions into the Hisaab account.
     def import_adapter
       @import_adapter ||= Account::ProviderImportAdapter.new(account)
     end
 
-    # The linked Sure account for this transaction, if any.
+    # The linked Hisaab account for this transaction, if any.
     def account
       @account ||= monobank_account.current_account
     end
@@ -109,7 +109,7 @@ class MonobankEntry::Processor
       data[:description].presence || I18n.t("transactions.unknown_name")
     end
 
-    # The id of the Sure category the transaction's MCC maps to, or nil when no matcher
+    # The id of the Hisaab category the transaction's MCC maps to, or nil when no matcher
     # was injected, the account has category matching switched off, the MCC is missing,
     # or it has no confident equivalent among the family's categories. The import
     # adapter applies this via enrich_attribute, so it never overwrites a category the
@@ -144,7 +144,7 @@ class MonobankEntry::Processor
     end
 
     # Monobank reports `amount` in the account currency's minor units, using banking
-    # convention: negative is money out, positive is money in. Sure stores expenses as
+    # convention: negative is money out, positive is money in. Hisaab stores expenses as
     # positive and income as negative, so the sign is flipped.
     def amount
       -(minor_units(data[:amount]) / account_minor_unit_divisor)
@@ -197,7 +197,7 @@ class MonobankEntry::Processor
 
     # Provider metadata persisted on Transaction#extra.
     #
-    # `pending` is the flag Sure's pending scopes read (Transaction::PENDING_PROVIDERS).
+    # `pending` is the flag Hisaab's pending scopes read (Transaction::PENDING_PROVIDERS).
     # `balance_after` is Monobank's running account balance at the time of the
     # transaction, which is useful when reconciling a drifted balance by hand.
     def extra_metadata
@@ -256,7 +256,7 @@ class MonobankEntry::Processor
     # Both are set only for a *recognized foreign* operation — one whose `currencyCode`
     # maps to a known currency that differs from the account's. `fx_amount` additionally
     # needs an `operationAmount` that is present and parseable. An operation in the
-    # account's own currency, or one whose code Sure does not know, leaves both unset while
+    # account's own currency, or one whose code Hisaab does not know, leaves both unset while
     # `operation_amount` still carries the raw figure whenever it differs from `amount`.
     def fx_from
       operation_currency if foreign_operation?

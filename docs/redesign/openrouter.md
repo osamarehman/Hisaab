@@ -11,11 +11,11 @@ OPENAI_ACCESS_TOKEN=sk-or-v1-...                  # your OpenRouter key
 OPENAI_URI_BASE=https://openrouter.ai/api/v1
 OPENAI_MODEL=google/gemma-4-31b-it:free           # any model; see below
 # Optional: lets OpenRouter attribute requests to the app
-OPENAI_EXTRA_HEADERS={"HTTP-Referer":"https://<your-domain>","X-Title":"Sure"}
+OPENAI_EXTRA_HEADERS={"HTTP-Referer":"https://<your-domain>","X-Title":"Hisaab"}
 ```
 
 These can also be set in Settings → Self-hosting (AI provider) instead of the
-environment. With a custom `OPENAI_URI_BASE` Sure uses the chat-completions
+environment. With a custom `OPENAI_URI_BASE` Hisaab uses the chat-completions
 API and reads PDFs as extracted text, which works with OpenRouter.
 
 ## Choosing a free model

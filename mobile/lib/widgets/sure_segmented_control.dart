@@ -16,7 +16,7 @@ class SureSegment<T> {
   final Widget? icon;
 }
 
-/// Sure design-system segmented control — a tokenized single-select toggle
+/// Hisaab design-system segmented control — a tokenized single-select toggle
 /// mirroring the web DS `segmented-control`: an inset track holding equal-width
 /// segments, where the selected segment is a raised surface (container fill +
 /// the subtle DS shadow) and unselected segments are flat `textSecondary` labels.

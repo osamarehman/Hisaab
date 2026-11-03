@@ -122,7 +122,7 @@ class SimplefinAccount::Transactions::ProcessorInvestmentTest < ActiveSupport::T
     # Should create transaction entries
     assert_equal 3, @account.entries.where(entryable_type: "Transaction").count
 
-    # Verify amounts are correctly negated (SimpleFIN positive = income = negative in Sure)
+    # Verify amounts are correctly negated (SimpleFIN positive = income = negative in Hisaab)
     entry = @account.entries.find_by(external_id: "simplefin_TRN-921a8cdb-f331-48ee-9de2-b0b9ff1d316a")
     assert_not_nil entry
     assert_equal BigDecimal("-1.49"), entry.amount

@@ -36,7 +36,7 @@ zh-CN:
       files_hint: PDF、CSV 或 XLSX。每个文件最大 %{max_size}MB。
       files_label: 对账单文件
       inbox_upload: 上传
-      period_hint: "如果 PDF 中写明了账单周期，Sure 会直接读取，否则从文件名中的日期（例如 2026-04）读取。你也可以在账单上手动设置。"
+      period_hint: "如果 PDF 中写明了账单周期，Hisaab 会直接读取，否则从文件名中的日期（例如 2026-04）读取。你也可以在账单上手动设置。"
     index:
       account_label: 账户
       confidence: "%{confidence} 匹配"
@@ -76,7 +76,7 @@ zh-CN:
       difference: 差额
       download: 下载
       institution_name_hint: 机构提示
-      ledger_amount: Sure 账本
+      ledger_amount: Hisaab 账本
       linked_to: 已关联到 %{account}。
       linking_title: 账户关联
       link_suggestion: 关联建议
@@ -86,7 +86,7 @@ zh-CN:
       period_end_on: 周期结束
       period_start_on: 周期开始
       reconciliation_title: 对账
-      reconciliation_unavailable: 请先添加对账单周期以及期初或期末余额，然后确保 Sure 在这些日期有余额历史。
+      reconciliation_unavailable: 请先添加对账单周期以及期初或期末余额，然后确保 Hisaab 在这些日期有余额历史。
       reject: 拒绝
       save: 保存对账单
       statement_amount: 对账单

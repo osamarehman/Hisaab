@@ -3,11 +3,11 @@
 # relationships.category.data.id (e.g. "restaurants-and-cafes"); Up does not tag
 # transfers or income.
 #
-# We map those child slugs onto the family's existing/default Sure categories via
+# We map those child slugs onto the family's existing/default Hisaab categories via
 # aliases, mirroring PlaidAccount::Transactions::CategoryTaxonomy. Aliases are written
-# in Sure's default-category vocabulary and matched case/punctuation-insensitively.
+# in Hisaab's default-category vocabulary and matched case/punctuation-insensitively.
 #
-# Up categories with no honest Sure-default equivalent (e.g. Booze, Adult, Pets, Apps
+# Up categories with no honest Hisaab-default equivalent (e.g. Booze, Adult, Pets, Apps
 # & Games, Life Admin, Technology) are intentionally left without a mapping alias, so
 # they stay uncategorised for the user's own rules / AI to handle. A wrong
 # auto-category is worse than none.

@@ -1,4 +1,4 @@
-/// An auto-label keyword: a Sure rule with one `transaction_name` condition
+/// An auto-label keyword: a Hisaab rule with one `transaction_name` condition
 /// and a `set_transaction_category` action. Other rule shapes parse with a
 /// null [keyword] or [categoryId] and are ignored by the household screens.
 class LabelRule {

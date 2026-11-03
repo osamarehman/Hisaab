@@ -36,7 +36,7 @@ hu:
       files_hint: PDF, CSV vagy XLSX. Maximum %{max_size} MB fájlonként.
       files_label: Kimutatásfájlok
       inbox_upload: Feltöltés
-      period_hint: "A Sure az időszakot a PDF-ből olvassa ki, ha szerepel benne, vagy a fájlnévben lévő dátumból (pl. 2026-04). A kivonaton kézzel is megadhatod."
+      period_hint: "A Hisaab az időszakot a PDF-ből olvassa ki, ha szerepel benne, vagy a fájlnévben lévő dátumból (pl. 2026-04). A kivonaton kézzel is megadhatod."
     index:
       account_label: Számla
       confidence: "%{confidence} egyezés"
@@ -76,7 +76,7 @@ hu:
       difference: Különbség
       download: Letöltés
       institution_name_hint: Intézménynév-tipp
-      ledger_amount: Sure főkönyv
+      ledger_amount: Hisaab főkönyv
       linked_to: "Összekapcsolva ezzel a számlával: %{account}."
       linking_title: Számlakapcsolat
       link_suggestion: Kapcsolati javaslat
@@ -86,7 +86,7 @@ hu:
       period_end_on: Időszak vége
       period_start_on: Időszak kezdete
       reconciliation_title: Egyeztetés
-      reconciliation_unavailable: Adj meg egy kimutatási időszakot és nyitó- vagy záróegyenleget, majd győződj meg arról, hogy a Sure rendelkezik egyenlegelőzményekkel ezekre a dátumokra.
+      reconciliation_unavailable: Adj meg egy kimutatási időszakot és nyitó- vagy záróegyenleget, majd győződj meg arról, hogy a Hisaab rendelkezik egyenlegelőzményekkel ezekre a dátumokra.
       reject: Elutasítás
       save: Kimutatás mentése
       statement_amount: Kimutatás

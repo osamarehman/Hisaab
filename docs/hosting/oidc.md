@@ -1,6 +1,6 @@
 # Configuring OpenID Connect, SAML, and SSO Providers
 
-This guide shows how to enable OpenID Connect (OIDC), SAML 2.0, and other single sign-on (SSO) providers for Sure using Google, GitHub, or another identity provider (e.g. Keycloak, Authentik, Okta, Azure AD).
+This guide shows how to enable OpenID Connect (OIDC), SAML 2.0, and other single sign-on (SSO) providers for Hisaab using Google, GitHub, or another identity provider (e.g. Keycloak, Authentik, Okta, Azure AD).
 
 It also documents the new `config/auth.yml` and environment variables that control:
 
@@ -44,7 +44,7 @@ and ensure that the `openid`, `email`, and `profile` scopes are available.
 
 ---
 
-## 2. Configure Sure: OIDC core settings
+## 2. Configure Hisaab: OIDC core settings
 
 Set the following environment variables in your deployment (e.g. `.env`, `docker-compose`, or hosting platform):
 
@@ -111,7 +111,7 @@ production:
 - `AUTH_LOCAL_LOGIN_ENABLED` (default: `true`)
   - When `true`, the login page shows the email/password form and "Forgot password" link.
   - When `false`, local login is disabled for all users unless the admin override flag is enabled.
-  - When `false`, password reset via Sure is also disabled (users must reset via the IdP).
+  - When `false`, password reset via Hisaab is also disabled (users must reset via the IdP).
 
 - `AUTH_LOCAL_ADMIN_OVERRIDE_ENABLED` (default: `false`)
   - When `true` and `AUTH_LOCAL_LOGIN_ENABLED=false`, super‑admin users can still log in with local passwords.
@@ -123,7 +123,7 @@ production:
 
 - `AUTH_JIT_MODE` (default: `create_and_link`)
   - `create_and_link`: the current behavior.
-    - If the SSO identity is new and the email does not match an existing user, Sure will offer to create a new account (subject to domain checks below).
+    - If the SSO identity is new and the email does not match an existing user, Hisaab will offer to create a new account (subject to domain checks below).
   - `link_only`: stricter behavior.
     - New SSO identities can only be linked to existing users; JIT account creation is disabled.
     - Users without an existing account are sent back to the login page with an explanatory message.
@@ -142,7 +142,7 @@ Each provider entry in `providers` configures an SSO button on the login page:
 - `strategy`: the OmniAuth strategy (`openid_connect`, `google_oauth2`, `github`, ...).
 - `name`: the OmniAuth provider name, which determines the `/auth/:provider` path.
 - `label`: button text shown to users.
-- `icon`: optional icon name passed to the Sure `icon` helper (e.g. `key`, `google`, `github`).
+- `icon`: optional icon name passed to the Hisaab `icon` helper (e.g. `key`, `google`, `github`).
 
 Special behavior:
 
@@ -161,7 +161,7 @@ To enable Google:
    - `GOOGLE_OAUTH_CLIENT_ID`
    - `GOOGLE_OAUTH_CLIENT_SECRET`
 
-   If either is missing, Sure will skip registering the Google provider and the Google button will not appear on the login page.
+   If either is missing, Hisaab will skip registering the Google provider and the Google button will not appear on the login page.
 
 3. In your Google Cloud OAuth client configuration, add an authorized redirect URI that matches the host you use in dev.
 
@@ -258,13 +258,13 @@ ALLOWED_OIDC_DOMAINS="example.com,yourcorp.com"
 
 Behavior:
 
-- SSO sign‑ins with emails under `example.com` or `yourcorp.com` can be linked to existing Sure users.
+- SSO sign‑ins with emails under `example.com` or `yourcorp.com` can be linked to existing Hisaab users.
 - New account creation via SSO is disabled; users without accounts see appropriate messaging and must contact an admin.
 - SSO sign‑ins from any other domain cannot JIT‑create accounts.
 
 ---
 
-With these settings, you can run Sure in:
+With these settings, you can run Hisaab in:
 
 - Traditional local login mode
 - Hybrid local + SSO mode
@@ -277,7 +277,7 @@ Use the combination that best fits your self‑hosted environment and security p
 
 ## 5. Multiple OIDC Providers
 
-Sure supports configuring multiple OIDC providers simultaneously, allowing users to choose between different identity providers (e.g., Keycloak, Authentik, Okta) on the login page.
+Hisaab supports configuring multiple OIDC providers simultaneously, allowing users to choose between different identity providers (e.g., Keycloak, Authentik, Okta) on the login page.
 
 ### 5.1 YAML-based multi-provider configuration
 
@@ -330,7 +330,7 @@ OIDC_AUTHENTIK_REDIRECT_URI="https://yourdomain.com/auth/authentik/callback"
 
 ## 6. Database-Backed Provider Management
 
-For more dynamic provider management, Sure supports storing SSO provider configurations in the database with a web-based admin interface.
+For more dynamic provider management, Hisaab supports storing SSO provider configurations in the database with a web-based admin interface.
 
 ### 6.1 Enabling database providers
 
@@ -448,7 +448,7 @@ Each provider has a **Default Role** field (defaults to `member`) that sets the 
 
 **Role mapping from IdP groups:**
 
-Expand **"Role Mapping"** in the admin UI to map IdP group names to Sure roles. Enter comma-separated group names for each role:
+Expand **"Role Mapping"** in the admin UI to map IdP group names to Hisaab roles. Enter comma-separated group names for each role:
 
 - **Super Admin Groups**: `Platform-Admins, IdP-Superusers`
 - **Admin Groups**: `Team-Leads, Managers`
@@ -469,7 +469,7 @@ Mapping is case-sensitive and matches exact group claim values from the IdP. Whe
 
 ### Discovery endpoint validation fails
 
-When adding an OIDC provider, Sure validates the `.well-known/openid-configuration` endpoint:
+When adding an OIDC provider, Hisaab validates the `.well-known/openid-configuration` endpoint:
 
 - Ensure the issuer URL is correct and accessible
 - Check firewall rules allow outbound HTTPS to the issuer
@@ -565,7 +565,7 @@ Each provider requires a callback URL configured in your identity provider:
 ### Issuer validation
 
 - OIDC identities store the issuer claim from the ID token
-- On subsequent logins, Sure verifies the issuer matches the configured provider
+- On subsequent logins, Hisaab verifies the issuer matches the configured provider
 - This prevents issuer impersonation attacks
 
 ### Admin access
@@ -584,7 +584,7 @@ Each provider requires a callback URL configured in your identity provider:
 
 ## 9. SAML 2.0 Support
 
-Sure supports SAML 2.0 via database-backed providers. Select **"SAML 2.0"** as the strategy when adding a provider at `/admin/sso_providers`.
+Hisaab supports SAML 2.0 via database-backed providers. Select **"SAML 2.0"** as the strategy when adding a provider at `/admin/sso_providers`.
 
 Configure with either:
 - **IdP Metadata URL** (recommended) - auto-fetches configuration

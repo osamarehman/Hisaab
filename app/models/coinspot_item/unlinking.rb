@@ -3,7 +3,7 @@
 module CoinspotItem::Unlinking
   extend ActiveSupport::Concern
 
-  # Detaches every CoinSpot account's link to its Sure account, clearing the
+  # Detaches every CoinSpot account's link to its Hisaab account, clearing the
   # provider reference off any holdings first so they aren't destroyed along
   # with the link. Returns a per-account result array describing what would
   # be (or was) unlinked; pass dry_run: true to preview without changing

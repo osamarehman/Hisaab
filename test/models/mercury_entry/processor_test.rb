@@ -29,7 +29,7 @@ class MercuryEntry::ProcessorTest < ActiveSupport::TestCase
 
     entry = @account.entries.find_by(external_id: "mercury_tx_001", source: "mercury")
     assert entry
-    # Mercury positive = inflow; Sure convention negates it → negative
+    # Mercury positive = inflow; Hisaab convention negates it → negative
     assert entry.amount.negative?
     assert_in_delta(-150.0, entry.amount.to_f, 0.01)
   end

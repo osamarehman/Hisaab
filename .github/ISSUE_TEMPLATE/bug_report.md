@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Open a bug report when you experience broken functionality within the latest
-  version of the Sure app
+  version of the Hisaab app
 title: 'Bug: [Add descriptive title here]'
 labels: ''
 assignees: ''
@@ -13,9 +13,9 @@ assignees: ''
 ### General checklist
 
 - [ ] I have removed personal / sensitive data from screenshots and logs
-- [ ] I have searched [existing issues](https://github.com/we-promise/sure/issues?q=is:issue) and [discussions](https://github.com/we-promise/sure/discussions) to ensure this is not a duplicate issue
+- [ ] I have searched [existing issues](https://github.com/osamarehman/Hisaab/issues?q=is:issue) and [discussions](https://github.com/osamarehman/Hisaab/discussions) to ensure this is not a duplicate issue
     
-### How are you using Sure?
+### How are you using Hisaab?
 
 - [ ] I was a paying Maybe customer (hosted version)
 - [ ] I use it on PikaPod, Umbrel or similar (VPS included)
@@ -28,7 +28,7 @@ _Paying, hosted users should delete this entire section._
 If you are a self-hosted user, please complete all of the information below.  Issues with incomplete information will be marked as `Needs Info` to help our small team prioritize bug fixes.
 
 - Self hosted app commit SHA (find in user menu): [enter commit sha here]
-  - [ ] I have confirmed that my app's commit is the latest version of Sure
+  - [ ] I have confirmed that my app's commit is the latest version of Hisaab
 - Where are you hosting?
   - [ ] Render
   - [ ] Docker Compose
@@ -44,7 +44,7 @@ A clear and concise description of what the bug is.
 
 ### To Reproduce
 
-Be as specific as possible so Sure contributors can quickly reproduce the bug you're experiencing.
+Be as specific as possible so Hisaab contributors can quickly reproduce the bug you're experiencing.
 
 Steps to reproduce the behavior:
 

@@ -1,15 +1,15 @@
 # Setting Up Monobank (Ukraine)
 
 [Monobank](https://monobank.ua) exposes a personal API that returns your own cards, jars
-and statements. You bring your own token, so Sure talks to Monobank directly on your
+and statements. You bring your own token, so Hisaab talks to Monobank directly on your
 behalf — no third-party aggregator sits in between.
 
 > [!NOTE]
 > This integration uses Monobank's **personal** API. Its documentation states that a
 > service which stores other people's data on its own servers must use the corporate
 > (service provider) API instead, and that programs used by clients personally — where
-> the data never passes through the developer's nodes — do not. A self-hosted Sure
-> instance is the latter. If you run Sure as a hosted service for other people, read
+> the data never passes through the developer's nodes — do not. A self-hosted Hisaab
+> instance is the latter. If you run Hisaab as a hosted service for other people, read
 > [Monobank's API terms](https://api.monobank.ua/docs/index.html) first.
 
 > [!NOTE]
@@ -25,15 +25,15 @@ behalf — no third-party aggregator sits in between.
 The token is scoped to your own data: it can list your accounts, read statements, and
 register a statement webhook (`POST /personal/webhook`). It cannot move money.
 
-## 2. Add Monobank to Sure
+## 2. Add Monobank to Hisaab
 
-1. In Sure, go to **Settings > Providers** and find the **Monobank** panel.
+1. In Hisaab, go to **Settings > Providers** and find the **Monobank** panel.
 2. Paste your token and save.
-3. Your cards and jars appear for setup. Link each one to an existing Sure account or
+3. Your cards and jars appear for setup. Link each one to an existing Hisaab account or
    create a new account from it, and skip anything you don't want to track.
 
 Cards become cash accounts; jars become savings accounts. A card's balance is stored as
-your own funds — Monobank reports the credit limit inside the balance, and Sure
+your own funds — Monobank reports the credit limit inside the balance, and Hisaab
 subtracts it.
 
 ## 3. Syncing
@@ -76,7 +76,7 @@ MONOBANK_INCLUDE_PENDING=0
 
 ### Categories
 
-Monobank does not categorise transactions; it reports the merchant's MCC. Sure maps the
+Monobank does not categorise transactions; it reports the merchant's MCC. Hisaab maps the
 codes with a clear equivalent (groceries, restaurants, fuel, pharmacies, …) onto your
 existing categories, matching them by the name in your own language. Codes without an
 honest equivalent — cash withdrawals, transfers, gambling — are left uncategorised for
@@ -112,5 +112,5 @@ History arrives in 31-day steps, one step per sync. Set a start date on the conn
 to bound how far back it goes, then let it run.
 
 **Sync errors**
-Provider sync failures and notes are captured in Sure's debug log (super admin:
+Provider sync failures and notes are captured in Hisaab's debug log (super admin:
 **Settings > Debug**), filtered by the `monobank` provider key.

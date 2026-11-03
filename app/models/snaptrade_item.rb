@@ -57,7 +57,7 @@ class SnaptradeItem < ApplicationRecord
     return [] if snaptrade_accounts.empty?
 
     results = []
-    # Process only accounts that are linked to a Sure account
+    # Process only accounts that are linked to a Hisaab account
     linked_snaptrade_accounts.includes(account_provider: :account).each do |snaptrade_account|
       account = snaptrade_account.current_account
       next unless account
@@ -212,7 +212,7 @@ class SnaptradeItem < ApplicationRecord
     snaptrade_accounts.joins(:account_provider)
   end
 
-  # Get all Sure accounts linked to this SnapTrade item
+  # Get all Hisaab accounts linked to this SnapTrade item
   def accounts
     @accounts ||= snaptrade_accounts
       .includes(account_provider: :account)

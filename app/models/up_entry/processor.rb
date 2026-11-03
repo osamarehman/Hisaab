@@ -35,7 +35,7 @@ class UpEntry::Processor
   # Build a processor for a single raw Up transaction tied to +up_account+.
   #
   # category_matcher (optional) maps Up's category slug onto one of the family's
-  # existing Sure categories. It is injected by UpAccount::Transactions::Processor so a
+  # existing Hisaab categories. It is injected by UpAccount::Transactions::Processor so a
   # single matcher (built once per account) is reused across the account's transactions.
   def initialize(up_transaction, up_account:, category_matcher: nil)
     @up_transaction = up_transaction
@@ -43,7 +43,7 @@ class UpEntry::Processor
     @category_matcher = category_matcher
   end
 
-  # Import the transaction into the linked Sure account via the import adapter.
+  # Import the transaction into the linked Hisaab account via the import adapter.
   # Returns nil when the account isn't linked; re-raises on validation/save errors.
   def process
     unless account.present?
@@ -80,12 +80,12 @@ class UpEntry::Processor
 
     attr_reader :up_transaction, :up_account
 
-    # Memoized adapter that writes provider transactions into the Sure account.
+    # Memoized adapter that writes provider transactions into the Hisaab account.
     def import_adapter
       @import_adapter ||= Account::ProviderImportAdapter.new(account)
     end
 
-    # The linked Sure account for this transaction, if any.
+    # The linked Hisaab account for this transaction, if any.
     def account
       @account ||= up_account.current_account
     end
@@ -105,7 +105,7 @@ class UpEntry::Processor
       data[:description].presence || I18n.t("transactions.unknown_name")
     end
 
-    # The id of the Sure category that Up's category slug maps to, or nil when no
+    # The id of the Hisaab category that Up's category slug maps to, or nil when no
     # matcher was injected, the account has category matching switched off, the
     # transaction has no Up category (transfers/income), or the slug has no confident
     # equivalent among the family's categories. The import adapter applies this via
@@ -127,7 +127,7 @@ class UpEntry::Processor
     # Mark internal movements as funds_movement so they are excluded from income,
     # expense, and budget analytics. Two-sided transfers between two linked accounts are
     # additionally paired into a Transfer by Family#auto_match_transfers!; one-sided moves
-    # (counterpart not linked in Sure) and round-ups rely on this flag, since the matcher
+    # (counterpart not linked in Hisaab) and round-ups rely on this flag, since the matcher
     # has no opposing entry to pair them with.
     def kind
       transfer_account_id ? "funds_movement" : nil
@@ -156,7 +156,7 @@ class UpEntry::Processor
     end
 
     # Up amounts use banking convention: negative is money out, positive is money in.
-    # Sure stores expenses as positive and income as negative, so the sign is flipped.
+    # Hisaab stores expenses as positive and income as negative, so the sign is flipped.
     def amount
       raw_value = amount_data[:value]
       parsed_amount = case raw_value

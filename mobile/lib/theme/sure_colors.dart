@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'sure_tokens.dart';
 
-/// Exposes the full Sure design-system palette to widgets in a brightness-aware
+/// Exposes the full Hisaab design-system palette to widgets in a brightness-aware
 /// way. The generated [SureTokenPalette] carries semantic colors (success,
 /// destructive, textSubdued, …) that the base [ColorScheme] does not, so without
 /// this extension widgets have to branch on `Theme.of(context).brightness` and

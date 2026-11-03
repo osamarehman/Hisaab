@@ -11,7 +11,7 @@ class UpAccount::Processor
   end
 
   # Sync the linked account's balance and process its transactions. No-op when
-  # the Up account isn't linked to a Sure account.
+  # the Up account isn't linked to a Hisaab account.
   def process
     unless up_account.current_account.present?
       Rails.logger.info "UpAccount::Processor - No linked account for up_account #{up_account.id}, skipping processing"
@@ -28,12 +28,12 @@ class UpAccount::Processor
 
   private
 
-    # Update the linked Sure account's balance/currency from the Up snapshot.
+    # Update the linked Hisaab account's balance/currency from the Up snapshot.
     def process_account!
       account = up_account.current_account
       balance = up_account.current_balance || 0
 
-      # Loan balances are stored as positive debt in Sure regardless of Up's sign.
+      # Loan balances are stored as positive debt in Hisaab regardless of Up's sign.
       balance = balance.abs if account.accountable_type == "Loan"
       currency = parse_currency(up_account.currency) || account.currency || "AUD"
 

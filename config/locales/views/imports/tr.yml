@@ -96,7 +96,7 @@ tr:
         leave_empty: Boş bırak
         name_label: Ad
         no_security_provider_warning: Menkul kıymet fiyat sağlayıcısı yapılandırılmamış.
-          Alım satım içe aktarmalarınız çalışacak, ancak Sure geçmiş fiyat verilerini
+          Alım satım içe aktarmalarınız çalışacak, ancak Hisaab geçmiş fiyat verilerini
           geriye dönük olarak doldurmayacaktır. Bunu yapılandırmak için lütfen ayarlarınıza
           gidin.
         note_label: Not

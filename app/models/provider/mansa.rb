@@ -1,5 +1,5 @@
 # Mansa API (mansaapi.com) — African stock exchange data, including NGX
-# (Nigerian Exchange). Added because none of Sure's existing securities
+# (Nigerian Exchange). Added because none of Hisaab's existing securities
 # providers cover NGX: TwelveData/YahooFinance don't list it, and EODHD's own
 # MIC-code map in this codebase (see Provider::Eodhd::MIC_TO_EODHD_EXCHANGE)
 # has no XNSA entry despite EODHD's marketing pages listing Nigeria as a
@@ -54,7 +54,7 @@ class Provider::Mansa < Provider
   MANSA_EXCHANGE_TO_MIC = MIC_TO_MANSA_EXCHANGE.invert.freeze
 
   # The only exchange verified end-to-end (see above). Used to scope any
-  # search/quote request that doesn't specify a MIC we recognize — Sure's own
+  # search/quote request that doesn't specify a MIC we recognize — Hisaab's own
   # trade-form combobox never passes exchange_operating_mic on search at all
   # (see app/views/trades/_form.html.erb), so leaving this unscoped would let
   # Mansa return matches from other African exchanges this adapter has no

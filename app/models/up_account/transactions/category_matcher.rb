@@ -1,9 +1,9 @@
-# Auto-matches Up Bank's spending categories to the family's existing Sure categories.
+# Auto-matches Up Bank's spending categories to the family's existing Hisaab categories.
 # Mirrors PlaidAccount::Transactions::CategoryMatcher: a fast, cheap, high-confidence
 # pass that never creates categories and never overwrites user data (the import adapter
 # applies the result via enrich_attribute, which respects locks). Up tags a transaction
 # with a child category slug (relationships.category.data.id); we map the honest
-# equivalents onto Sure's default categories and leave the rest for user rules / AI.
+# equivalents onto Hisaab's default categories and leave the rest for user rules / AI.
 class UpAccount::Transactions::CategoryMatcher
   include UpAccount::Transactions::CategoryTaxonomy
 

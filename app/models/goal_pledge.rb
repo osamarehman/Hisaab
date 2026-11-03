@@ -40,7 +40,7 @@ class GoalPledge < ApplicationRecord
   # extend! widens the upper bound) and amount within ±$0.50 OR ±1%.
   #
   # The amount being compared is the money that actually moved IN:
-  #   - transfer pledges resolve against a Transaction inflow (Sure
+  #   - transfer pledges resolve against a Transaction inflow (Hisaab
   #     convention: inflow < 0), so the entry amount IS the contribution.
   #   - manual_save pledges resolve against a Valuation, whose amount is the
   #     account's full new TOTAL balance — not the contribution. The caller

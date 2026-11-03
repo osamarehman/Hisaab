@@ -42,7 +42,7 @@ class KrakenAccount::ProcessorTest < ActiveSupport::TestCase
     KrakenAccount::HoldingsProcessor.any_instance.stubs(:process).returns(nil)
   end
 
-  # Sure stores positive = money out. A buy spends cash, so its entry amount is
+  # Hisaab stores positive = money out. A buy spends cash, so its entry amount is
   # positive; a sell returns cash, so its amount is negative. That is also what
   # `qty * price` yields once qty carries its own sign, which it already did.
   test "imports buy and sell spot fills as trade entries" do

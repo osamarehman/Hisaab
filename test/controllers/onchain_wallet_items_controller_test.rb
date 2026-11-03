@@ -21,7 +21,7 @@ class OnchainWalletItemsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match I18n.t("onchain_wallet_items.new_wallet.bitcoin_single_address_note"), response.body
-    # "Can Sure spend my coins?" is asked while pasting an address, not while
+    # "Can Hisaab spend my coins?" is asked while pasting an address, not while
     # reading a settings page for the third time.
     assert_match I18n.t("settings.providers.onchain_wallet_panel.keyless_title"), response.body
     assert_match I18n.t("onchain_wallet_items.new_wallet.read_only_note"), response.body

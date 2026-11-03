@@ -42,7 +42,7 @@ pl:
       files_hint: PDF, CSV lub XLSX. Maks. %{max_size} MB na plik.
       files_label: Pliki wyciągów
       inbox_upload: Prześlij
-      period_hint: "Sure odczytuje okres z pliku PDF, jeśli jest w nim podany, lub z daty w nazwie pliku (np. 2026-04). Możesz go też ustawić na wyciągu."
+      period_hint: "Hisaab odczytuje okres z pliku PDF, jeśli jest w nim podany, lub z daty w nazwie pliku (np. 2026-04). Możesz go też ustawić na wyciągu."
     index:
       account_label: Konto
       confidence: Zgodność %{confidence}
@@ -83,7 +83,7 @@ pl:
       difference: Różnica
       download: Pobierz
       institution_name_hint: Podpowiedź instytucji
-      ledger_amount: Księga Sure
+      ledger_amount: Księga Hisaab
       link_suggestion: Sugestia powiązania
       linked_to: Powiązane z %{account}.
       linking_title: Powiązanie konta
@@ -94,7 +94,7 @@ pl:
       period_start_on: Początek okresu
       reconciliation_title: Uzgodnienie
       reconciliation_unavailable: Dodaj okres wyciągu oraz saldo początkowe lub końcowe,
-        a następnie upewnij się, że Sure ma historię sald dla tych dat.
+        a następnie upewnij się, że Hisaab ma historię sald dla tych dat.
       reject: Odrzuć
       save: Zapisz wyciąg
       statement_amount: Wyciąg

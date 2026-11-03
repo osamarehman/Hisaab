@@ -30,12 +30,12 @@ class FioAccount < ApplicationRecord
   validates :name, :currency, presence: true
   validates :fio_account_id, uniqueness: { scope: :fio_item_id, allow_nil: true }
 
-  # Fio accounts with no linked Sure account.
+  # Fio accounts with no linked Hisaab account.
   scope :unlinked, -> { left_joins(:account_provider).where(account_providers: { id: nil }) }
   # Unlinked accounts that still need a setup decision (i.e. not explicitly skipped).
   scope :needs_setup, -> { unlinked.where(ignored: false) }
   scope :ordered, -> { order(created_at: :desc) }
-  # The linked Sure account, if any.
+  # The linked Hisaab account, if any.
   def current_account
     account
   end

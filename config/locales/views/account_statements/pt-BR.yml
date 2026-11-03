@@ -36,7 +36,7 @@ pt-BR:
       files_hint: PDF, CSV ou XLSX. Máximo de %{max_size} MB por arquivo.
       files_label: Arquivos de extrato
       inbox_upload: Enviar
-      period_hint: "O Sure lê o período do PDF, quando ele o informa, ou de uma data no nome do arquivo (ex.: 2026-04). Você também pode defini-lo no extrato."
+      period_hint: "O Hisaab lê o período do PDF, quando ele o informa, ou de uma data no nome do arquivo (ex.: 2026-04). Você também pode defini-lo no extrato."
     index:
       account_label: Conta
       confidence: "%{confidence} de correspondência"
@@ -76,7 +76,7 @@ pt-BR:
       difference: Diferença
       download: Baixar
       institution_name_hint: Dica da instituição
-      ledger_amount: Registro do Sure
+      ledger_amount: Registro do Hisaab
       linked_to: Vinculado a %{account}.
       linking_title: Vínculo de conta
       link_suggestion: Sugestão de vínculo
@@ -86,7 +86,7 @@ pt-BR:
       period_end_on: Fim do período
       period_start_on: Início do período
       reconciliation_title: Conciliação
-      reconciliation_unavailable: Adicione um período de extrato e um saldo de abertura ou fechamento e verifique se o Sure tem histórico de saldos para essas datas.
+      reconciliation_unavailable: Adicione um período de extrato e um saldo de abertura ou fechamento e verifique se o Hisaab tem histórico de saldos para essas datas.
       reject: Rejeitar
       save: Salvar extrato
       statement_amount: Extrato

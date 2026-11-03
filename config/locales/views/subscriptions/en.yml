@@ -6,11 +6,11 @@ en:
       page_title: "Upgrade"
       account_settings: "Account Settings"
       sign_out: "Sign out"
-      contribute_and_support_sure: "Contribute and support Sure"
+      contribute_and_support_sure: "Contribute and support Hisaab"
       cta: "Continue supporting the development of this codebase!"
       header:
         support: "Support"
-        sure: "Sure"
+        sure: "Hisaab"
         today: "today"
       redirect_to_stripe: "In the next step, you'll be redirected to Stripe which handles credit cards for us."
       trialing: "Your data will be deleted in %{days} days"

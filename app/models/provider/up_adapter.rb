@@ -4,7 +4,7 @@ class Provider::UpAdapter < Provider::Base
 
   Provider::Factory.register("UpAccount", self)
 
-  # Sure accountable types that can be created from Up accounts.
+  # Hisaab accountable types that can be created from Up accounts.
   def self.supported_account_types
     %w[Depository Loan]
   end

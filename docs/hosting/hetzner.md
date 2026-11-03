@@ -1,6 +1,6 @@
-# Deploying Sure on Hetzner Cloud
+# Deploying Hisaab on Hetzner Cloud
 
-This guide will help you deploy Sure on a Hetzner Cloud server with Docker Compose, including SSL certificates, security hardening, and automated backups.
+This guide will help you deploy Hisaab on a Hetzner Cloud server with Docker Compose, including SSL certificates, security hardening, and automated backups.
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ mkdir -p /opt/sure
 cd /opt/sure
 
 # Download the Docker Compose configuration
-curl -o compose.yml https://raw.githubusercontent.com/we-promise/sure/main/compose.example.yml
+curl -o compose.yml https://raw.githubusercontent.com/osamarehman/Hisaab/main/compose.example.yml
 ```
 
 ## Step 3: Configure Environment Variables
@@ -139,7 +139,7 @@ certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 ## Step 5: Deploy the Application
 
-Now let's deploy the Sure application:
+Now let's deploy the Hisaab application:
 
 ```bash
 # Navigate to the application directory
@@ -419,7 +419,7 @@ If you encounter issues:
 1. Check the [troubleshooting section](#troubleshooting) above
 2. Review the application logs: `docker compose logs -f`
 3. Check system resources: `htop` and `df -h`
-4. Open a discussion in our [GitHub repository](https://github.com/we-promise/sure/discussions)
+4. Open a discussion in our [GitHub repository](https://github.com/osamarehman/Hisaab/discussions)
 
 ## Security Reminders
 

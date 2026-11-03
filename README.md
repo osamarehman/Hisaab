@@ -1,128 +1,72 @@
-[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-blue)](https://deepwiki.com/we-promise/sure)
-[![View performance data on Skylight](https://badges.skylight.io/typical/s6PEZSKwcklL.svg)](https://oss.skylight.io/app/applications/s6PEZSKwcklL)
-[![Dosu](https://raw.githubusercontent.com/dosu-ai/assets/main/dosu-badge.svg)](https://app.dosu.dev/a72bdcfd-15f5-4edc-bd85-ea0daa6c3adc/ask)
-[![Pipelock Security Scan](https://github.com/we-promise/sure/actions/workflows/pipelock.yml/badge.svg)](https://github.com/we-promise/sure/actions/workflows/pipelock.yml)
+# Hisaab
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/we-promise/sure/main/docs/screenshots/dashboard-dark.webp">
-  <img alt="The Sure dashboard in two columns (cashflow, net worth, spending and outflows) beside the AI assistant answering a question about savings" src="https://raw.githubusercontent.com/we-promise/sure/main/docs/screenshots/dashboard-light.webp">
-</picture>
+Hisaab is a household finance app. A family shares one set of accounts, logs spending, plans budgets, tracks bills and loans, and sees where the month's money went. It works in any currency.
 
-<p align="center">
-  <!-- Keep these links. Translations will automatically update with the README. -->
-  <a href="https://readme-i18n.com/de/we-promise/sure">Deutsch</a> | 
-  <a href="https://readme-i18n.com/es/we-promise/sure">Español</a> | 
-  <a href="https://readme-i18n.com/fr/we-promise/sure">Français</a> | 
-  <a href="https://readme-i18n.com/ja/we-promise/sure">日本語</a> | 
-  <a href="https://readme-i18n.com/ko/we-promise/sure">한국어</a> | 
-  <a href="https://readme-i18n.com/pt/we-promise/sure">Português</a> | 
-  <a href="https://readme-i18n.com/ru/we-promise/sure">Русский</a> | 
-  <a href="https://readme-i18n.com/zh/we-promise/sure">中文</a>
-</p>
+Hisaab runs as a Rails server with a web app, Android and iOS apps (Flutter), and a macOS desktop shell. Everything talks to the same server, so the whole household sees the same numbers.
 
-# Sure: The personal finance app for everyone
+## What it does
 
-<b>Get
-involved: [Discord](https://discord.gg/36ZGBsxYEK) • [Website](https://sure.am) • [Issues](https://github.com/we-promise/sure/issues)</b>
+- **Shared household books.** Invite family members, choose which accounts each person sees, and keep one ledger for the house.
+- **Bank alert emails.** Forward your bank's transaction alerts to a private address and each one becomes a pending transaction you approve or reject. See [bank alert emails](docs/hosting/bank-alert-emails.md).
+- **Budgets, bills and goals.** Monthly budgets by category, recurring bills with reminders, and savings goals.
+- **Interest-free by default.** Loans and savings are tracked without interest (no riba). Set `INTEREST_FREE=false` to turn interest back on.
+- **Reports.** Cash flow, net worth, spending against your usual months, and a monthly PDF report.
+- **AI assistant.** Ask questions about your money in plain language. Works with OpenAI or any OpenAI-compatible endpoint such as OpenRouter. See [AI setup](docs/hosting/ai.md).
+- **English and Urdu**, plus the other languages in `config/locales`, with right-to-left layout support.
+- **API and MCP.** A documented HTTP API ([OpenAPI spec](docs/api/openapi.yaml)) and an [MCP endpoint](docs/hosting/mcp.md) for AI clients.
 
-> [!IMPORTANT]
-> This repository is a community fork of the now-abandoned Maybe Finance project. <br />
-> Learn more in their [final release](https://github.com/maybe-finance/maybe/releases/tag/v0.6.0) doc.
+## Clients
 
-## Backstory
+| Client | Where | Notes |
+| --- | --- | --- |
+| Web | Any modern browser | The full app, including settings and administration. |
+| Android and iOS | [`mobile/`](mobile/README.md) | Flutter app for daily use: balances, transactions, budgets, bank alerts. |
+| macOS | [`desktop/`](desktop/README.md) | Tauri shell around the web app. |
+| API clients and AI agents | [`docs/api`](docs/api), [MCP guide](docs/hosting/mcp.md) | Same accounts and permissions as the apps. |
 
-The [Maybe Finance](https://github.com/maybe-finance/maybe) (archived/abandoned repo) team spent most of 2021–2022 building a full-featured personal finance and wealth management app. It even included an “Ask an Advisor” feature that connected users with a real CFP/CFA — all included with your subscription.
+More detail in [docs/clients.md](docs/clients.md).
 
-The business end of things didn't work out, and so they stopped developing the app in mid-2023.
+## Self-hosting
 
-After spending nearly $1 million on development (employees, contractors, data providers, infra, etc.), the team open-sourced the app. Their goal was to let users self-host it for free — and eventually launch a hosted version for a small fee.
+Hisaab ships as a Docker Compose stack: Rails web, a Sidekiq worker, PostgreSQL and Redis.
 
-They actually did launch that hosted version … briefly.
-
-That also didn’t work out — at least not as a sustainable B2C business — so now here we are: hosting a community-maintained fork to keep the codebase alive and see where this can go next.
-
-Join us!
-
-## Hosting Sure
-
-Sure is a fully working personal finance app that can be [self hosted with Docker](docs/hosting/docker.md).
-Sure can be accessed from a browser, the macOS desktop app, the mobile app, API
-clients, and LLM agents. See [Sure Clients](docs/clients.md) for an overview.
-
-## Forking and Attribution
-
-This repo is a community fork of the archived Maybe Finance repo.
-You’re free to fork it under the AGPLv3 license — but we’d love it if you stuck around and contributed here instead.
-
-To stay compliant and avoid trademark issues:
-
-- Be sure to include the original [AGPLv3 license](https://github.com/maybe-finance/maybe/blob/main/LICENSE) and clearly state in your README that your fork is based on Maybe Finance but is **not affiliated with or endorsed by** Maybe Finance Inc.
-- "Maybe" is a trademark of Maybe Finance Inc. and therefore, use of it is NOT allowed in forked repositories (or the logo)
-
-## Performance Issues
-
-With data-heavy apps, inevitably, there are performance issues. We've set up a public dashboard showing the problematic requests seen on the demo site, along with the stacktraces to help debug them.
-
-[https://www.skylight.io/app/applications/s6PEZSKwcklL/recent/6h/endpoints](https://oss.skylight.io/app/applications/s6PEZSKwcklL/recent/6h/endpoints)
-
-Any contributions that help improve performance are very much welcome.
-
-## Local Development Setup
-
-**If you are trying to _self-host_ the app, [read this guide to get started](docs/hosting/docker.md).**
-
-The instructions below are for developers to get started with contributing to the app.
-
-### Requirements
-
-- See `.ruby-version` file for required Ruby version
-- PostgreSQL >9.3 (latest stable version recommended)
-- Redis > 5.4 (latest stable version recommended)
-
-### Getting Started
 ```sh
-cd sure
+cp .env.household.example .env   # fill in APP_DOMAIN, POSTGRES_PASSWORD, SECRET_KEY_BASE
+docker compose -f compose.household.yml up -d
+```
+
+Put a reverse proxy with TLS in front of it. The full walkthrough is in the [Docker hosting guide](docs/hosting/docker.md).
+
+## Local development
+
+Requirements:
+
+- Ruby (version in `.ruby-version`)
+- PostgreSQL (latest stable)
+- Redis 5.4 or newer
+
+```sh
+cd Hisaab
 cp .env.local.example .env.local
 bin/setup
 bin/dev
 
-# Optionally, load demo data
+# Optional: load demo data
 rake demo_data:default
 ```
 
-Visit http://localhost:3000 to view the app.
+Open http://localhost:3000. With demo data loaded, sign in as `user@example.com` / `Password1!`.
 
-If you loaded the optional demo data, log in with these credentials:
+Before opening a pull request, run the checks in the [development guide](docs/llm-guides/development.md#before-opening-a-pull-request): `bin/rails test`, system tests where relevant, Rubocop, ERB lint, Biome and Brakeman. Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-- Email: `user@example.com`
-- Password: `Password1!`
+## Currency
 
-For further instructions, see guides below.
+Each household picks its own currency in Settings. Pakistani rupee (PKR) is the default for new households; every ISO 4217 currency is supported, and accounts can hold other currencies alongside the household one.
 
-### Setup Guides
+## Security
 
-- [Mac dev setup](https://github.com/we-promise/sure/wiki/Mac-Dev-Setup-Guide)
-- [Linux dev setup](https://github.com/we-promise/sure/wiki/Linux-Dev-Setup-Guide)
-- [Windows dev setup](https://github.com/we-promise/sure/wiki/Windows-Dev-Setup-Guide)
-- Dev containers - visit [this guide](https://code.visualstudio.com/docs/devcontainers/containers)
+Report vulnerabilities as described in [SECURITY.md](SECURITY.md). Please don't open public issues for them.
 
-### One-click Install
+## License
 
-Render expects each button target branch to have a `render.yaml` at the repository root. The branch-ready Blueprint files live in `branches/<branch-name>/render.yaml` in a separate repo and can be copied to each corresponding branch root.
-
-| Option | What it deploys | `latest` | `stable` |
-| --- | --- | --- | --- |
-| **Sure - No AI** | Sure web, Sidekiq worker, Render Postgres, and Render Key Value. AI tokens are intentionally blank. | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/we-promise/sure-render-templates/tree/sure-no-ai-latest) | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/we-promise/sure-render-templates/tree/sure-no-ai) |
-| **Sure - Simple AI** | Sure with OpenAI-backed AI settings, pgvector-ready Postgres, Sidekiq, and Render Key Value. Render prompts for the OpenAI token. | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/we-promise/sure-render-templates/tree/sure-simple-ai-latest) | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/we-promise/sure-render-templates/tree/sure-simple-ai) |
-| **Sure - External AI** | Sure with external assistant settings plus AlphaClaw, which manages the OpenClaw gateway on Render. | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/we-promise/sure-render-templates/tree/sure-external-ai-latest) | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/we-promise/sure-render-templates/tree/sure-external-ai) |
-
-[![Run on PikaPods](https://www.pikapods.com/static/run-button.svg)](https://www.pikapods.com/pods?run=sure)
-
-[![Deploy on Hostim](https://hostim.dev/img/deploy-button.svg)](https://console.hostim.dev/dashboard?preview=1&modal=1&template=sure)
-
-## License and Trademarks
-
-Maybe and Sure are both distributed under
-an [AGPLv3 license](https://github.com/we-promise/sure/blob/main/LICENSE).
-- "Maybe" is a trademark of Maybe Finance, Inc.
-- "Sure" is not, and refers to this community fork.
+Hisaab is released under the [GNU Affero General Public License v3.0](LICENSE). If you run a modified version for other people over a network, you must offer them its source code.

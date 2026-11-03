@@ -8,7 +8,7 @@ class SnaptradeAccountProcessorTest < ActiveSupport::TestCase
     @snaptrade_item = snaptrade_items(:configured_item)
     @snaptrade_account = snaptrade_accounts(:fidelity_401k)
 
-    # Create and link a Sure investment account
+    # Create and link a Hisaab investment account
     @account = @family.accounts.create!(
       name: "Test Investment",
       balance: 50000,

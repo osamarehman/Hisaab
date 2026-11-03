@@ -494,7 +494,7 @@ class WiseItem::Importer
       end
     end
 
-    # Called after entries have been created to link interbalance pairs as Sure Transfers.
+    # Called after entries have been created to link interbalance pairs as Hisaab Transfers.
     def link_interbalance_transfers!
       Array(@interbalance_activities).each do |activity|
         resource_id = activity.dig("resource", "id").to_s

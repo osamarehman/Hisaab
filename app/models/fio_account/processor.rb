@@ -12,7 +12,7 @@ class FioAccount::Processor
   end
 
   # Sync the linked account's balance and process its movements. No-op when the Fio
-  # account isn't linked to a Sure account.
+  # account isn't linked to a Hisaab account.
   def process
     unless fio_account.current_account.present?
       Rails.logger.info "FioAccount::Processor - No linked account for fio_account #{fio_account.id}, skipping processing"
@@ -29,13 +29,13 @@ class FioAccount::Processor
 
   private
 
-    # Update the linked Sure account's balance/currency from the statement header.
+    # Update the linked Hisaab account's balance/currency from the statement header.
     def process_account!
       account = fio_account.current_account
       balance = fio_account.current_balance || 0
       currency = parse_currency(fio_account.currency) || account.currency
 
-      # A drawn overdraft, loan or mortgage is reported negative by Fio; Sure holds a
+      # A drawn overdraft, loan or mortgage is reported negative by Fio; Hisaab holds a
       # liability as a positive balance.
       balance = balance.abs if account.accountable_type == "Loan"
 

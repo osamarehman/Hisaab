@@ -59,7 +59,7 @@ class OidcIdentityTest < ActiveSupport::TestCase
 
   test "sync_user_attributes! preserves user-edited first and last name" do
     # Regression for #1103: every SSO login used to overwrite user.first_name
-    # with the IdP value, clobbering edits the user made inside Sure.
+    # with the IdP value, clobbering edits the user made inside Hisaab.
     @user.update!(first_name: "Adam", last_name: "Smith")
     auth = OmniAuth::AuthHash.new(
       provider: @oidc_identity.provider,

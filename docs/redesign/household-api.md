@@ -1,8 +1,8 @@
 # Household edition: API contract
 
 The household edition of the mobile app (PKR, manual entry, statement import,
-labels) relies on these API v1 additions. "Label" in the app is a Sure
-**category**; "auto-label keyword" is a Sure **rule** with one
+labels) relies on these API v1 additions. "Label" in the app is a Hisaab
+**category**; "auto-label keyword" is a Hisaab **rule** with one
 `transaction_name` contains-condition and one `set_transaction_category`
 action. All endpoints use the existing API auth (Bearer token or `X-Api-Key`)
 and family scoping.

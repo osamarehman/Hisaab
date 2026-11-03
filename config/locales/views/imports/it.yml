@@ -100,7 +100,7 @@ it:
         account_label: Conto
         name_label: Nome
         note_label: Nota
-        no_security_provider_warning: Il provider di prezzi dei titoli non è configurato. Le importazioni di operazioni funzioneranno, ma Sure non recupererà la cronologia dei prezzi. Vai nelle impostazioni per configurarlo.
+        no_security_provider_warning: Il provider di prezzi dei titoli non è configurato. Le importazioni di operazioni funzioneranno, ma Hisaab non recupererà la cronologia dei prezzi. Vai nelle impostazioni per configurarlo.
         date_format_label: Formato data
         apply_configuration: Applica configurazione
       category_import:

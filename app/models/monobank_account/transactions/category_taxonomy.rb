@@ -1,18 +1,18 @@
-# Maps Merchant Category Codes (ISO 18245) onto the family's existing Sure categories.
+# Maps Merchant Category Codes (ISO 18245) onto the family's existing Hisaab categories.
 #
 # Monobank does not categorise transactions; it reports the merchant's MCC (`mcc`, plus
 # `originalMcc` when the acquirer rewrote it). That is a far coarser signal than a
 # provider-assigned category, so the table below is deliberately conservative: only
-# codes whose meaning maps cleanly onto one of Sure's default categories are listed.
+# codes whose meaning maps cleanly onto one of Hisaab's default categories are listed.
 #
-# Codes with no honest Sure equivalent are intentionally absent, and that includes ones
+# Codes with no honest Hisaab equivalent are intentionally absent, and that includes ones
 # it would be tempting to guess at:
 #
 # * 6011 / 6012 / 4829 / 6051 — cash withdrawals, transfers and quasi-cash. These are
-#   money movement, not spending; Sure's transfer matcher pairs them up instead.
+#   money movement, not spending; Hisaab's transfer matcher pairs them up instead.
 # * 5921 / 5993 / 7995 — alcohol, tobacco and gambling, which most people track under
 #   their own categories if at all.
-# * 8211 / 8220 — education, which has no Sure default category.
+# * 8211 / 8220 — education, which has no Hisaab default category.
 #
 # A wrong auto-category is worse than none: the import adapter applies matches via
 # enrich_attribute, so anything left unmapped simply stays uncategorised for the user's
@@ -20,7 +20,7 @@
 module MonobankAccount::Transactions::CategoryTaxonomy
   # Each group carries two ways of finding the user's category:
   #
-  # * `key` is the Sure default-category translation key
+  # * `key` is the Hisaab default-category translation key
   #   (Category::DEFAULT_CATEGORY_TRANSLATION_KEYS), so the matcher can compare against
   #   the category name as the family actually sees it in their own locale — the common
   #   case for a Monobank user, whose categories are unlikely to be named in English.

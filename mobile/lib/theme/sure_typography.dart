@@ -1,6 +1,6 @@
 import 'sure_tokens.dart';
 
-/// Sure type scale.
+/// Hisaab type scale.
 ///
 /// Mirrors the Tailwind font-size defaults the web design system uses. Like
 /// [SureSpacing], this is hand-authored rather than generated from

@@ -49,7 +49,7 @@ class DS::Pill < DesignSystemComponent
   #   semantic aliases (`:success`, `:warning`, `:error`,
   #   `:destructive`, `:neutral`, `:info`). Aliases resolve via
   #   `SEMANTIC_TONE_ALIASES`.
-  # - Sure has full violet / indigo / fuchsia / amber / green / gray /
+  # - Hisaab has full violet / indigo / fuchsia / amber / green / gray /
   #   red ramps in the design system; this component picks named tokens
   #   at render time. No raw hex — except `custom_color:`, which exists for
   #   user-defined entities (categories, tags) whose hue is data, not design.
@@ -177,7 +177,7 @@ class DS::Pill < DesignSystemComponent
       # Marker mode (Beta / Canary / NEW): rounded-md (slight chip
       # shape), uppercase, sub-12px text, wider tracking.
       # text-[10/11px] stays as arbitrary values — the pill is
-      # intentionally sub-12px (Sure's smallest scale token is text-xs
+      # intentionally sub-12px (Hisaab's smallest scale token is text-xs
       # / 12px) so it reads as a marker, not a label. Padding / gap /
       # tracking snap to Tailwind's scale to satisfy the design-system
       # "no arbitrary values" rule.

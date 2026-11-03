@@ -8,7 +8,7 @@
 # sub-account transfers (type="transfer") and margin events (type="margin",
 # "rollover", "settled") are also skipped.
 #
-# Fiat entries are cash and become Transactions, with Sure's sign convention:
+# Fiat entries are cash and become Transactions, with Hisaab's sign convention:
 # negative = inflow/income, positive = outflow/expense, so deposits and rewards
 # are negative and withdrawals and fees positive.
 #
@@ -170,7 +170,7 @@ class KrakenAccount::LedgerProcessor
       entry_amount, price_missing = resolve_amount(abs_impact, symbol, date)
       return if entry_amount.nil?
 
-      # Sure sign convention: inflow = negative, outflow = positive.
+      # Hisaab sign convention: inflow = negative, outflow = positive.
       signed_amount = inflow?(type) ? -entry_amount.abs : entry_amount.abs
 
       name  = build_name(type, abs_impact, symbol)

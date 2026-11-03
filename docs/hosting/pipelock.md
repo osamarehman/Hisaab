@@ -1,25 +1,25 @@
 # Pipelock: AI Agent Security Proxy
 
-[Pipelock](https://github.com/luckyPipewrench/pipelock) is an optional security proxy that scans AI agent traffic flowing through Sure. It protects against secret exfiltration, prompt injection, and tool poisoning.
+[Pipelock](https://github.com/luckyPipewrench/pipelock) is an optional security proxy that scans AI agent traffic flowing through Hisaab. It protects against secret exfiltration, prompt injection, and tool poisoning.
 
 ## What Pipelock does
 
-Pipelock runs as a separate proxy service alongside Sure with two listeners:
+Pipelock runs as a separate proxy service alongside Hisaab with two listeners:
 
 | Listener | Port | Direction | What it scans |
 |----------|------|-----------|---------------|
-| Forward proxy | 8888 | Outbound (Sure to LLM) | Destination, SSRF, rate, budget, CONNECT-header DLP, and receipt controls for HTTPS tunnels |
-| MCP reverse proxy | 8889 | Inbound (agent to Sure /mcp) | Prompt injection, tool poisoning, DLP |
+| Forward proxy | 8888 | Outbound (Hisaab to LLM) | Destination, SSRF, rate, budget, CONNECT-header DLP, and receipt controls for HTTPS tunnels |
+| MCP reverse proxy | 8889 | Inbound (agent to Hisaab /mcp) | Prompt injection, tool poisoning, DLP |
 
 ### Forward proxy (outbound)
 
-When `HTTPS_PROXY=http://pipelock:8888` is set, outbound HTTPS requests from clients that honor the variable are routed through Pipelock. The default Sure examples don't configure TLS interception, so Pipelock can control the tunnel destination and connection but can't read encrypted request or response bodies. Body scanning requires TLS interception plus installing Pipelock's CA in the client container.
+When `HTTPS_PROXY=http://pipelock:8888` is set, outbound HTTPS requests from clients that honor the variable are routed through Pipelock. The default Hisaab examples don't configure TLS interception, so Pipelock can control the tunnel destination and connection but can't read encrypted request or response bodies. Body scanning requires TLS interception plus installing Pipelock's CA in the client container.
 
 Faraday-based OpenAI calls honor the proxy variables. Some provider clients may open direct connections, and Docker Compose doesn't enforce a network route that prevents bypass.
 
 ### MCP reverse proxy (inbound)
 
-External AI assistants that call Sure's `/mcp` endpoint should connect through Pipelock on port 8889 instead of directly to port 3000. Pipelock scans:
+External AI assistants that call Hisaab's `/mcp` endpoint should connect through Pipelock on port 8889 instead of directly to port 3000. Pipelock scans:
 
 - Tool call arguments (DLP, shell obfuscation detection)
 - Tool responses (injection payloads)
@@ -32,8 +32,8 @@ The `compose.example.ai.yml` file includes Pipelock. To use it:
 
 1. Download the compose file and Pipelock config:
    ```bash
-   curl -o compose.ai.yml https://raw.githubusercontent.com/we-promise/sure/main/compose.example.ai.yml
-   curl -o pipelock.example.yaml https://raw.githubusercontent.com/we-promise/sure/main/pipelock.example.yaml
+   curl -o compose.ai.yml https://raw.githubusercontent.com/osamarehman/Hisaab/main/compose.example.ai.yml
+   curl -o pipelock.example.yaml https://raw.githubusercontent.com/osamarehman/Hisaab/main/pipelock.example.yaml
    ```
 
 2. Start the stack:
@@ -114,7 +114,7 @@ pipelock:
 
 This creates a separate Deployment, Service, and ConfigMap. The chart auto-injects `HTTPS_PROXY`/`HTTP_PROXY`/`NO_PROXY` into web and worker pods.
 
-Sure pins Pipelock 3.4.0 by tag and multi-architecture image digest. Read the [Pipelock release notes](https://github.com/luckyPipewrench/pipelock/releases/tag/v3.4.0) before overriding that pin.
+Hisaab pins Pipelock 3.4.0 by tag and multi-architecture image digest. Read the [Pipelock release notes](https://github.com/luckyPipewrench/pipelock/releases/tag/v3.4.0) before overriding that pin.
 
 ### Signed action receipts
 
@@ -299,7 +299,7 @@ If requests are being incorrectly blocked, switch to `audit` mode in the config 
 mode: audit
 ```
 
-### MCP requests not reaching Sure
+### MCP requests not reaching Hisaab
 
 Verify the MCP upstream is configured correctly:
 ```bash
@@ -307,7 +307,7 @@ Verify the MCP upstream is configured correctly:
 docker compose -f compose.ai.yml exec pipelock /pipelock healthcheck --addr 127.0.0.1:8888
 ```
 
-Check that `MCP_API_TOKEN` and `MCP_USER_EMAIL` are set in your `.env` file and that the email matches an existing Sure user.
+Check that `MCP_API_TOKEN` and `MCP_USER_EMAIL` are set in your `.env` file and that the email matches an existing Hisaab user.
 
 ### Receipts are not being written
 

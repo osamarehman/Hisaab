@@ -4,7 +4,7 @@
 #
 # Two things have to be in place, and each is a separate setting the user has to
 # have made. The only provider that prices bare crypto symbols quotes in USD, so
-# a family whose currency is not USD needs one exchange rate on top — and Sure's
+# a family whose currency is not USD needs one exchange rate on top — and Hisaab's
 # default exchange rate provider requires an API key, so a self-hosted install
 # with no key has no FX at all.
 #

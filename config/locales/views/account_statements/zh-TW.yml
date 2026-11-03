@@ -36,7 +36,7 @@ zh-TW:
       files_hint: PDF、CSV 或 XLSX，每個檔案最大 %{max_size}MB。
       files_label: 對帳單檔案
       inbox_upload: 上傳
-      period_hint: "如果 PDF 中載明對帳單期間，Sure 會直接讀取，否則從檔名中的日期（例如 2026-04）讀取。你也可以在對帳單上手動設定。"
+      period_hint: "如果 PDF 中載明對帳單期間，Hisaab 會直接讀取，否則從檔名中的日期（例如 2026-04）讀取。你也可以在對帳單上手動設定。"
     index:
       account_label: 帳戶
       confidence: '%{confidence} 相符度'
@@ -76,7 +76,7 @@ zh-TW:
       difference: 差額
       download: 下載
       institution_name_hint: 機構名稱提示
-      ledger_amount: Sure 帳務紀錄
+      ledger_amount: Hisaab 帳務紀錄
       linked_to: 已連結到 %{account}。
       linking_title: 帳戶連結
       link_suggestion: 連結建議
@@ -86,7 +86,7 @@ zh-TW:
       period_end_on: 期間結束
       period_start_on: 期間開始
       reconciliation_title: 對帳
-      reconciliation_unavailable: 請填入對帳單期間以及期初或期末餘額，並確認 Sure 有這些日期的餘額歷史資料。
+      reconciliation_unavailable: 請填入對帳單期間以及期初或期末餘額，並確認 Hisaab 有這些日期的餘額歷史資料。
       reject: 拒絕
       save: 儲存對帳單
       statement_amount: 對帳單

@@ -32,7 +32,7 @@ APNs environments. Registrations select `sandbox` or `production` per device.
 
 ## Send a diagnostic notification
 
-1. Sign into the Sure iOS app with the same hosted account as the super-admin
+1. Sign into the Hisaab iOS app with the same hosted account as the super-admin
    signed into the web app, and enable push notifications.
 2. Open **System Health → Background jobs → Push notifications** in the web app.
 3. Select **Send test push notification**. This sends only to that account's

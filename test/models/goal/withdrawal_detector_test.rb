@@ -18,7 +18,7 @@ class Goal::WithdrawalDetectorTest < ActiveSupport::TestCase
     assert_equal [ entry.id ], detect.map(&:id)
   end
 
-  # In Sure an inflow carries a NEGATIVE amount. Reading the sign the other way
+  # In Hisaab an inflow carries a NEGATIVE amount. Reading the sign the other way
   # round would offer to attribute the user's own deposits as spending.
   test "never surfaces an inflow" do
     outflow(-1_200)

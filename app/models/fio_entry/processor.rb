@@ -2,7 +2,7 @@
 
 require "digest/md5"
 
-# Maps one Fio movement onto a Sure entry.
+# Maps one Fio movement onto a Hisaab entry.
 #
 # Fio returns each movement as a bag of numbered columns
 # (`{"column22" => {"value" => 1147608196, "name" => "ID pohybu", "id" => 22}}`), the same
@@ -78,7 +78,7 @@ class FioEntry::Processor
     @fio_account = fio_account
   end
 
-  # Import the movement into the linked Sure account via the import adapter.
+  # Import the movement into the linked Hisaab account via the import adapter.
   # Returns nil when the account isn't linked or the movement is unusable.
   def process
     unless account.present?
@@ -127,7 +127,7 @@ class FioEntry::Processor
       @external_id ||= self.class.canonical_external_id(fio_transaction)
     end
 
-    # Fio signs outgoing movements negative; Sure stores an expense positive.
+    # Fio signs outgoing movements negative; Hisaab stores an expense positive.
     def amount
       return @amount if defined?(@amount)
 

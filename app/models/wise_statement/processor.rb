@@ -78,7 +78,7 @@ class WiseStatement::Processor
     end
 
     # Wise statements use a signed amount: credits are positive and debits are
-    # negative. Sure uses the opposite sign convention for imported entries.
+    # negative. Hisaab uses the opposite sign convention for imported entries.
     # The statement amount is the full balance impact and includes fees, so the
     # reported totalFees are excluded to match the transfer importer's net amount.
     def amount

@@ -66,8 +66,8 @@ class WiseActivity::Processor
       activity.dig(:resource, :id).to_s
     end
 
-    # Expenses (outflow) → positive in Sure.
-    # Incomes (inflow / interest) → negative in Sure.
+    # Expenses (outflow) → positive in Hisaab.
+    # Incomes (inflow / interest) → negative in Hisaab.
     def amount
       raw = parse_amount
       case activity_type

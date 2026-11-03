@@ -123,7 +123,7 @@ class QuestradeItemsController < ApplicationController
         next
       end
 
-      # Create Sure account and link
+      # Create Hisaab account and link
       link_questrade_account(questrade_account, accountable_type)
       created_count += 1
     rescue => e

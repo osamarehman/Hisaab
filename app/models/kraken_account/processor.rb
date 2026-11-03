@@ -94,7 +94,7 @@ class KrakenAccount::Processor
       security = KrakenAccount::SecurityResolver.resolve(base_symbol)
       return unless security
 
-      # Sure's convention is positive = money out, so a buy is +cost and a sell
+      # Hisaab's convention is positive = money out, so a buy is +cost and a sell
       # -cost: the sign of the quantity, with Kraken's `cost` as the magnitude.
       # `cost` is the fill's actual cash figure and can differ from `vol * price`
       # by rounding, so it is kept rather than recomputed.
@@ -215,7 +215,7 @@ class KrakenAccount::Processor
     end
 
     # The quote-currency side of the same trade: what actually moved in or out of
-    # the cash balance. Sure's sign convention is the ledger's inverted -- there a
+    # the cash balance. Hisaab's sign convention is the ledger's inverted -- there a
     # buy shows the quote asset leaving as a negative amount; here money out is
     # positive.
     #

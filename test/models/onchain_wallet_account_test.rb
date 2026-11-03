@@ -105,7 +105,7 @@ class OnchainWalletAccountTest < ActiveSupport::TestCase
     end
 
     # What the user asked for is to stop tracking the address, not to lose the
-    # account: the Sure account and its holdings stay, as manual ones.
+    # account: the Hisaab account and its holdings stay, as manual ones.
     assert Account.exists?(account.id)
     assert Holding.exists?(holding.id)
     assert_nil holding.reload.account_provider_id

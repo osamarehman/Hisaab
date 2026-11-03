@@ -189,7 +189,7 @@ class SimplefinAccount::Investments::HoldingsProcessor
       [ nil, nil ]
     end
 
-    # Sure stores holding cost_basis as per-share average cost. SimpleFIN
+    # Hisaab stores holding cost_basis as per-share average cost. SimpleFIN
     # brokerages are inconsistent about which field carries which shape:
     #
     #   - total_cost / value: always a total position cost per the SimpleFIN

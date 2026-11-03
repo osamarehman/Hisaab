@@ -71,7 +71,7 @@ class RedbarkAccount < ApplicationRecord
   end
 
   # Normalise a Redbark liability (CreditCard / Loan) `current_balance` into the
-  # sign Sure stores: a positive amount owed (or a negative credit / overpaid
+  # sign Hisaab stores: a positive amount owed (or a negative credit / overpaid
   # balance).
   #
   # Redbark does not normalise the sign across its upstream sources:
@@ -98,9 +98,9 @@ class RedbarkAccount < ApplicationRecord
   #
   # @param balance [BigDecimal, Numeric] the raw `current_balance` value the
   #   processor read off `#current_balance` for this account.
-  # @param accountable_type [String] the accountable type of the Sure account
+  # @param accountable_type [String] the accountable type of the Hisaab account
   #   being updated (e.g. "CreditCard"). Used only for the support metadata.
-  # @param account [Account, nil] the Sure account, when available — attached
+  # @param account [Account, nil] the Hisaab account, when available — attached
   #   to the DebugLogEntry capture so support can trace the affected account.
   # @return [BigDecimal, Numeric] the balance with the correct sign.
   def normalized_liability_balance(balance:, accountable_type: nil, account: nil)

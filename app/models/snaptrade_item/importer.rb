@@ -358,7 +358,7 @@ class SnaptradeItem::Importer
         .where.not(snaptrade_account_id: nil)
 
       orphaned.each do |snaptrade_account|
-        # Only delete if not linked to a Sure account
+        # Only delete if not linked to a Hisaab account
         if snaptrade_account.current_account.blank?
           Rails.logger.info "SnaptradeItem::Importer - Pruning orphaned account #{snaptrade_account.id}"
           snaptrade_account.destroy

@@ -2655,7 +2655,7 @@ class TradeRepublicClientTest < ActiveSupport::TestCase
   end
 
   test "normalize_event_detail reads an English bond purchase" do
-    # Sure connects with locale "en", so this is the detail it actually receives.
+    # Hisaab connects with locale "en", so this is the detail it actually receives.
     detail = @client.send(:normalize_event_detail, bond_purchase_detail_en, item: { "title" => "Mar 2040", "subtitle" => "Buy Order" })
 
     assert_equal "IT0005377152", detail["isin"]
@@ -2824,7 +2824,7 @@ class TradeRepublicClientTest < ActiveSupport::TestCase
 
   private
 
-    # Same shape as bond_purchase_detail, in English, as Sure receives it.
+    # Same shape as bond_purchase_detail, in English, as Hisaab receives it.
     def bond_purchase_detail_en
       row = ->(title, text) { { "title" => title, "detail" => { "text" => text, "type" => "text" }, "style" => "plain" } }
       breakdown = {

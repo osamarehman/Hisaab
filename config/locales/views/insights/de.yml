@@ -3,7 +3,7 @@ de:
   insights:
     notification:
       title: Neue Finanzanalyse
-      body: Öffne Sure, um deine neueste KI-Analyse anzusehen.
+      body: Öffne Hisaab, um deine neueste KI-Analyse anzusehen.
     actions:
       budget: Budget ansehen
       cash_flow_warning: Wiederkehrende Buchungen prüfen
@@ -25,7 +25,7 @@ de:
         Hilf mir, dieser Analyse auf den Grund zu gehen.
 
         Analyse: %{title}
-        Was Sure gefunden hat: %{body}
+        Was Hisaab gefunden hat: %{body}
         Zeitraum: %{period}
         Zahlen:
         %{facts}

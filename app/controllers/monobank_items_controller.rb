@@ -85,7 +85,7 @@ class MonobankItemsController < ApplicationController
     render json: { success: error.blank?, error_message: error, has_accounts: monobank_item.monobank_accounts.exists? }
   end
 
-  # Render the picker of unlinked Monobank accounts for a new Sure account.
+  # Render the picker of unlinked Monobank accounts for a new Hisaab account.
   def select_accounts
     @accountable_type = params[:accountable_type] || "Depository"
     @return_to = safe_return_to_path
@@ -105,7 +105,7 @@ class MonobankItemsController < ApplicationController
     render layout: false
   end
 
-  # Create new Sure accounts for the selected Monobank accounts and link them.
+  # Create new Hisaab accounts for the selected Monobank accounts and link them.
   def link_accounts
     monobank_item = requested_monobank_item
     unless monobank_item.credentials_configured?
@@ -150,7 +150,7 @@ class MonobankItemsController < ApplicationController
     redirect_to select_accounts_monobank_items_path(monobank_item_id: monobank_item.id, accountable_type: params[:accountable_type], return_to: safe_return_to_path), alert: t(".link_failed")
   end
 
-  # Render the picker to attach a Monobank account to an existing Sure account.
+  # Render the picker to attach a Monobank account to an existing Hisaab account.
   def select_existing_account
     @account = Current.family.accounts.find(params[:account_id])
 
@@ -175,7 +175,7 @@ class MonobankItemsController < ApplicationController
     render layout: false
   end
 
-  # Link a selected Monobank account to an existing Sure account and sync.
+  # Link a selected Monobank account to an existing Hisaab account and sync.
   def link_existing_account
     account = Current.family.accounts.find(params[:account_id])
     monobank_item = requested_monobank_item
@@ -341,7 +341,7 @@ class MonobankItemsController < ApplicationController
       t("monobank_items.setup_accounts.api_error")
     end
 
-    # Create and sync a Sure account from a Monobank account snapshot.
+    # Create and sync a Hisaab account from a Monobank account snapshot.
     def create_account_from_monobank(monobank_account, account_type)
       # Linking an account clears any prior skip so a future unlink re-prompts for setup.
       monobank_account.update!(ignored: false) if monobank_account.ignored?

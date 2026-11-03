@@ -649,7 +649,7 @@ class SimplefinItemsControllerTest < ActionDispatch::IntegrationTest
         { "id" => "n", "transacted_at" => 2.days.ago.to_i, "posted" => 2.days.ago.to_i, "amount" => "-100" }
       ]
     )
-    # Simulate the post-relink state: new_sfa is now linked to the Sure account,
+    # Simulate the post-relink state: new_sfa is now linked to the Hisaab account,
     # old_sfa is unlinked. sync_stats still carries the stale suggestion.
     AccountProvider.create!(account: sure_account, provider: new_sfa)
     sync = @simplefin_item.syncs.create!(status: :completed, sync_stats: {

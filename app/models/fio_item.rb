@@ -141,7 +141,7 @@ class FioItem < ApplicationRecord
     fio_accounts.first
   end
 
-  # True once the Fio account has been linked to a Sure account.
+  # True once the Fio account has been linked to a Hisaab account.
   def has_completed_initial_setup?
     accounts.any?
   end
@@ -157,7 +157,7 @@ class FioItem < ApplicationRecord
     end
   end
 
-  # Number of Fio accounts linked to a Sure account.
+  # Number of Fio accounts linked to a Hisaab account.
   def linked_accounts_count
     account_counts[:linked]
   end

@@ -1,17 +1,17 @@
-# Sure Flutter - Technical Documentation
+# Hisaab Flutter - Technical Documentation
 
 ## Project Overview
 
-Sure Flutter is a mobile client for the [Sure Finances Management System](https://github.com/we-promise/sure), developed with Flutter framework and supporting both Android and iOS platforms. This application provides core mobile functionality for the Sure Finances management system, allowing users to view and manage their financial accounts anytime, anywhere.
+Hisaab Flutter is a mobile client for the [Hisaab Management System](https://github.com/osamarehman/Hisaab), developed with Flutter framework and supporting both Android and iOS platforms. This application provides core mobile functionality for the Hisaab management system, allowing users to view and manage their financial accounts anytime, anywhere.
 
 ### Backend Relationship
 
-This application is a client app for the Sure Finances Management System and requires connection to the Sure backend server (Rails API) to function properly. Backend project: https://github.com/we-promise/sure
+This application is a client app for the Hisaab Management System and requires connection to the Hisaab backend server (Rails API) to function properly. Backend project: https://github.com/osamarehman/Hisaab
 
 ## Core Features
 
 ### 1. Backend Configuration
-- **Server Address Configuration**: Configure Sure backend server URL on first launch
+- **Server Address Configuration**: Configure Hisaab backend server URL on first launch
 - **Connection Testing**: Provides connection test functionality to verify server availability
 - **Address Persistence**: Server address is saved locally and automatically loaded on next startup
 

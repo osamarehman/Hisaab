@@ -25,9 +25,9 @@ class YnabImportTest < ActiveSupport::TestCase
     import.generate_rows_from_csv
 
     rows = import.rows.order(:source_row_number)
-    # Row 1 is a pure outflow (rent): an expense, stored positive in Sure's convention
+    # Row 1 is a pure outflow (rent): an expense, stored positive in Hisaab's convention
     assert_equal BigDecimal("1500"), rows.first.signed_amount
-    # Row 3 is a pure inflow (paycheck): income, stored negative in Sure's convention
+    # Row 3 is a pure inflow (paycheck): income, stored negative in Hisaab's convention
     assert_equal BigDecimal("-2500"), rows.third.signed_amount
   end
 
@@ -136,7 +136,7 @@ class YnabImportTest < ActiveSupport::TestCase
     CSV
     import.generate_rows_from_csv
 
-    # inflow 100 - outflow 30 = +70 (income), reversed to -70 in Sure's convention
+    # inflow 100 - outflow 30 = +70 (income), reversed to -70 in Hisaab's convention
     assert_equal BigDecimal("-70"), import.rows.first.signed_amount
   end
 
@@ -147,7 +147,7 @@ class YnabImportTest < ActiveSupport::TestCase
     CSV
     import.generate_rows_from_csv
 
-    # A negative outflow is still an expense (+25 in Sure's convention), never income
+    # A negative outflow is still an expense (+25 in Hisaab's convention), never income
     assert_equal BigDecimal("25"), import.rows.first.signed_amount
   end
 

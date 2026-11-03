@@ -100,7 +100,7 @@ vi:
         account_label: Tài khoản
         name_label: Tên
         note_label: Ghi chú
-        no_security_provider_warning: Nhà cung cấp giá chứng khoán chưa được cấu hình. Nhập giao dịch sẽ hoạt động, nhưng Sure sẽ không bổ sung lịch sử giá. Vui lòng vào cài đặt để cấu hình.
+        no_security_provider_warning: Nhà cung cấp giá chứng khoán chưa được cấu hình. Nhập giao dịch sẽ hoạt động, nhưng Hisaab sẽ không bổ sung lịch sử giá. Vui lòng vào cài đặt để cấu hình.
         date_format_label: Định dạng ngày
         apply_configuration: Áp dụng cấu hình
       category_import:

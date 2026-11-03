@@ -16,7 +16,7 @@ class GoalPledge::Reconciler
 
     # Older pledges resolve first. Deterministic so "first claim wins"
     # under ties doesn't depend on PK ordering (which find_each batches
-    # by) — relevant the day Sure adopts ULID/UUID PKs.
+    # by) — relevant the day Hisaab adopts ULID/UUID PKs.
     GoalPledge
       .where(account_id: entry.account_id, status: "open", kind: expected_kind)
       .where("expires_at >= ?", Time.current)

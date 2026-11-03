@@ -36,7 +36,7 @@ nl:
       files_hint: PDF, CSV of XLSX. Max. %{max_size} MB per bestand.
       files_label: Afschriftbestanden
       inbox_upload: Uploaden
-      period_hint: "Sure leest de periode uit de pdf als die erin staat, of uit een datum in de bestandsnaam (bijv. 2026-04). Je kunt hem ook bij het afschrift instellen."
+      period_hint: "Hisaab leest de periode uit de pdf als die erin staat, of uit een datum in de bestandsnaam (bijv. 2026-04). Je kunt hem ook bij het afschrift instellen."
     index:
       account_label: Account
       confidence: "%{confidence} overeenkomst"
@@ -76,7 +76,7 @@ nl:
       difference: Verschil
       download: Downloaden
       institution_name_hint: Hint voor instelling
-      ledger_amount: Sure-grootboek
+      ledger_amount: Hisaab-grootboek
       linked_to: Gekoppeld aan %{account}.
       linking_title: Accountkoppeling
       link_suggestion: Koppelsuggestie
@@ -86,7 +86,7 @@ nl:
       period_end_on: Einde periode
       period_start_on: Begin periode
       reconciliation_title: Afstemming
-      reconciliation_unavailable: Voeg een afschriftperiode en een begin- of eindsaldo toe en zorg ervoor dat Sure een saldogeschiedenis heeft voor die datums.
+      reconciliation_unavailable: Voeg een afschriftperiode en een begin- of eindsaldo toe en zorg ervoor dat Hisaab een saldogeschiedenis heeft voor die datums.
       reject: Afwijzen
       save: Afschrift opslaan
       statement_amount: Afschrift

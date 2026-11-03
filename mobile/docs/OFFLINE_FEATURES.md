@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Sure mobile app implements a comprehensive offline-first architecture that allows users to continue using the app even when they don't have an internet connection. All transactions created offline are automatically synced to the server when the connection is restored.
+The Hisaab mobile app implements a comprehensive offline-first architecture that allows users to continue using the app even when they don't have an internet connection. All transactions created offline are automatically synced to the server when the connection is restored.
 
 ## Key Features
 

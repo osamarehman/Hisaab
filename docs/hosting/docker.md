@@ -1,6 +1,6 @@
-# Self Hosting Sure with Docker
+# Self Hosting Hisaab with Docker
 
-This guide will help you setup, update, and maintain your self-hosted Sure application with Docker Compose. Docker Compose is the most popular and recommended way to self-host the Sure app.
+This guide will help you setup, update, and maintain your self-hosted Hisaab application with Docker Compose. Docker Compose is the most popular and recommended way to self-host the Hisaab app.
 
 ## Setup Guide
 
@@ -39,7 +39,7 @@ Make sure you are in the directory you just created and run the following comman
 
 ```bash
 # Download the sample compose.yml file from the GitHub repository
-curl --fail --location --silent --show-error --output compose.yml https://raw.githubusercontent.com/we-promise/sure/main/compose.example.yml
+curl --fail --location --silent --show-error --output compose.yml https://raw.githubusercontent.com/osamarehman/Hisaab/main/compose.example.yml
 ```
 
 This command will do the following:
@@ -63,7 +63,7 @@ In order to configure the app, you will need to create a file called `.env`, whi
 To do this, you should get our .env.example as a starting point:
 
 ```bash
-curl --fail --location --silent --show-error --output .env https://raw.githubusercontent.com/we-promise/sure/main/.env.example
+curl --fail --location --silent --show-error --output .env https://raw.githubusercontent.com/osamarehman/Hisaab/main/.env.example
 ```
 
 #### Generate the app secret key
@@ -113,9 +113,9 @@ RAILS_ASSUME_SSL: "true"
 
 #### Sending email (SMTP)
 
-Sure sends email through an SMTP server that you provide. Email is sent by the background worker (the `worker` service), not by `web`, so the worker must have these settings.
+Hisaab sends email through an SMTP server that you provide. Email is sent by the background worker (the `worker` service), not by `web`, so the worker must have these settings.
 
-On a self-hosted instance, Sure sends these emails:
+On a self-hosted instance, Hisaab sends these emails:
 
 - Password reset links, when password sign-in is enabled.
 - A confirmation link when a user changes their email address, but only when **Require email confirmation** is on under Settings > Self-Hosting. When it is off, the new address is saved straight away and nothing is sent.
@@ -203,7 +203,7 @@ services:
 
 The worker is the service that sends email, so it is the one that must have the file. The same setting is also used for other outbound HTTPS connections; see [Self-signed certificate support](oidc.md#self-signed-certificate-support) for the certificate format and troubleshooting.
 
-Pull request [#2811](https://github.com/we-promise/sure/pull/2811), which is still open, would pass `.env` to both services directly. If it is merged, listing the keys in the anchor is no longer needed.
+Pull request [#2811](https://github.com/osamarehman/Hisaab/pull/2811), which is still open, would pass `.env` to both services directly. If it is merged, listing the keys in the anchor is no longer needed.
 
 **Applying changes**
 
@@ -229,7 +229,7 @@ WEBAUTHN_ALLOWED_ORIGINS="https://sure.example.com"
 
 #### Binding to IPv6 (optional)
 
-By default Sure listens on `0.0.0.0:3000` (IPv4 wildcard) inside the container and Docker publishes the port on the host's IPv4 interface only. If you want the app reachable over IPv6 as well, two things need to change:
+By default Hisaab listens on `0.0.0.0:3000` (IPv4 wildcard) inside the container and Docker publishes the port on the host's IPv4 interface only. If you want the app reachable over IPv6 as well, two things need to change:
 
 1. **Tell the app to bind to `[::]`** by setting `BINDING=::` in the container environment. `BINDING` is Rails' native env var for the server bind address. On any kernel with `net.ipv6.bindv6only=0` (the default on Linux and macOS) a single `[::]` bind is **dual-stack**: it accepts both IPv6 and IPv4 clients from the same socket. You do not need two binds and you do not need two ports.
 2. **Tell Docker to publish the host port on IPv6** by adding a bracketed-host `ports:` entry alongside the existing IPv4 one.
@@ -276,7 +276,7 @@ This will pull our official Docker image and start the app. You will see logs in
 
 Open your browser, and navigate to `http://localhost:3000`.
 
-If everything is working, you will see the Sure login screen.
+If everything is working, you will see the Hisaab login screen.
 
 ### Step 5: Create your account
 
@@ -297,7 +297,7 @@ If you do not want additional self-service registrations, switch the instance to
 
 ### Step 6: Run the app in the background
 
-Most self-hosting users will want the Sure app to run in the background on their computer so they can access it at all times. To do this, hit `Ctrl+C` to stop the running process, and then run the following command:
+Most self-hosting users will want the Hisaab app to run in the background on their computer so they can access it at all times. To do this, hit `Ctrl+C` to stop the running process, and then run the following command:
 
 ```bash
 docker compose up -d
@@ -313,11 +313,11 @@ docker compose ls
 
 Your app is now set up. You can visit it at `http://localhost:3000` in your browser.
 
-If you find bugs or have a feature request, be sure to read through our [contributing guide here](https://github.com/we-promise/sure/wiki/How-to-Contribute-Effectively-to-Sure).
+If you find bugs or have a feature request, be sure to read through our [contributing guide here](https://github.com/osamarehman/Hisaab/blob/main/CONTRIBUTING.md).
 
 ## AI features, external assistant, and Pipelock
 
-Sure ships with a separate compose file for AI-related features: `compose.example.ai.yml`. It adds:
+Hisaab ships with a separate compose file for AI-related features: `compose.example.ai.yml`. It adds:
 
 - **Pipelock** (always on): AI agent security proxy for outbound tunnel controls and inbound MCP scanning
 - **Ollama + Open WebUI** (optional `--profile local-ai`): local LLM inference
@@ -326,9 +326,9 @@ Sure ships with a separate compose file for AI-related features: `compose.exampl
 
 ```bash
 # Download both compose files
-curl --fail --location --silent --show-error --output compose.yml https://raw.githubusercontent.com/we-promise/sure/main/compose.example.yml
-curl --fail --location --silent --show-error --output compose.ai.yml https://raw.githubusercontent.com/we-promise/sure/main/compose.example.ai.yml
-curl --fail --location --silent --show-error --output pipelock.example.yaml https://raw.githubusercontent.com/we-promise/sure/main/pipelock.example.yaml
+curl --fail --location --silent --show-error --output compose.yml https://raw.githubusercontent.com/osamarehman/Hisaab/main/compose.example.yml
+curl --fail --location --silent --show-error --output compose.ai.yml https://raw.githubusercontent.com/osamarehman/Hisaab/main/compose.example.ai.yml
+curl --fail --location --silent --show-error --output pipelock.example.yaml https://raw.githubusercontent.com/osamarehman/Hisaab/main/pipelock.example.yaml
 
 # Run with Pipelock (no local LLM)
 docker compose -f compose.ai.yml up -d
@@ -339,12 +339,12 @@ docker compose -f compose.ai.yml --profile local-ai up -d
 
 ### Setting up the external AI assistant
 
-The external assistant delegates chat to a remote AI agent instead of calling LLMs directly. The agent calls back to Sure's `/mcp` endpoint for financial data (accounts, transactions, balance sheet).
+The external assistant delegates chat to a remote AI agent instead of calling LLMs directly. The agent calls back to Hisaab's `/mcp` endpoint for financial data (accounts, transactions, balance sheet).
 
 1. Set the MCP endpoint credentials in your `.env`:
    ```bash
    MCP_API_TOKEN=generate-a-random-token-here
-   MCP_USER_EMAIL=your@email.com   # must match an existing Sure user
+   MCP_USER_EMAIL=your@email.com   # must match an existing Hisaab user
    ```
 
 2. Set the external assistant connection:
@@ -367,20 +367,20 @@ See [docs/hosting/ai.md](ai.md) for full configuration details including agent I
 
 ### Pipelock security proxy
 
-Pipelock sits between Sure and external services. The default Compose file provides:
+Pipelock sits between Hisaab and external services. The default Compose file provides:
 
 - MCP request and response scanning for DLP, prompt injection, and tool poisoning
 - HTTPS tunnel controls for destination, SSRF, rate, budget, CONNECT headers, and optional signed receipts
 
 The example doesn't enable TLS interception, so Pipelock can't read encrypted HTTPS request or response bodies. Docker Compose also doesn't prevent a client from bypassing the proxy.
 
-When using `compose.example.ai.yml`, Pipelock is always running. External AI agents should connect to port 8889 (MCP reverse proxy) instead of directly to Sure's `/mcp` on port 3000.
+When using `compose.example.ai.yml`, Pipelock is always running. External AI agents should connect to port 8889 (MCP reverse proxy) instead of directly to Hisaab's `/mcp` on port 3000.
 
 For full Pipelock configuration, see [docs/hosting/pipelock.md](pipelock.md).
 
-## Running Sure on small (512 MB) hosts
+## Running Hisaab on small (512 MB) hosts
 
-Sure runs comfortably on hosts or containers limited to 512 MB of RAM, which makes it a good fit for the smallest tiers on platforms like Render, Fly.io, or a cheap VPS. This section summarizes what fits, what does not, and how to handle the jobs that do not.
+Hisaab runs comfortably on hosts or containers limited to 512 MB of RAM, which makes it a good fit for the smallest tiers on platforms like Render, Fly.io, or a cheap VPS. This section summarizes what fits, what does not, and how to handle the jobs that do not.
 
 ### What fits in 512 MB
 
@@ -420,7 +420,7 @@ If you want to load sample/demo data on a small host:
 
 ## Daily market data import
 
-Sure imports security prices once a day, Monday to Friday. By default the import runs at 22:00 UTC, about an hour after the New York close. To change the time or turn the import off, open **Settings > Self-Hosting** and use the market data import options under the sync settings. The time you save there is interpreted in your browser's timezone.
+Hisaab imports security prices once a day, Monday to Friday. By default the import runs at 22:00 UTC, about an hour after the New York close. To change the time or turn the import off, open **Settings > Self-Hosting** and use the market data import options under the sync settings. The time you save there is interpreted in your browser's timezone.
 
 You can also set the defaults in your `.env` file. A value saved on the settings page always takes precedence over these variables:
 
@@ -434,7 +434,7 @@ MARKET_DATA_SYNC_TIMEZONE=UTC     # IANA name such as Europe/Berlin; unknown nam
 
 ## How to update your app
 
-The mechanism that updates your self-hosted Sure app is the GHCR (Github Container Registry) Docker image that you see in the `compose.yml` file:
+The mechanism that updates your self-hosted Hisaab app is the GHCR (Github Container Registry) Docker image that you see in the `compose.yml` file:
 
 ```yml
 image: ghcr.io/we-promise/sure:${SURE_IMAGE_TAG:-stable}
@@ -483,7 +483,7 @@ docker compose up -d
 
 ## Backups, upgrades and rollbacks
 
-The `backup` service in `compose.example.yml` takes full backups of your instance. It runs the same Sure image as `web` and `worker`, so there is nothing to install or download. Run these commands from the directory that holds `compose.yml`.
+The `backup` service in `compose.example.yml` takes full backups of your instance. It runs the same Hisaab image as `web` and `worker`, so there is nothing to install or download. Run these commands from the directory that holds `compose.yml`.
 
 **Take a backup now** (do this before every upgrade):
 
@@ -512,11 +512,11 @@ Each backup is a folder under `backups/<version>/<date>-<manual|scheduled>/` wit
 | `db.dump` | The whole database: accounts, transactions, budgets, rules, users and settings |
 | `storage.tar.gz` | Uploaded files: transaction attachments, account statements and documents, imports and exports, profile pictures and account logos |
 | `config/.env`, `config/compose.yml` | Your configuration, including `SECRET_KEY_BASE` |
-| `manifest.json` | Sure version and image, database schema version, when it was taken |
+| `manifest.json` | Hisaab version and image, database schema version, when it was taken |
 | `restore.sh` | Restores the backup into a new folder (see below) |
 | `SHA256SUMS` | Checksums, verified before every restore |
 
-`db.dump` is written with the PostgreSQL tools in the Sure image (version 17), which older tools can't read. Restore it with `sure-backup` (`restore`, `recover` or `restore.sh`), not with `pg_restore` from the `db` container.
+`db.dump` is written with the PostgreSQL tools in the Hisaab image (version 17), which older tools can't read. Restore it with `sure-backup` (`restore`, `recover` or `restore.sh`), not with `pg_restore` from the `db` container.
 
 Uploaded files are backed up from the `app-storage` volume. If you store them in S3, Cloudflare R2, Google Cloud Storage or another bucket (`ACTIVE_STORAGE_SERVICE`), they are not in the backup; use your provider's versioning or replication for those.
 
@@ -565,7 +565,7 @@ sh 2026-10-01_080524-manual/restore.sh
 It verifies the backup and asks for a folder for the restored instance (new or empty; its name becomes the Compose project name). Then it:
 
 - refuses if Docker already has containers or volumes for that project name, or if the copied compose files use storage outside the new folder (external volumes or networks, absolute host paths), so it can't overwrite another instance;
-- warns if other Sure instances are running on the machine, and offers to start the restored one without its `worker` (see below);
+- warns if other Hisaab instances are running on the machine, and offers to start the restored one without its `worker` (see below);
 - picks the next free port if the backup's `PORT` is taken;
 - stops with a list of files to copy over if your compose files mount local files that are not part of the backup (custom certificates, for example);
 - copies the configuration and the backup in, pins `web` and `worker` to the backed-up version in `compose.restore.yml`, and sets `COMPOSE_FILE` in `.env` so plain `docker compose` commands use it;
@@ -578,10 +578,10 @@ For scripts, pass the answers as options: `sh restore.sh --target ~/sure-restore
 
 ### Without the backup service (any version, including 0.7.5 and older)
 
-You can also run backups with the script on its own, without the `backup` service and without editing `compose.yml`. That's the way to back up and restore Sure 0.7.5 and older, whose images don't include the script, and it suits anyone who prefers to keep the script outside the image. Download it once next to `compose.yml`:
+You can also run backups with the script on its own, without the `backup` service and without editing `compose.yml`. That's the way to back up and restore Hisaab 0.7.5 and older, whose images don't include the script, and it suits anyone who prefers to keep the script outside the image. Download it once next to `compose.yml`:
 
 ```bash
-curl --fail --location --silent --show-error --output sure-backup https://raw.githubusercontent.com/we-promise/sure/main/bin/sure-backup
+curl --fail --location --silent --show-error --output sure-backup https://raw.githubusercontent.com/osamarehman/Hisaab/main/bin/sure-backup
 ```
 
 Then, from that folder:
@@ -599,9 +599,9 @@ To take a backup every day without the service, add a cron job on the host, for 
 
 ### Upgrading from the database-only backup service (v0.7.5)
 
-Sure v0.7.5 shipped a `backup` service that ran `bin/db-backup.sh` and uploaded database dumps with rclone. It keeps working until you change it, but it does not back up uploaded files or configuration and cannot restore. To switch:
+Hisaab v0.7.5 shipped a `backup` service that ran `bin/db-backup.sh` and uploaded database dumps with rclone. It keeps working until you change it, but it does not back up uploaded files or configuration and cannot restore. To switch:
 
-1. Replace the `backup` service in your `compose.yml` with the `backup` and `backup-offsite` services from the current [`compose.example.yml`](https://github.com/we-promise/sure/blob/main/compose.example.yml).
+1. Replace the `backup` service in your `compose.yml` with the `backup` and `backup-offsite` services from the current [`compose.example.yml`](https://github.com/osamarehman/Hisaab/blob/main/compose.example.yml).
 2. In `.env`, remove `BACKUP_OVERWRITE`; backups are now kept per version and date. `BACKUP_SCHEDULE` must be a daily time (`minute hour * * *`). `BACKUP_DESTINATION`, `INSTANCE_ID` and the `RCLONE_CONFIG_*` variables now belong to `backup-offsite`.
 3. Start them: `docker compose --profile backup --profile backup-offsite up -d backup backup-offsite`.
 
@@ -613,13 +613,13 @@ If you download the new `bin/db-backup.sh` without updating the compose file, th
 
 ### ActiveRecord::DatabaseConnectionError
 
-If you are trying to get Sure started for the **first time** and run into database connection issues, it is likely because Docker has already initialized the Postgres database with a _different_ default role (usually from a previous attempt to start the app).
+If you are trying to get Hisaab started for the **first time** and run into database connection issues, it is likely because Docker has already initialized the Postgres database with a _different_ default role (usually from a previous attempt to start the app).
 
 If you run into this issue, you can optionally **reset the database**.
 
-**PLEASE NOTE: this will delete any existing data that you have in your Sure database, so proceed with caution.**  For first-time users of the app just trying to get started, you're generally safe to run the commands below.
+**PLEASE NOTE: this will delete any existing data that you have in your Hisaab database, so proceed with caution.**  For first-time users of the app just trying to get started, you're generally safe to run the commands below.
 
-By running the commands below, you will delete your existing Sure database and "reset" it.
+By running the commands below, you will delete your existing Hisaab database and "reset" it.
 
 ```
 docker compose down
@@ -634,10 +634,10 @@ Importing comma-separated-value file(s) requires the `sure-worker` container to 
 
 ### Inspecting background jobs (`/sidekiq`)
 
-Sure ships the Sidekiq Web dashboard at `/sidekiq`. The route only exists for a signed-in **super admin** — the first user created on your instance. Anyone else (including logged-out visitors) gets a 404, so there is nothing to configure to keep it safe. If you want a second layer of protection anyway, set both `SIDEKIQ_WEB_USERNAME` and `SIDEKIQ_WEB_PASSWORD` in your environment file to additionally require basic-auth credentials; there are no default credentials.
+Hisaab ships the Sidekiq Web dashboard at `/sidekiq`. The route only exists for a signed-in **super admin** — the first user created on your instance. Anyone else (including logged-out visitors) gets a 404, so there is nothing to configure to keep it safe. If you want a second layer of protection anyway, set both `SIDEKIQ_WEB_USERNAME` and `SIDEKIQ_WEB_PASSWORD` in your environment file to additionally require basic-auth credentials; there are no default credentials.
 
 For day-to-day triage of stuck syncs, imports, and exports, prefer **Settings → Background jobs** — it maps queue state onto the actual records and offers safe recovery actions. The Sidekiq dashboard is a break-glass tool; two warnings when using it directly:
 
 - Never manually retry `SimplefinConnectionUpdateJob` — it consumes a single-use setup token, and a retry permanently breaks that connection attempt.
-- Deleting or retrying jobs does **not** update the corresponding Sure record (a deleted `ImportJob` leaves its import stuck in `importing`) — use Settings → Background jobs for record-level recovery.
+- Deleting or retrying jobs does **not** update the corresponding Hisaab record (a deleted `ImportJob` leaves its import stuck in `importing`) — use Settings → Background jobs for record-level recovery.
 

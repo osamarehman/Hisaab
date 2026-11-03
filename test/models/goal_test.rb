@@ -306,7 +306,7 @@ class GoalTest < ActiveSupport::TestCase
       currency: "USD"
     ) { |g| g.goal_accounts.build(account: account) }
 
-    # Three inflows over the 90-day window. Sure convention: inflows are
+    # Three inflows over the 90-day window. Hisaab convention: inflows are
     # negative. Net = -900 → pace = 900 / 3 = 300.
     create_transaction(account: account, amount: -300, date: 80.days.ago.to_date)
     create_transaction(account: account, amount: -300, date: 40.days.ago.to_date)

@@ -110,7 +110,7 @@ class UpItem < ApplicationRecord
     save!
   end
 
-  # True once at least one Up account has been linked to a Sure account.
+  # True once at least one Up account has been linked to a Hisaab account.
   def has_completed_initial_setup?
     accounts.any?
   end
@@ -130,7 +130,7 @@ class UpItem < ApplicationRecord
     end
   end
 
-  # Number of Up accounts linked to a Sure account.
+  # Number of Up accounts linked to a Hisaab account.
   def linked_accounts_count
     account_counts[:linked]
   end

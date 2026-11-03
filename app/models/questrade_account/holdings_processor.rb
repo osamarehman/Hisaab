@@ -84,7 +84,7 @@ class QuestradeAccount::HoldingsProcessor
       cost_basis = parse_decimal(data[:averageEntryPrice]) # per-share cost
 
       # Questrade positions don't carry a currency, so we fall back to the
-      # account currency. This is fine: Sure values each holding via the
+      # account currency. This is fine: Hisaab values each holding via the
       # security's own price/currency (Security#current_price), so this arg is
       # just a consistent bookkeeping/dedup key, not the source of valuation.
       currency = extract_currency(data, fallback: account.currency)

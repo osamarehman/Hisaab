@@ -141,7 +141,7 @@ class GoalsController < ApplicationController
   # unstamps the pledge id it wrote onto a matched transaction. No account,
   # balance, entry or transaction is removed, so the archive-first gate this
   # used to enforce bought no safety; it only hid the action behind a two-step
-  # flow no other Sure resource requires.
+  # flow no other Hisaab resource requires.
   def destroy
     @goal.destroy!
     redirect_to goals_path, notice: t(".success")

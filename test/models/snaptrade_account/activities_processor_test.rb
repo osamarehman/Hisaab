@@ -8,7 +8,7 @@ class SnaptradeAccount::ActivitiesProcessorTest < ActiveSupport::TestCase
     @snaptrade_item = snaptrade_items(:configured_item)
     @snaptrade_account = snaptrade_accounts(:fidelity_401k)
 
-    # Create a linked Sure account for the SnapTrade account
+    # Create a linked Hisaab account for the SnapTrade account
     @account = @family.accounts.create!(
       name: "Test Investment",
       balance: 50000,
@@ -17,7 +17,7 @@ class SnaptradeAccount::ActivitiesProcessorTest < ActiveSupport::TestCase
       accountable: Investment.new
     )
 
-    # Link the SnapTrade account to the Sure account
+    # Link the SnapTrade account to the Hisaab account
     @snaptrade_account.ensure_account_provider!(@account)
     @snaptrade_account.reload
   end
@@ -289,7 +289,7 @@ class SnaptradeAccount::ActivitiesProcessorTest < ActiveSupport::TestCase
   test "normalizes bare TRANSFER from the provider sign" do
     # Regression test for issue #2756. Unlike TRANSFER_IN/TRANSFER_OUT, a bare "TRANSFER"
     # carries no direction in the type, so SnapTrade's sign is the only directional signal
-    # available and must be inverted into Sure's convention rather than passed through.
+    # available and must be inverted into Hisaab's convention rather than passed through.
     @snaptrade_account.update!(raw_activities_payload: [
       build_cash_activity(
         id: "transfer_generic_in",

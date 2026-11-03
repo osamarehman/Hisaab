@@ -46,7 +46,7 @@ class FioItem::ImporterTest < ActiveSupport::TestCase
     assert_equal 2, account.raw_transactions_payload.size
   end
 
-  # Discovery must not create a Sure account: which account a connection feeds, and
+  # Discovery must not create a Hisaab account: which account a connection feeds, and
   # whether it feeds one at all, is the user's decision in setup.
   test "does not link the discovered account to a Sure account" do
     provider = FakeFioProvider.new(statement: statement(movements: [ movement(id: 1) ]))
@@ -202,7 +202,7 @@ class FioItem::ImporterTest < ActiveSupport::TestCase
   end
 
   # Rotating in a token for a *different* Fio account must not quietly repoint the
-  # connection: the linked Sure account would start receiving another account's balance
+  # connection: the linked Hisaab account would start receiving another account's balance
   # and movements.
   test "refuses a statement naming a different account than the connection syncs" do
     account = fio_account(current_balance: 195.01, raw_transactions_payload: [ movement(id: 1) ])

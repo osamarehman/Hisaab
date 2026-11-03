@@ -1,4 +1,4 @@
-/// Sure spacing scale.
+/// Hisaab spacing scale.
 ///
 /// Mirrors the Tailwind spacing defaults the web design system relies on
 /// (`1rem = 16px`, so each step is `value * 4px`). Hand-authored rather than

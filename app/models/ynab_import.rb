@@ -93,7 +93,7 @@ class YnabImport < Import
   # YNAB splits money movement across Outflow and Inflow columns (positive
   # magnitudes) rather than a single signed amount. Combine them into the
   # "inflows positive" convention the framework expects — Import::Row reverses it
-  # to Sure's internal "outflows positive" signage. A single signed Amount column,
+  # to Hisaab's internal "outflows positive" signage. A single signed Amount column,
   # when present, takes precedence (some hand-built exports use one).
   def signed_csv_amount(csv_row)
     explicit = csv_value(csv_row, amount_col_label.presence || "Amount")

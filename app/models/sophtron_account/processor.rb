@@ -99,9 +99,9 @@ class SophtronAccount::Processor
       raise
     end
 
-    # Converts a Sophtron balance into Sure's stored sign.
+    # Converts a Sophtron balance into Hisaab's stored sign.
     #
-    # Sure stores liability debt as a positive amount. Automatic mode keeps
+    # Hisaab stores liability debt as a positive amount. Automatic mode keeps
     # the historical flip for credit cards and loans. An explicit credit card
     # override is authoritative because some Sophtron institutions already
     # report debt as positive and others report it as negative.

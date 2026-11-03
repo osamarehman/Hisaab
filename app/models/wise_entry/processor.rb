@@ -96,8 +96,8 @@ class WiseEntry::Processor
       ref.present? ? ref : I18n.t("wise_items.entries.default_name")
     end
 
-    # Expenses (outgoing) → positive amount in Sure convention.
-    # Incomes (incoming)  → negative amount in Sure convention.
+    # Expenses (outgoing) → positive amount in Hisaab convention.
+    # Incomes (incoming)  → negative amount in Hisaab convention.
     # Incoming cross-currency transfers use targetValue (what actually arrived) not sourceValue.
     def main_amount
       if outgoing?

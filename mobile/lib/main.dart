@@ -31,7 +31,7 @@ void main() async {
   await ApiConfig.initialize();
 
   // Add initial log entry
-  LogService.instance.info('App', 'Sure app starting...');
+  LogService.instance.info('App', 'Hisaab app starting...');
 
   // Read the privacy preference before the first frame so money values are
   // never briefly rendered unmasked for a user who enabled "Hide amounts".

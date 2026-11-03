@@ -1,9 +1,9 @@
-# Sure Clients
+# Hisaab Clients
 
-Sure is centered on a Rails server. Every client connects to that server and
+Hisaab is centered on a Rails server. Every client connects to that server and
 uses the same accounts, users, authentication rules, and financial data. A
 client can be a browser, a native app, a mobile app, an automation script, or an
-LLM agent using Sure's MCP endpoint.
+LLM agent using Hisaab's MCP endpoint.
 
 Use this guide to choose the right entry point for a person, device, or
 integration.
@@ -13,15 +13,15 @@ integration.
 | Client | Best for | Status | Entry point |
 | --- | --- | --- | --- |
 | Web app | Full everyday use, administration, and self-hosted access from any modern browser. | Primary client | Run the Rails app and visit the server URL. For local development, use `bin/dev` and open `http://localhost:3000`. |
-| macOS desktop app | People who want Sure in a native Mac window with system app chrome and deep-link handling. | Native shell around the web app | See [Sure Desktop](../desktop/README.md). |
-| Mobile app | Basic mobile access on iOS and Android, currently focused on login and account balances. | Flutter companion app | See [Sure Mobile](../mobile/README.md). |
-| LLM agents and assistants | Claude Desktop, GPT agents, local agents, or custom tools that need structured access to Sure data. | MCP endpoint for external AI clients | See [MCP Server for External AI Assistants](hosting/mcp.md). |
+| macOS desktop app | People who want Hisaab in a native Mac window with system app chrome and deep-link handling. | Native shell around the web app | See [Hisaab Desktop](../desktop/README.md). |
+| Mobile app | Basic mobile access on iOS and Android, currently focused on login and account balances. | Flutter companion app | See [Hisaab Mobile](../mobile/README.md). |
+| LLM agents and assistants | Claude Desktop, GPT agents, local agents, or custom tools that need structured access to Hisaab data. | MCP endpoint for external AI clients | See [MCP Server for External AI Assistants](hosting/mcp.md). |
 | Custom API clients | Scripts, services, importer experiments, dashboards, or other integrations. | HTTP API | See the OpenAPI spec at [docs/api/openapi.yaml](api/openapi.yaml) and endpoint guides such as [docs/api/transactions.md](api/transactions.md). |
 
 ## Web app
 
-The web app is the complete Sure experience. It is the right default when a
-person wants to use Sure directly, manage settings, connect providers, review
+The web app is the complete Hisaab experience. It is the right default when a
+person wants to use Hisaab directly, manage settings, connect providers, review
 transactions, or work with features that may not yet be available in native
 clients.
 
@@ -40,8 +40,8 @@ The web app also serves as the surface rendered by the macOS desktop app.
 
 ## macOS desktop app
 
-The macOS desktop app is a Tauri 2 shell that renders the full Sure web app in a
-native Mac window. On first launch, it asks for the Sure server URL, checks the
+The macOS desktop app is a Tauri 2 shell that renders the full Hisaab web app in a
+native Mac window. On first launch, it asks for the Hisaab server URL, checks the
 server health endpoint, and then loads the normal sign-in flow.
 
 Use it when someone wants a desktop app experience without a separate desktop
@@ -54,7 +54,7 @@ install, deep link, and notarization notes.
 ## Mobile app
 
 The mobile app is a Flutter companion app for iOS and Android. It connects to a
-Sure server through the API and currently focuses on core mobile flows such as
+Hisaab server through the API and currently focuses on core mobile flows such as
 authentication and viewing account balances.
 
 Use it when someone needs phone access and the feature set they need is
@@ -67,14 +67,14 @@ implementation notes.
 
 ## LLM agents and MCP clients
 
-LLM agents are clients too. Sure exposes a Model Context Protocol endpoint for
+LLM agents are clients too. Hisaab exposes a Model Context Protocol endpoint for
 external assistants and agent runtimes that need structured access to financial
 data.
 
 Use MCP when a person wants an assistant such as Claude Desktop, a GPT agent, or
-a custom local agent to query Sure directly instead of copying data into a chat
+a custom local agent to query Hisaab directly instead of copying data into a chat
 window. MCP access is configured server-side with a bearer token and a specific
-Sure user email.
+Hisaab user email.
 
 Because this gives the assistant read access to that user's family data, treat
 the MCP token like a production secret and only connect assistants and providers
@@ -84,12 +84,12 @@ See [docs/hosting/mcp.md](hosting/mcp.md) for setup and protocol details.
 
 ## Custom API clients
 
-Custom clients can call Sure's HTTP API directly. This is the right path for
+Custom clients can call Hisaab's HTTP API directly. This is the right path for
 scripts, services, import experiments, dashboards, and integrations that do not
 need an MCP-compatible agent interface.
 
 API requests can authenticate with a user-generated `X-Api-Key` header, or with
-OAuth2 bearer tokens from Sure's Doorkeeper authorization server for registered
+OAuth2 bearer tokens from Hisaab's Doorkeeper authorization server for registered
 app clients.
 
 Start with the OpenAPI spec at [docs/api/openapi.yaml](api/openapi.yaml) and
@@ -97,14 +97,14 @@ endpoint guides such as [docs/api/transactions.md](api/transactions.md).
 
 ## Choosing a client
 
-- Start with the web app when a person needs the complete Sure experience.
+- Start with the web app when a person needs the complete Hisaab experience.
 - Use the macOS desktop app when they want the web app wrapped in a native Mac
   application.
 - Use the mobile app for iOS or Android access to supported mobile flows.
 - Use MCP for LLM agents and assistant runtimes.
 - Use the HTTP API for custom software integrations.
 
-All clients should connect to a Sure server the user controls or trusts. Native,
+All clients should connect to a Hisaab server the user controls or trusts. Native,
 mobile, API, and MCP clients do not replace the server; they are different ways
 to access it.
 
@@ -112,7 +112,7 @@ to access it.
 
 Read monthly server-calculated totals and the daily spending comparison using
 [`GET /api/v1/cash_flow`](api/openapi.yaml). Native clients should
-use these values instead of rebuilding Sure's reporting rules from transactions.
+use these values instead of rebuilding Hisaab's reporting rules from transactions.
 
 Structural node `name` values are fallback labels; clients should localize
 `cash_flow`, `surplus`, `deficit`, and `invested` by `kind` at the presentation boundary.
@@ -130,7 +130,7 @@ zero-based link indices. Refunds are netted within each category; parent direct
 amounts exclude children before each direction is grouped. Graph income and
 spending can therefore differ from the gross monthly figures, while net savings
 agrees. Surplus and deficit nodes balance the central flow. Clients own layout,
-formatting, and structural colors; all financial aggregation stays on Sure.
+formatting, and structural colors; all financial aggregation stays on Hisaab.
 
 The public endpoint uses the standard OAuth/API-key authentication and does not
 accept browser sessions. Responses are private and not HTTP-cacheable; native
@@ -160,4 +160,4 @@ owner or removed by that owner; knowing the APNs token alone never authorizes tr
 
 ## FinanceKit device publisher
 
-The native Apple client can enroll as a FinanceKit device publisher, map explicitly selected Wallet accounts, and upload an ordered local outbox during foreground or iOS-granted background execution. Setup and repair use normal Sure authentication; uploads use a revocable one-purpose credential that cannot read Sure data. Stable server-issued account lineages preserve identity across publisher replacement. See the [OpenAPI reference](api/openapi.yaml) and [operator guide](hosting/financekit.md).
+The native Apple client can enroll as a FinanceKit device publisher, map explicitly selected Wallet accounts, and upload an ordered local outbox during foreground or iOS-granted background execution. Setup and repair use normal Hisaab authentication; uploads use a revocable one-purpose credential that cannot read Hisaab data. Stable server-issued account lineages preserve identity across publisher replacement. See the [OpenAPI reference](api/openapi.yaml) and [operator guide](hosting/financekit.md).

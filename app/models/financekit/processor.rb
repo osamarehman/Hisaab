@@ -144,7 +144,7 @@ class Financekit::Processor
       identity.assign_attributes(financekit_account: mapping, generation: batch.generation,
         sequence: batch.sequence, status: record["status"], raw_payload: record)
 
-      # "Keep Sure" is a durable decision about this source identity, not a
+      # "Keep Hisaab" is a durable decision about this source identity, not a
       # one-off dismissal. The publisher re-sends the same record on every
       # capture that covers it, so without this the resolved conflict reopens
       # on the next batch and the family is asked the same question forever.
@@ -216,7 +216,7 @@ class Financekit::Processor
         status: "deleted", tombstoned_at: Time.current, raw_payload: nil)
       entry = identity.entry
       if entry && settled_by_family?(identity)
-        # The family already chose to keep Sure's entry for this identity. The
+        # The family already chose to keep Hisaab's entry for this identity. The
         # tombstone is still recorded so the source cannot resurrect it, but the
         # protected entry stays and the answered conflict is not reopened.
         # Review state follows the same rule as resolution and upserts: it is
@@ -245,7 +245,7 @@ class Financekit::Processor
     end
 
     # A conflict the family resolved with "keep_sure" settles that source
-    # identity for good: Sure's version wins and the publisher's copy of the
+    # identity for good: Hisaab's version wins and the publisher's copy of the
     # record is recorded without touching the ledger or raising again.
     def settled_by_family?(identity)
       identity.persisted? && settled_identity_ids.include?(identity.id)
@@ -320,7 +320,7 @@ class Financekit::Processor
     # whether the record still needs review.
     #
     # Matching on that identity rather than the lineage alone is what makes
-    # "keep Sure" durable here, the same way it is for a source transaction: the
+    # "keep Hisaab" durable here, the same way it is for a source transaction: the
     # publisher re-sends the same disagreement on every capture that covers it,
     # so keying the lookup on open rows made the decision last one capture. A
     # different observation still opens its own conflict.

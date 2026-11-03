@@ -125,7 +125,7 @@ class MonobankItem < ApplicationRecord
     save!
   end
 
-  # True once at least one Monobank account has been linked to a Sure account.
+  # True once at least one Monobank account has been linked to a Hisaab account.
   def has_completed_initial_setup?
     accounts.any?
   end
@@ -145,7 +145,7 @@ class MonobankItem < ApplicationRecord
     end
   end
 
-  # Number of Monobank accounts linked to a Sure account.
+  # Number of Monobank accounts linked to a Hisaab account.
   def linked_accounts_count
     account_counts[:linked]
   end

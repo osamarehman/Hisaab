@@ -25,7 +25,7 @@ class KrakenAccount::LedgerProcessorTest < ActiveSupport::TestCase
   end
 
   # ---------------------------------------------------------------------------
-  # sign convention: Sure uses negative = inflow, positive = outflow
+  # sign convention: Hisaab uses negative = inflow, positive = outflow
   # ---------------------------------------------------------------------------
 
   test "creates a deposit entry with negative amount (inflow)" do

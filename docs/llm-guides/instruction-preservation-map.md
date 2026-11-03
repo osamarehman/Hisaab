@@ -2,7 +2,7 @@
 
 This map was written before the instruction rewrite, against `main` at
 `947fe8327c6eac31f218d350b8dd5f865d5036fc` (2026-09-06 UTC).
-The new branch starts there. [PR #3403](https://github.com/we-promise/sure/pull/3403)
+The new branch starts there. [PR #3403](https://github.com/osamarehman/Hisaab/pull/3403)
 is reference material only; none of its commits are in this branch's ancestry.
 This document records the migration decision, not additional operating rules.
 
@@ -116,50 +116,50 @@ was included; neither `--first-parent` nor `--all` defined the policy baseline.
 Dates below are **committer dates normalized to UTC**, obtained with
 `TZ=UTC git show --date=format-local:%Y-%m-%d --format='%h %cd %s'`.
 PR #3403's diff and review comments were inspected separately, not merged or
-cherry-picked. Its [9f44bee07](https://github.com/we-promise/sure/commit/9f44bee07) commit is not an ancestor of the audited base.
+cherry-picked. Its [9f44bee07](https://github.com/osamarehman/Hisaab/commit/9f44bee07) commit is not an ancestor of the audited base.
 
 | Date | Commit | Evolution and consequence |
 | --- | --- | --- |
-| 2025-02-04 | [2a338eb01](https://github.com/we-promise/sure/commit/2a338eb01) | Cursor architecture/conventions introduced; contributor guidance points readers there. |
-| 2025-03-28 | [2f6b11c18](https://github.com/we-promise/sure/commit/2f6b11c18) | General AI rules and the generated Cursor structure helper introduced. |
-| 2025-05-26 | [07ca33f2f](https://github.com/we-promise/sure/commit/07ca33f2f) | Taskmaster scaffolding adds generic Cursor-rule authoring and self-improvement templates. |
-| 2025-06-17 | [b803ddac9](https://github.com/we-promise/sure/commit/b803ddac9) | CLAUDE introduced alongside API v1 work. |
-| 2025-06-20 | [fcf14f5f2](https://github.com/we-promise/sure/commit/fcf14f5f2) | Claude's explicit all-checks-pass pre-PR gate introduced; still present at base. |
-| 2025-08-15 | [fb6e094f7](https://github.com/we-promise/sure/commit/fb6e094f7) | Gemini Code Assist reviews explicitly disabled; settings unchanged since. |
-| 2025-08-27 | [c99335147](https://github.com/we-promise/sure/commit/c99335147) | AGENTS introduces a shorter, different checklist; not evidence of repealing Claude's gate. |
-| 2025-09-16 | [e00599516](https://github.com/we-promise/sure/commit/e00599516) | Context file updates; parallel instruction maintenance continues. |
-| 2025-09-20 | [60f54f9ba](https://github.com/we-promise/sure/commit/60f54f9ba) | Copilot gets another substantial copy, including pre-PR commands. |
-| 2025-09-21 | [2892ebb2f](https://github.com/we-promise/sure/commit/2892ebb2f) | Codex Linux environment helper added. |
-| 2025-09-23 | [7245dd79a](https://github.com/we-promise/sure/commit/7245dd79a) | Cursor cleanup adds the temporary Rails 7.2-only migration restriction. |
-| 2025-10-28 | [391011628](https://github.com/we-promise/sure/commit/391011628) | Claude switches from temporary hardcoded English advice to mandatory localization. |
-| 2025-11-14 | [972648b66](https://github.com/we-promise/sure/commit/972648b66) | Codex helper updated for Ruby 3.4.7; not a portable runtime contract. |
-| 2025-11-16 | [066fdf4ed](https://github.com/we-promise/sure/commit/066fdf4ed) | Junie copies nine Cursor rules; later source changes do not automatically reach the copy. |
-| 2025-12-19 | [664c6c2b7](https://github.com/we-promise/sure/commit/664c6c2b7) | SimpleFIN/Plaid pending + FX guidance added. |
-| 2026-01-10 | [3658e812a](https://github.com/we-promise/sure/commit/3658e812a) | Pending defaults/reconciliation change; Claude updated while AGENTS retains default-off prose. |
-| 2026-01-22 | [3f5fff27e](https://github.com/we-promise/sure/commit/3f5fff27e) | Lunchflow pending support reaches AGENTS; Claude's unsupported claim persists. |
-| 2026-01-30 | [9f5fdd4d1](https://github.com/we-promise/sure/commit/9f5fdd4d1) | Mandatory rswag documentation exception added. |
-| 2026-02-10 | [8fcd2912c](https://github.com/we-promise/sure/commit/8fcd2912c) | Post-commit API behavioral/docs/auth checklist and verification introduced. |
-| 2026-03-16 | [a0b1029ba](https://github.com/we-promise/sure/commit/a0b1029ba) | Contributor guide documents automated Pipelock security scanning. |
-| 2026-04-06 | [616c363b3](https://github.com/we-promise/sure/commit/616c363b3) | Devcontainer Selenium guidance added. |
-| 2026-04-10 | [0aca297e9](https://github.com/we-promise/sure/commit/0aca297e9) | Securities-provider shared guide added. |
-| 2026-05-01 | [e250d266e](https://github.com/we-promise/sure/commit/e250d266e) | Design-token source evolves; link to current design system. |
-| 2026-05-10 | [712d6baca](https://github.com/we-promise/sure/commit/712d6baca) | AGENTS adds DS reuse and reviewer escalation policy, absent from old copies. |
-| 2026-05-18/19 | [5249842c7](https://github.com/we-promise/sure/commit/5249842c7), [e8ce28648](https://github.com/we-promise/sure/commit/e8ce28648) | Beta gating guide introduced, then deleted and replaced with the preview guide. |
-| 2026-06-02 | [3508f7058](https://github.com/we-promise/sure/commit/3508f7058) | Goals guide introduced. |
-| 2026-06-14 | [88343002d](https://github.com/we-promise/sure/commit/88343002d) | Rails 7.2 → 8.1 upgrade supersedes the old migration-version prohibition. |
-| 2026-06-15 | [08bfd4377](https://github.com/we-promise/sure/commit/08bfd4377) | Support-relevant provider diagnostics required in DebugLogEntry. |
-| 2026-06-20 | [dc2a565b6](https://github.com/we-promise/sure/commit/dc2a565b6) | Up raw logging privacy constraint added to Claude. |
-| 2026-07-26 | [375dd060d](https://github.com/we-promise/sure/commit/375dd060d) | Preview gate guide updated for insights. |
-| 2026-08-04 | [efb7cc393](https://github.com/we-promise/sure/commit/efb7cc393) | Wealth blueprint and external agent harness docs added; preserve their separate product scope. |
-| 2026-08-16 | [acf4cb201](https://github.com/we-promise/sure/commit/acf4cb201) | Goals deletion semantics updated; preserve current guide. |
+| 2025-02-04 | [2a338eb01](https://github.com/osamarehman/Hisaab/commit/2a338eb01) | Cursor architecture/conventions introduced; contributor guidance points readers there. |
+| 2025-03-28 | [2f6b11c18](https://github.com/osamarehman/Hisaab/commit/2f6b11c18) | General AI rules and the generated Cursor structure helper introduced. |
+| 2025-05-26 | [07ca33f2f](https://github.com/osamarehman/Hisaab/commit/07ca33f2f) | Taskmaster scaffolding adds generic Cursor-rule authoring and self-improvement templates. |
+| 2025-06-17 | [b803ddac9](https://github.com/osamarehman/Hisaab/commit/b803ddac9) | CLAUDE introduced alongside API v1 work. |
+| 2025-06-20 | [fcf14f5f2](https://github.com/osamarehman/Hisaab/commit/fcf14f5f2) | Claude's explicit all-checks-pass pre-PR gate introduced; still present at base. |
+| 2025-08-15 | [fb6e094f7](https://github.com/osamarehman/Hisaab/commit/fb6e094f7) | Gemini Code Assist reviews explicitly disabled; settings unchanged since. |
+| 2025-08-27 | [c99335147](https://github.com/osamarehman/Hisaab/commit/c99335147) | AGENTS introduces a shorter, different checklist; not evidence of repealing Claude's gate. |
+| 2025-09-16 | [e00599516](https://github.com/osamarehman/Hisaab/commit/e00599516) | Context file updates; parallel instruction maintenance continues. |
+| 2025-09-20 | [60f54f9ba](https://github.com/osamarehman/Hisaab/commit/60f54f9ba) | Copilot gets another substantial copy, including pre-PR commands. |
+| 2025-09-21 | [2892ebb2f](https://github.com/osamarehman/Hisaab/commit/2892ebb2f) | Codex Linux environment helper added. |
+| 2025-09-23 | [7245dd79a](https://github.com/osamarehman/Hisaab/commit/7245dd79a) | Cursor cleanup adds the temporary Rails 7.2-only migration restriction. |
+| 2025-10-28 | [391011628](https://github.com/osamarehman/Hisaab/commit/391011628) | Claude switches from temporary hardcoded English advice to mandatory localization. |
+| 2025-11-14 | [972648b66](https://github.com/osamarehman/Hisaab/commit/972648b66) | Codex helper updated for Ruby 3.4.7; not a portable runtime contract. |
+| 2025-11-16 | [066fdf4ed](https://github.com/osamarehman/Hisaab/commit/066fdf4ed) | Junie copies nine Cursor rules; later source changes do not automatically reach the copy. |
+| 2025-12-19 | [664c6c2b7](https://github.com/osamarehman/Hisaab/commit/664c6c2b7) | SimpleFIN/Plaid pending + FX guidance added. |
+| 2026-01-10 | [3658e812a](https://github.com/osamarehman/Hisaab/commit/3658e812a) | Pending defaults/reconciliation change; Claude updated while AGENTS retains default-off prose. |
+| 2026-01-22 | [3f5fff27e](https://github.com/osamarehman/Hisaab/commit/3f5fff27e) | Lunchflow pending support reaches AGENTS; Claude's unsupported claim persists. |
+| 2026-01-30 | [9f5fdd4d1](https://github.com/osamarehman/Hisaab/commit/9f5fdd4d1) | Mandatory rswag documentation exception added. |
+| 2026-02-10 | [8fcd2912c](https://github.com/osamarehman/Hisaab/commit/8fcd2912c) | Post-commit API behavioral/docs/auth checklist and verification introduced. |
+| 2026-03-16 | [a0b1029ba](https://github.com/osamarehman/Hisaab/commit/a0b1029ba) | Contributor guide documents automated Pipelock security scanning. |
+| 2026-04-06 | [616c363b3](https://github.com/osamarehman/Hisaab/commit/616c363b3) | Devcontainer Selenium guidance added. |
+| 2026-04-10 | [0aca297e9](https://github.com/osamarehman/Hisaab/commit/0aca297e9) | Securities-provider shared guide added. |
+| 2026-05-01 | [e250d266e](https://github.com/osamarehman/Hisaab/commit/e250d266e) | Design-token source evolves; link to current design system. |
+| 2026-05-10 | [712d6baca](https://github.com/osamarehman/Hisaab/commit/712d6baca) | AGENTS adds DS reuse and reviewer escalation policy, absent from old copies. |
+| 2026-05-18/19 | [5249842c7](https://github.com/osamarehman/Hisaab/commit/5249842c7), [e8ce28648](https://github.com/osamarehman/Hisaab/commit/e8ce28648) | Beta gating guide introduced, then deleted and replaced with the preview guide. |
+| 2026-06-02 | [3508f7058](https://github.com/osamarehman/Hisaab/commit/3508f7058) | Goals guide introduced. |
+| 2026-06-14 | [88343002d](https://github.com/osamarehman/Hisaab/commit/88343002d) | Rails 7.2 → 8.1 upgrade supersedes the old migration-version prohibition. |
+| 2026-06-15 | [08bfd4377](https://github.com/osamarehman/Hisaab/commit/08bfd4377) | Support-relevant provider diagnostics required in DebugLogEntry. |
+| 2026-06-20 | [dc2a565b6](https://github.com/osamarehman/Hisaab/commit/dc2a565b6) | Up raw logging privacy constraint added to Claude. |
+| 2026-07-26 | [375dd060d](https://github.com/osamarehman/Hisaab/commit/375dd060d) | Preview gate guide updated for insights. |
+| 2026-08-04 | [efb7cc393](https://github.com/osamarehman/Hisaab/commit/efb7cc393) | Wealth blueprint and external agent harness docs added; preserve their separate product scope. |
+| 2026-08-16 | [acf4cb201](https://github.com/osamarehman/Hisaab/commit/acf4cb201) | Goals deletion semantics updated; preserve current guide. |
 
 The only deleted instruction source in the scoped main-history window is
 `docs/llm-guides/gating-a-beta-feature.md`, replaced by the preview guide in
-[e8ce28648](https://github.com/we-promise/sure/commit/e8ce28648). Other local refs expose `.cursor/rules/localization.mdc`,
+[e8ce28648](https://github.com/osamarehman/Hisaab/commit/e8ce28648). Other local refs expose `.cursor/rules/localization.mdc`,
 `docs/llm-guides/rails-provider-generator.md`, and earlier
 `patrimonial-agent-harness.md` / `patrimonial-blueprint.md` names, but those file
 histories are not reachable from the audited main base. They are not resurrected
-as main policy; the wealth-named guides entered main directly in [efb7cc393](https://github.com/we-promise/sure/commit/efb7cc393).
+as main policy; the wealth-named guides entered main directly in [efb7cc393](https://github.com/osamarehman/Hisaab/commit/efb7cc393).
 
 ## Factual corrections, not product changes
 
@@ -171,7 +171,7 @@ as main policy; the wealth-named guides entered main directly in [efb7cc393](htt
 | SimpleFIN infers pending from a blank posted date | [SimplefinEntry::Processor.pending?](../../app/models/simplefin_entry/processor.rb) requires explicit epoch zero plus a positive transaction timestamp when no explicit pending flag is set. |
 | Blanket pending defaults; Lunchflow does not store pending metadata | Initializers for [SimpleFIN](../../config/initializers/simplefin.rb), [Plaid](../../config/initializers/plaid_config.rb), and [Lunchflow](../../config/initializers/lunchflow.rb), the [SimpleFIN importer](../../app/models/simplefin_item/importer.rb), and [Lunchflow processor](../../app/models/lunchflow_entry/processor.rb) distinguish provider defaults, import-layer overrides and stored metadata. |
 | Valuations rswag spec still needs OAuth replaced | [valuations_spec.rb](../../spec/requests/api/v1/valuations_spec.rb) already creates an API key and supplies `X-Api-Key`. |
-| New migrations must remain Rails 7.2 | [Gemfile](../../Gemfile) requires Rails 8.1; upgrade commit [88343002d](https://github.com/we-promise/sure/commit/88343002d) provides the historical transition. |
+| New migrations must remain Rails 7.2 | [Gemfile](../../Gemfile) requires Rails 8.1; upgrade commit [88343002d](https://github.com/osamarehman/Hisaab/commit/88343002d) provides the historical transition. |
 
 No application code or runtime configuration changes are needed to correct these
 descriptions. The shared guides link to the implementation for future verification.

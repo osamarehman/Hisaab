@@ -6,14 +6,14 @@ import '../theme/sure_spacing.dart';
 import '../theme/sure_tokens.dart';
 import '../theme/sure_typography.dart';
 
-/// Sure design-system button variants, mirroring the web `DS::Button`
+/// Hisaab design-system button variants, mirroring the web `DS::Button`
 /// (`DS::Buttonish::VARIANTS`).
 enum SureButtonVariant { primary, secondary, destructive, outline, ghost }
 
 /// Button sizes, mirroring the web `DS::Buttonish::SIZES` (sm/md/lg ≈ 28/36/48).
 enum SureButtonSize { sm, md, lg }
 
-/// Sure design-system button — a custom, non-Material control mirroring the web
+/// Hisaab design-system button — a custom, non-Material control mirroring the web
 /// `DS::Button`: tokenized variant colors, `font-medium` label, sizes, and a
 /// flat custom press feedback (no Material ripple). `onPressed: null` (or
 /// [loading]) renders a disabled button.

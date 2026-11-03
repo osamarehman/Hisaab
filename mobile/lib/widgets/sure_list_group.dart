@@ -5,7 +5,7 @@ import '../theme/sure_spacing.dart';
 import '../theme/sure_tokens.dart';
 import 'sure_icon.dart';
 
-/// Sure design-system grouped list — a tokenized container that stacks
+/// Hisaab design-system grouped list — a tokenized container that stacks
 /// [SureListRow]s behind a single rounded surface with a hairline border, the
 /// subtle DS shadow, and inset dividers between rows. Mirrors the web grouped
 /// inset list (`bg-container` + `rounded-lg` + `shadow-border-xs`, rows clipped

@@ -1,6 +1,6 @@
 # Automatic Property Valuations
 
-Sure can look up a property's estimated market value when you add it, and refresh that value automatically so it shows up in the account balance and net worth.
+Hisaab can look up a property's estimated market value when you add it, and refresh that value automatically so it shows up in the account balance and net worth.
 
 | Provider | Coverage | Lookup by | Free tier | Environment variable |
 | --- | --- | --- | --- | --- |
@@ -21,7 +21,7 @@ Chimnie values UK residential properties by their **UPRN** (Unique Property Refe
 3. Add a property, choose **Add via Chimnie**, and enter the address, postcode and UPRN.
 4. Review the estimate, its range and Chimnie's confidence, then confirm.
 
-Sure only requests Chimnie's free valuation fields (estimated value, range and confidence). Valuations are stored in GBP, so the account currency must stay GBP for automatic refreshes to apply.
+Hisaab only requests Chimnie's free valuation fields (estimated value, range and confidence). Valuations are stored in GBP, so the account currency must stay GBP for automatic refreshes to apply.
 
 Chimnie only covers residential properties. Commercial or mixed-use UPRNs, and properties without an estimate, are reported as errors and no property is created.
 
@@ -36,10 +36,10 @@ Chimnie only covers residential properties. Commercial or mixed-use UPRNs, and p
 
 On a property's overview tab, **Refresh valuation** requests a new value straight away. It skips the minimum interval but still counts against the provider's monthly request cap.
 
-Every provider has a monthly request cap enforced by Sure. Raise it with `RENTCAST_MAX_REQUESTS_PER_MONTH`, `REALIE_MAX_REQUESTS_PER_MONTH` or `CHIMNIE_MAX_REQUESTS_PER_MONTH`. Chimnie's cap defaults to 1,000 requests a month because its UPRN valuations are free.
+Every provider has a monthly request cap enforced by Hisaab. Raise it with `RENTCAST_MAX_REQUESTS_PER_MONTH`, `REALIE_MAX_REQUESTS_PER_MONTH` or `CHIMNIE_MAX_REQUESTS_PER_MONTH`. Chimnie's cap defaults to 1,000 requests a month because its UPRN valuations are free.
 
 Failed and skipped refreshes are recorded in the debug log under the `provider_sync_error` category.
 
 ## Attribution
 
-Chimnie valuation data contains Ordnance Survey, Royal Mail and HM Land Registry data. Sure shows the required attribution on the property preview.
+Chimnie valuation data contains Ordnance Survey, Royal Mail and HM Land Registry data. Hisaab shows the required attribution on the property preview.

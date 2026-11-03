@@ -60,7 +60,7 @@ class Provider::Questrade
     get_json("v1/accounts")
   end
 
-  # GET /v1/accounts/:id/positions  (Sure calls these "holdings")
+  # GET /v1/accounts/:id/positions  (Hisaab calls these "holdings")
   def get_holdings(account_id:)
     get_json("v1/accounts/#{account_id}/positions")
   end

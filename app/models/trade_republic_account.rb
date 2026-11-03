@@ -40,7 +40,7 @@ class TradeRepublicAccount < ApplicationRecord
     account || linked_account
   end
 
-  # The linked Sure account, unless it is being deleted or was disabled.
+  # The linked Hisaab account, unless it is being deleted or was disabled.
   def usable_account
     acct = current_account
     acct unless acct.nil? || acct.pending_deletion? || acct.disabled?

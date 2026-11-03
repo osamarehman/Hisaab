@@ -1,7 +1,7 @@
 module MonobankItem::Unlinking
   extend ActiveSupport::Concern
 
-  # Unlink every Monobank account from its Sure account, detaching holdings and
+  # Unlink every Monobank account from its Hisaab account, detaching holdings and
   # destroying the AccountProvider links. With +dry_run+, only reports what
   # would be unlinked. Returns a per-account result array (with :error on failure).
   def unlink_all!(dry_run: false)

@@ -103,7 +103,7 @@ namespace :simplefin do
     user = User.find_by!(email: email)
     family = user.family
     # Drop seeded sfas by account_id prefix (see seed_* values in the seed task)
-    # plus the Sure account created by the seed. This handles both the
+    # plus the Hisaab account created by the seed. This handles both the
     # standalone-item path and the piggyback-on-existing-item path.
     seed_sfas = SimplefinAccount
       .joins(:simplefin_item)
@@ -116,7 +116,7 @@ namespace :simplefin do
       acct&.destroy_later if acct&.may_mark_for_deletion?
       sfa.destroy
     end
-    # Drop the seeded Sure account even when unlinked (name-based, safe).
+    # Drop the seeded Hisaab account even when unlinked (name-based, safe).
     family.accounts.where(name: "Citi Double Cash (dev seed)").find_each do |acct|
       acct.destroy_later if acct.may_mark_for_deletion?
     end

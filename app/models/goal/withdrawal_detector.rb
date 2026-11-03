@@ -60,7 +60,7 @@ class Goal::WithdrawalDetector
         .where(account_id: accounts.map(&:id))
         .where(excluded: false)
         .where(date: LOOKBACK_DAYS.days.ago.to_date..Date.current)
-        # In Sure an inflow carries a NEGATIVE amount, so an outflow is the
+        # In Hisaab an inflow carries a NEGATIVE amount, so an outflow is the
         # positive side. Reading this the other way round would offer to
         # attribute the user's deposits as spending.
         .where("entries.amount >= ?", MIN_AMOUNT)

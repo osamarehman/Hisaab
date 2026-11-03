@@ -4,7 +4,7 @@
 # POST /api/v1/accounts: create_and_sync writes the opening balance valuation
 # and the creating user owns the account.
 class Assistant::Function::CreateAccount < Assistant::Function
-  # Household words for account kinds, mapped to Sure's accountable types.
+  # Household words for account kinds, mapped to Hisaab's accountable types.
   ACCOUNT_KINDS = {
     "cash" => [ "Depository", "cash" ],
     "bank" => [ "Depository", "checking" ],

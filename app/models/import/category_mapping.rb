@@ -59,7 +59,7 @@ class Import::CategoryMapping < Import::Mapping
       parent_name = parts[0].strip
       child_name  = parts[1].strip
 
-      # Ensure parent is a top-level category (subcategories cannot have children in Sure).
+      # Ensure parent is a top-level category (subcategories cannot have children in Hisaab).
       parent = import.family.categories.roots.find_by(name: parent_name)
 
       if parent.nil?

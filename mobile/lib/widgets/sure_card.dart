@@ -4,7 +4,7 @@ import '../theme/sure_colors.dart';
 import '../theme/sure_spacing.dart';
 import '../theme/sure_tokens.dart';
 
-/// Sure design-system card — a tokenized content surface mirroring the web card
+/// Hisaab design-system card — a tokenized content surface mirroring the web card
 /// chrome (`bg-container` + a hairline border + rounded corners + the subtle DS
 /// shadow). Use it instead of a Material [Card] so the chrome stays in lockstep
 /// with `sure.tokens.json` and reads correctly in light and dark.

@@ -1,4 +1,4 @@
-# A bounded projection of Sure's existing reporting calculations for one period:
+# A bounded projection of Hisaab's existing reporting calculations for one period:
 # a calendar month, or any range (last N months, all time, custom).
 # The client never needs to download transaction history to reproduce these rules.
 #

@@ -78,7 +78,7 @@ class BankAlert < ApplicationRecord
   end
 
   private
-    # Money out is a positive amount in Sure's sign convention.
+    # Money out is a positive amount in Hisaab's sign convention.
     def create_entry!(pending:, on: account)
       on.entries.create!(
         date: (occurred_at || received_at).in_time_zone(family.timezone.presence || DEFAULT_TIME_ZONE).to_date,

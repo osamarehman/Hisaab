@@ -1,10 +1,10 @@
 
 <!-- roadmap:v1
 
-# Sure roadmap
+# Hisaab roadmap
 
 This file is the curation and triage source for the public roadmap page in the
-Sure website repository. Keep phases and items in the order they should appear
+Hisaab website repository. Keep phases and items in the order they should appear
 publicly. Changes to this file are reviewed through pull requests.
 
 The website reads this deliberately small format:
@@ -27,7 +27,7 @@ Description: Make the everyday experience dependable, fast, and easier to mainta
 
 ### Item: Web UX/UI polish
 Status: Planned
-Description: Refine the web experience around the details that make Sure feel clear and cohesive.
+Description: Refine the web experience around the details that make Hisaab feel clear and cohesive.
 
 ### Item: AI controls and transparency
 Status: Planned
@@ -35,7 +35,7 @@ Description: Give people understandable controls and visibility into how AI work
 
 ### Item: Documentation and onboarding
 Status: Planned
-Description: Help new people get value from Sure quickly, whether they use the hosted app or self-host it.
+Description: Help new people get value from Hisaab quickly, whether they use the hosted app or self-host it.
 
 ### Item: Mobile app planning and delivery
 Status: Planned
@@ -67,7 +67,7 @@ Description: Help people understand the possible outcomes of financial choices b
 
 ### Item: Localization and country support
 Status: Planned
-Description: Make Sure useful and natural for people across more countries, currencies, and financial systems.
+Description: Make Hisaab useful and natural for people across more countries, currencies, and financial systems.
 
 ### Item: Themes and customization
 Status: Planned
@@ -79,7 +79,7 @@ Description: Open the platform carefully.
 
 ### Item: External-agent integration and execution
 Status: Exploring
-Description: Create safe, permissioned ways for outside agents to work with Sure.
+Description: Create safe, permissioned ways for outside agents to work with Hisaab.
 
 ### Item: Agent-assisted cleanup and memory
 Status: Exploring
@@ -87,12 +87,12 @@ Description: Use agents to reduce financial-data maintenance while keeping peopl
 
 ### Item: Polished mobile ecosystem
 Status: Planned
-Description: Grow mobile into a complete, reliable part of the Sure experience.
+Description: Grow mobile into a complete, reliable part of the Hisaab experience.
 
 ### Item: Improved macOS and desktop experience
 Status: Planned
-Description: Make Sure feel at home across desktop platforms and workflows.
+Description: Make Hisaab feel at home across desktop platforms and workflows.
 
 ### Item: Business finance support
 Status: Exploring
-Description: Carefully extend Sure to the needs of people managing business finances.
+Description: Carefully extend Hisaab to the needs of people managing business finances.

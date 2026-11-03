@@ -1,7 +1,7 @@
 class UpAccount < ApplicationRecord
   include CurrencyNormalizable, Encryptable
 
-  # Maps Up `accountType` values to Sure accountable types/subtypes.
+  # Maps Up `accountType` values to Hisaab accountable types/subtypes.
   UP_ACCOUNT_TYPE_MAP = {
     "TRANSACTIONAL" => { accountable_type: "Depository", subtype: "checking" },
     "SAVER" => { accountable_type: "Depository", subtype: "savings" },
@@ -25,22 +25,22 @@ class UpAccount < ApplicationRecord
   validates :name, :currency, presence: true
   validates :account_id, uniqueness: { scope: :up_item_id, allow_nil: true }
 
-  # Up accounts with no linked Sure account.
+  # Up accounts with no linked Hisaab account.
   scope :unlinked, -> { left_joins(:account_provider).where(account_providers: { id: nil }) }
   # Unlinked accounts that still need a setup decision (i.e. not explicitly skipped).
   scope :needs_setup, -> { unlinked.where(ignored: false) }
 
-  # The linked Sure account, if any.
+  # The linked Hisaab account, if any.
   def current_account
     account
   end
 
-  # Suggested Sure accountable type derived from Up's account type, or nil.
+  # Suggested Hisaab accountable type derived from Up's account type, or nil.
   def suggested_account_type
     UP_ACCOUNT_TYPE_MAP[account_type.to_s.upcase]&.fetch(:accountable_type)
   end
 
-  # Suggested Sure subtype (e.g. checking/savings) for this Up account, or nil.
+  # Suggested Hisaab subtype (e.g. checking/savings) for this Up account, or nil.
   def suggested_subtype
     UP_ACCOUNT_TYPE_MAP[account_type.to_s.upcase]&.[](:subtype)
   end

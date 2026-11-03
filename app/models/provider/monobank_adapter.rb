@@ -4,7 +4,7 @@ class Provider::MonobankAdapter < Provider::Base
 
   Provider::Factory.register("MonobankAccount", self)
 
-  # Sure accountable types that can be created from Monobank accounts. Everything the
+  # Hisaab accountable types that can be created from Monobank accounts. Everything the
   # personal API exposes — cards and jars alike — is a cash account (see
   # MonobankAccount::MONOBANK_ACCOUNT_TYPE_MAP).
   def self.supported_account_types

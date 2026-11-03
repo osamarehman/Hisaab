@@ -1,40 +1,40 @@
 # MCP Server for External AI Assistants
 
-Sure includes a Model Context Protocol (MCP) server endpoint that allows external AI assistants like Claude.ai, Claude Desktop, GPT agents, or custom AI clients to query and act on your financial data.
+Hisaab includes a Model Context Protocol (MCP) server endpoint that allows external AI assistants like Claude.ai, Claude Desktop, GPT agents, or custom AI clients to query and act on your financial data.
 
 ## What is MCP?
 
-[Model Context Protocol](https://modelcontextprotocol.io/) is a JSON-RPC 2.0 protocol that enables AI assistants to access structured data and tools from external applications. Instead of copying and pasting financial data into a chat window, your AI assistant can directly query Sure's data through a secure API.
+[Model Context Protocol](https://modelcontextprotocol.io/) is a JSON-RPC 2.0 protocol that enables AI assistants to access structured data and tools from external applications. Instead of copying and pasting financial data into a chat window, your AI assistant can directly query Hisaab's data through a secure API.
 
 This is useful when:
-- You want to use an external AI assistant (Claude, GPT, custom agents) to analyze your Sure financial data
-- You prefer to keep your LLM provider separate from Sure
+- You want to use an external AI assistant (Claude, GPT, custom agents) to analyze your Hisaab financial data
+- You prefer to keep your LLM provider separate from Hisaab
 - You're building custom AI agents that need access to financial tools
 
 ## Authentication Modes
 
-Sure supports two ways to authenticate MCP clients:
+Hisaab supports two ways to authenticate MCP clients:
 
 ### 1. OAuth 2.0 / dynamic client registration (recommended)
 
-This is the best option for Claude.ai and other MCP clients that support OAuth. Sure exposes:
+This is the best option for Claude.ai and other MCP clients that support OAuth. Hisaab exposes:
 
 - `/.well-known/oauth-protected-resource`
 - `/.well-known/oauth-authorization-server`
 - `POST /register` for dynamic client registration
 
-These endpoints let compatible MCP clients register a public OAuth client, redirect you back to Sure for sign-in, and receive a bearer token with the `read_write` scope.
+These endpoints let compatible MCP clients register a public OAuth client, redirect you back to Hisaab for sign-in, and receive a bearer token with the `read_write` scope.
 
 ### 2. Static bearer token via environment variables
 
-This is the simpler fallback for custom agents, scripts, and deployments where you want to pin the MCP server to a specific Sure user.
+This is the simpler fallback for custom agents, scripts, and deployments where you want to pin the MCP server to a specific Hisaab user.
 
 Set these environment variables:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `MCP_API_TOKEN` | Bearer token for authentication | `your-secret-token-here` |
-| `MCP_USER_EMAIL` | Email of the Sure user whose data the assistant can access | `user@example.com` |
+| `MCP_USER_EMAIL` | Email of the Hisaab user whose data the assistant can access | `user@example.com` |
 
 Both variables are required for the legacy token flow. OAuth clients using the
 MCP discovery and dynamic registration endpoints do not need these variables.
@@ -52,7 +52,7 @@ openssl rand -base64 32
 
 ### Choosing the user for static-token auth
 
-The `MCP_USER_EMAIL` must match an existing Sure user's email address. The AI assistant will have access to all financial data for that user's family.
+The `MCP_USER_EMAIL` must match an existing Hisaab user's email address. The AI assistant will have access to all financial data for that user's family.
 
 > [!CAUTION]
 > The AI assistant can call the MCP tools available to the specified user. This includes reading financial data and write-capable tools such as statement import, goal/category/tag changes, transaction updates, and budget updates. Only set this for users you trust with your AI provider.
@@ -119,7 +119,7 @@ That token can come from either:
 
 ### Supported Methods
 
-Sure implements the following JSON-RPC 2.0 methods:
+Hisaab implements the following JSON-RPC 2.0 methods:
 
 | Method | Description |
 |--------|-------------|
@@ -129,7 +129,7 @@ Sure implements the following JSON-RPC 2.0 methods:
 
 ### Available Tools
 
-The MCP endpoint exposes the same tool registry used by Sure's built-in assistant. Clients should treat `tools/list` as the source of truth.
+The MCP endpoint exposes the same tool registry used by Hisaab's built-in assistant. Clients should treat `tools/list` as the source of truth.
 
 At the time of writing, `tools/list` includes:
 
@@ -254,7 +254,7 @@ Response includes tool names, descriptions, and JSON schemas for parameters.
 
 ### OAuth discovery
 
-MCP clients that support OAuth can discover Sure's metadata automatically:
+MCP clients that support OAuth can discover Hisaab's metadata automatically:
 
 ```bash
 curl https://your-sure-instance/.well-known/oauth-protected-resource
@@ -311,11 +311,11 @@ Response:
 
 ### Transient Session Isolation
 
-The MCP controller creates a **transient session** for each request. This prevents session state leaks that could expose other users' data if the Sure instance is using impersonation features.
+The MCP controller creates a **transient session** for each request. This prevents session state leaks that could expose other users' data if the Hisaab instance is using impersonation features.
 
 Each MCP request:
 1. Authenticates the token
-2. Loads the authorized Sure user
+2. Loads the authorized Hisaab user
 3. Creates a temporary session scoped to that user
 4. Executes the tool call
 5. Discards the session
@@ -356,8 +356,8 @@ For a production-ready setup with security scanning:
 1. **Download the example configuration:**
 
    ```bash
-   curl -o compose.ai.yml https://raw.githubusercontent.com/we-promise/sure/main/compose.example.ai.yml
-   curl -o pipelock.example.yaml https://raw.githubusercontent.com/we-promise/sure/main/pipelock.example.yaml
+   curl -o compose.ai.yml https://raw.githubusercontent.com/osamarehman/Hisaab/main/compose.example.ai.yml
+   curl -o pipelock.example.yaml https://raw.githubusercontent.com/osamarehman/Hisaab/main/pipelock.example.yaml
    ```
 
 2. **Set your MCP credentials in `.env`:**
@@ -379,18 +379,18 @@ For a production-ready setup with security scanning:
    http://your-server:8889
    ```
 
-The Pipelock proxy (port 8889) scans all MCP traffic before forwarding to Sure's `/mcp` endpoint.
+The Pipelock proxy (port 8889) scans all MCP traffic before forwarding to Hisaab's `/mcp` endpoint.
 
 ## Connecting AI Assistants
 
 ### Claude.ai
 
-Sure's Settings UI is already geared toward Claude.ai OAuth integrations:
+Hisaab's Settings UI is already geared toward Claude.ai OAuth integrations:
 
 1. Open **Settings -> Integrations** in Claude.ai
 2. Click **Add integration**
-3. Paste your Sure MCP URL
-4. Claude redirects you to Sure to sign in and authorize access
+3. Paste your Hisaab MCP URL
+4. Claude redirects you to Hisaab to sign in and authorize access
 
 If you are using Pipelock, use the reverse-proxy URL on port `8889`. Otherwise use the app URL ending in `/mcp`.
 
@@ -412,7 +412,7 @@ Desktop MCP clients such as Cursor and VS Code authenticate with OAuth Dynamic C
 - Cursor web: `https://www.cursor.com/agents/mcp/oauth/callback`
 - VS Code extensions: `vscode://...`
 
-Sure accepts those native-app URI schemes, loopback `http://` callbacks, and `https://` callbacks. After you authorize in the browser, the client exchanges the authorization code (PKCE) for a bearer token and calls `/mcp`.
+Hisaab accepts those native-app URI schemes, loopback `http://` callbacks, and `https://` callbacks. After you authorize in the browser, the client exchanges the authorization code (PKCE) for a bearer token and calls `/mcp`.
 
 If OAuth is inconvenient (CI, scripts, or a client that cannot complete the browser flow), use the static `MCP_API_TOKEN` bearer token instead.
 
@@ -439,7 +439,7 @@ MCP does not depend on the in-app assistant. To use only your own agent, set the
 
 - The OAuth flow completed successfully and the client is sending the issued bearer token
 - The static token matches `MCP_API_TOKEN`
-- If you are using the static-token flow, `MCP_USER_EMAIL` matches an existing Sure user
+- If you are using the static-token flow, `MCP_USER_EMAIL` matches an existing Hisaab user
 
 ### Static token works, but the user still gets rejected
 
@@ -461,6 +461,6 @@ MCP does not depend on the in-app assistant. To use only your own agent, set the
 
 ## See Also
 
-- [External AI Assistant Configuration](ai.md#external-ai-assistant) - Configure Sure's chat to use an external agent
+- [External AI Assistant Configuration](ai.md#external-ai-assistant) - Configure Hisaab's chat to use an external agent
 - [Pipelock Security Proxy](pipelock.md) - Set up security scanning for MCP traffic
 - [Model Context Protocol Specification](https://modelcontextprotocol.io/) - Official MCP documentation

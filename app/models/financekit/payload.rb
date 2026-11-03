@@ -4,7 +4,7 @@ class Financekit::Payload
   # Source identifiers come from FinanceKit, so accept any RFC 4122 layout
   # rather than pinning the version and variant nibbles: a UUIDv7 or a nil UUID
   # is still a valid opaque identifier, and rejecting one wedges the stream on a
-  # record Sure does not mint. Matches lib/uuid_format.rb, used everywhere else.
+  # record Hisaab does not mint. Matches lib/uuid_format.rb, used everywhere else.
   UUID = UuidFormat::PATTERN
   DIGEST = /\A[0-9a-f]{64}\z/
   DECIMAL = /\A(?:0|[1-9][0-9]{0,14})(?:\.[0-9]{1,4})?\z/

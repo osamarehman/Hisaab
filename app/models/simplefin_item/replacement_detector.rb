@@ -5,7 +5,7 @@ class SimplefinItem
   # and issues a new one, so SimpleFIN returns both for a transition window).
   #
   # Heuristic:
-  #   * dormant_sfa:  linked to a Sure account, no activity in 45+ days,
+  #   * dormant_sfa:  linked to a Hisaab account, no activity in 45+ days,
   #                   AND near-zero current balance.
   #   * active_sfa:   unlinked, recently active (transactions in last 30 days),
   #                   belongs to the same simplefin_item,

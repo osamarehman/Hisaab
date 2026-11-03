@@ -11,7 +11,7 @@ import '../services/rules_service.dart';
 import '../services/transactions_service.dart';
 import '../widgets/ledger/ledger.dart';
 
-/// Labels (Sure categories) with their auto-label keywords (Sure rules).
+/// Labels (Hisaab categories) with their auto-label keywords (Hisaab rules).
 class LabelsScreen extends StatefulWidget {
   const LabelsScreen({super.key});
 

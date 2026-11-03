@@ -108,7 +108,7 @@ class FioItemsController < ApplicationController
     end
   end
 
-  # Render the confirmation screen for turning the connection's account into a new Sure
+  # Render the confirmation screen for turning the connection's account into a new Hisaab
   # account. Reached from the new-account flow, so there is nothing to choose between.
   def select_accounts
     @accountable_type = requested_accountable_type
@@ -127,7 +127,7 @@ class FioItemsController < ApplicationController
     render layout: false
   end
 
-  # Create a new Sure account for the connection's account and link the two.
+  # Create a new Hisaab account for the connection's account and link the two.
   def link_accounts
     fio_item = requested_fio_item
     unless fio_item.credentials_configured?
@@ -163,7 +163,7 @@ class FioItemsController < ApplicationController
   end
 
   # Render the confirmation screen for attaching the connection's account to an existing
-  # Sure account.
+  # Hisaab account.
   def select_existing_account
     @account = Current.family.accounts.find(params[:account_id])
 
@@ -185,7 +185,7 @@ class FioItemsController < ApplicationController
     render layout: false
   end
 
-  # Link the connection's account to an existing Sure account and sync.
+  # Link the connection's account to an existing Hisaab account and sync.
   def link_existing_account
     account = Current.family.accounts.find(params[:account_id])
     fio_item = requested_fio_item
@@ -243,7 +243,7 @@ class FioItemsController < ApplicationController
     @selected_account_type = @fio_account&.suggested_account_type || "skip"
   end
 
-  # Apply the user's setup choice: create and link a Sure account, or skip.
+  # Apply the user's setup choice: create and link a Hisaab account, or skip.
   def complete_account_setup
     fio_account = @fio_item.fio_accounts.needs_setup.first
     unless fio_account
@@ -333,13 +333,13 @@ class FioItemsController < ApplicationController
       end
     end
 
-    # Create and sync a Sure account from the Fio account's statement header.
+    # Create and sync a Hisaab account from the Fio account's statement header.
     def create_account_from_fio(fio_account, account_type)
       # Linking clears any prior skip so a future unlink re-prompts for setup.
       fio_account.update!(ignored: false) if fio_account.ignored?
 
       # Same normalization FioAccount::Processor applies: Fio reports a drawn loan or
-      # overdraft negative, Sure holds a liability positive. Without it the new account
+      # overdraft negative, Hisaab holds a liability positive. Without it the new account
       # shows a negative debt until a sync corrects it, and the next sync may well be
       # throttled — discovery just used the token.
       balance = fio_account.current_balance || 0

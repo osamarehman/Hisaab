@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Sure design-system icon primitive.
+/// Hisaab design-system icon primitive.
 ///
 /// Renders a bundled Lucide SVG (stroke `currentColor`, 2px) tinted to a single
 /// color, mirroring the web `icon` helper / `DS::FilledIcon` semantics: tokenized

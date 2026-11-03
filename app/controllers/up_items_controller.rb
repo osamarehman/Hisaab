@@ -100,7 +100,7 @@ class UpItemsController < ApplicationController
     render json: { success: error.blank?, error_message: error, has_accounts: up_item.up_accounts.exists? }
   end
 
-  # Render the picker of unlinked Up accounts for a new Sure account.
+  # Render the picker of unlinked Up accounts for a new Hisaab account.
   def select_accounts
     @accountable_type = params[:accountable_type] || "Depository"
     @return_to = safe_return_to_path
@@ -120,7 +120,7 @@ class UpItemsController < ApplicationController
     render layout: false
   end
 
-  # Create new Sure accounts for the selected Up accounts and link them.
+  # Create new Hisaab accounts for the selected Up accounts and link them.
   def link_accounts
     up_item = requested_up_item
     unless up_item.credentials_configured?
@@ -161,7 +161,7 @@ class UpItemsController < ApplicationController
     end
   end
 
-  # Render the picker to attach an Up account to an existing Sure account.
+  # Render the picker to attach an Up account to an existing Hisaab account.
   def select_existing_account
     @account = Current.family.accounts.find(params[:account_id])
 
@@ -186,7 +186,7 @@ class UpItemsController < ApplicationController
     render layout: false
   end
 
-  # Link a selected Up account to an existing Sure account and sync.
+  # Link a selected Up account to an existing Hisaab account and sync.
   def link_existing_account
     account = Current.family.accounts.find(params[:account_id])
     up_item = requested_up_item
@@ -352,7 +352,7 @@ class UpItemsController < ApplicationController
       t("up_items.setup_accounts.api_error")
     end
 
-    # Create and sync a Sure account from an Up account snapshot.
+    # Create and sync a Hisaab account from an Up account snapshot.
     def create_account_from_up(up_account, account_type)
       # Linking an account clears any prior skip so a future unlink re-prompts for setup.
       up_account.update!(ignored: false) if up_account.ignored?

@@ -203,7 +203,7 @@ class _RecentTransactionsScreenState extends State<RecentTransactionsScreen> {
     }
 
     // Determine display properties based on final amount. The semantic color
-    // comes from the Sure design-system tokens (success/destructive/subdued)
+    // comes from the Hisaab design-system tokens (success/destructive/subdued)
     // via MoneyTrend, instead of raw Colors.green/red.
     final isPositive = amount == null || amount >= 0;
     final moneyTrend = SureMoney.trendForAmount(amount);

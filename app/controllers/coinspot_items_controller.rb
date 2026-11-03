@@ -180,7 +180,7 @@ class CoinspotItemsController < ApplicationController
     @coinspot_accounts = unlinked_accounts_for(@coinspot_item)
   end
 
-  # Creates a Sure account for each selected, still-unlinked CoinSpot
+  # Creates a Hisaab account for each selected, still-unlinked CoinSpot
   # account and processes its initial activity. A single account's failure
   # is logged and skipped rather than aborting the rest of the selection;
   # a created account whose provider link fails to save is torn back down
@@ -271,7 +271,7 @@ class CoinspotItemsController < ApplicationController
       { coinspot_item: item, credentialed_items: credentialed_items }
     end
 
-    # A connection's CoinSpot accounts not yet linked to a Sure account.
+    # A connection's CoinSpot accounts not yet linked to a Hisaab account.
     def unlinked_accounts_for(coinspot_item)
       coinspot_item.coinspot_accounts.left_joins(:account_provider).where(account_providers: { id: nil }).order(:name)
     end

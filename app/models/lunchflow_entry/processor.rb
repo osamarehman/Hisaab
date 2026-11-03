@@ -209,12 +209,12 @@ class LunchflowEntry::Processor
       end
 
       # Lunchflow likely uses standard convention where negative is expense, positive is income
-      # Sure expects opposite convention (expenses positive, income negative)
-      # So we negate the amount to convert from Lunchflow to Sure format.
+      # Hisaab expects opposite convention (expenses positive, income negative)
+      # So we negate the amount to convert from Lunchflow to Hisaab format.
       #
       # For unidentified card authorization holds, the ASPSP
       # erroneously reports the authorization hold as positive credit (inflow).
-      # Force these holds to positive (outflow/expense in Sure) so they appear as pending expenses
+      # Force these holds to positive (outflow/expense in Hisaab) so they appear as pending expenses
       # and match the settled expense when it arrives.
       if unidentified_hold?
         parsed_amount.abs
@@ -320,7 +320,7 @@ class LunchflowEntry::Processor
 
       # In Lunchflow convention, negative = expense, positive = income.
       # Unidentified holds on expenses often arrive erroneously as positive credit (inflow),
-      # which LunchflowEntry::Processor normalizes to positive outflow in Sure (via parsed_amount.abs).
+      # which LunchflowEntry::Processor normalizes to positive outflow in Hisaab (via parsed_amount.abs).
       # If raw amount was positive, the sign was inverted upstream.
       sign_inverted = raw_amount ? raw_amount > 0 : false
 

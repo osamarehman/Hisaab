@@ -45,7 +45,7 @@ class MonobankEntry::ProcessorTest < ActiveSupport::TestCase
 
     assert_equal "monobank_tx_123", entry.external_id
     assert_equal "monobank", entry.source
-    # Monobank reports -12500 kopiykas out; Sure stores an expense as positive 125.00.
+    # Monobank reports -12500 kopiykas out; Hisaab stores an expense as positive 125.00.
     assert_equal BigDecimal("125"), entry.amount
     assert_equal "UAH", entry.currency
     assert_equal Date.new(2026, 1, 9), entry.date

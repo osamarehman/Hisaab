@@ -66,7 +66,7 @@ class GoalPledgeTest < ActiveSupport::TestCase
   end
 
   test "matches? rejects outflows of the same magnitude on transfer pledges" do
-    # Sure convention: outflow > 0, inflow < 0. A +$200 purchase must not
+    # Hisaab convention: outflow > 0, inflow < 0. A +$200 purchase must not
     # satisfy a $200 transfer pledge after the .abs amount-tolerance step.
     entry = build_entry(account: @account, amount: 200, date: @pledge.created_at.to_date)
     assert_not @pledge.matches?(entry)

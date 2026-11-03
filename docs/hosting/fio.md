@@ -1,11 +1,11 @@
 # Setting Up Fio banka (Czechia)
 
 [Fio banka](https://www.fio.cz/) exposes an API for reading movements from your own
-accounts. You bring your own token, so Sure talks to Fio directly on your behalf — no
+accounts. You bring your own token, so Hisaab talks to Fio directly on your behalf — no
 third-party aggregator sits in between, and no consent expires every 90 days.
 
 > [!NOTE]
-> A token grants access to **one account**. If you track three Fio accounts in Sure, you
+> A token grants access to **one account**. If you track three Fio accounts in Hisaab, you
 > generate three tokens and add three connections.
 
 ## 1. Get Your Token
@@ -13,7 +13,7 @@ third-party aggregator sits in between, and no consent expires every 90 days.
 1. Sign in to Fio internet banking.
 2. Open **Nastavení** (top right), then the **API** tab.
 3. Create a token with the **Sledování účtu** (account monitoring) right. That is
-   read-only; Sure never initiates payments, and a token without payment rights cannot
+   read-only; Hisaab never initiates payments, and a token without payment rights cannot
    be abused to move money.
 4. Authorize the request — Fio requires SMS or push confirmation, and every signatory
    has to sign on jointly held accounts.
@@ -23,17 +23,17 @@ Every token must have an expiry, at most **180 days**. Choose automatic renewal 
 do not want to repeat this twice a year: Fio then extends the token by 180 days on each
 internet or smart banking login.
 
-## 2. Add Fio to Sure
+## 2. Add Fio to Hisaab
 
-1. In Sure, go to **Settings > Providers** and find the **Fio banka** panel.
+1. In Hisaab, go to **Settings > Providers** and find the **Fio banka** panel.
 2. Paste the token and save.
 3. The first sync reads the statement header, which is the only account description Fio
-   offers, and the account appears for setup. Link it to an existing Sure account or
+   offers, and the account appears for setup. Link it to an existing Hisaab account or
    create a new one from it.
 
 Fio reports no account type, so the account is offered as a current account. Pick a loan
 instead if the token belongs to a mortgage, loan or overdraft account — Fio reports those
-balances negative, and Sure stores a liability as a positive balance.
+balances negative, and Hisaab stores a liability as a positive balance.
 
 ## 3. Syncing
 
@@ -68,7 +68,7 @@ recent movements. A sync only ever makes one request — retrying a refused peri
 immediately would breach the 30-second rule and get a 409 instead.
 
 To collect the rest: unlock the history in internet banking, then press **Sync** on the
-connection. That is what tells Sure the unlock happened, and the sync reaches for the
+connection. That is what tells Hisaab the unlock happened, and the sync reaches for the
 whole range again. Changing the token or the start date does the same.
 
 ### What lands in a transaction
@@ -109,7 +109,7 @@ transaction's provider data, not in the name.
 ## Troubleshooting
 
 **Connection requires a new token**
-Fio answers an unknown, expired or deactivated token with HTTP 500, which Sure reports
+Fio answers an unknown, expired or deactivated token with HTTP 500, which Hisaab reports
 as a token problem. Check the token's validity under **Nastavení > API** and paste a new
 one into the provider panel.
 
@@ -121,5 +121,5 @@ Either the history was never unlocked (see above), or the connection's start dat
 it.
 
 **Sync errors**
-Provider sync failures and notes are captured in Sure's debug log (super admin:
+Provider sync failures and notes are captured in Hisaab's debug log (super admin:
 **Settings > Debug**), filtered by the `fio` provider key. The token is never logged.
