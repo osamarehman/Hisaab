@@ -2654,4 +2654,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String bankAlertsUnverified(String domain) {
     return 'Couldn\'t confirm this came from $domain. Check it before you keep it.';
   }
+
+  @override
+  String get settingsCurrencyTitle => 'Currency';
+
+  @override
+  String get settingsCurrencySubtitle => 'Choose your household currency';
+
+  @override
+  String get currencyTitle => 'Currency';
+
+  @override
+  String get currencyIntro =>
+      'The currency for your household\'s totals, reports and new accounts. Accounts you already have keep their own currency.';
+
+  @override
+  String get currencySearchHint => 'Search by name or code';
+
+  @override
+  String get currencyNoMatch => 'No currency matches your search.';
+
+  @override
+  String currencyConfirmTitle(String code) {
+    return 'Use $code for your household?';
+  }
+
+  @override
+  String get currencyConfirmBody =>
+      'Totals, reports and new accounts will use it. Accounts you already have keep their own currency.';
+
+  @override
+  String get currencyConfirm => 'Change currency';
+
+  @override
+  String currencySaved(String code) {
+    return 'Household currency is now $code';
+  }
+
+  @override
+  String get currencyAdminOnly =>
+      'Only a household admin can change the currency.';
+
+  @override
+  String get currencyOffline =>
+      'You\'re offline. Connect to the internet and try again.';
+
+  @override
+  String get currencySaveFailed =>
+      'Couldn\'t change the currency. Please try again.';
 }

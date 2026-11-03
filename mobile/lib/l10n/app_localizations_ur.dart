@@ -2649,4 +2649,50 @@ class AppLocalizationsUr extends AppLocalizations {
   String bankAlertsUnverified(String domain) {
     return 'تصدیق نہیں ہو سکی کہ یہ $domain سے آئی ہے۔ رکھنے سے پہلے اسے جانچ لیں۔';
   }
+
+  @override
+  String get settingsCurrencyTitle => 'کرنسی';
+
+  @override
+  String get settingsCurrencySubtitle => 'اپنے گھر کی کرنسی چنیں';
+
+  @override
+  String get currencyTitle => 'کرنسی';
+
+  @override
+  String get currencyIntro =>
+      'آپ کے گھر کے کل حساب، رپورٹس اور نئے اکاؤنٹس اسی کرنسی میں ہوں گے۔ پہلے سے موجود اکاؤنٹس اپنی کرنسی برقرار رکھیں گے۔';
+
+  @override
+  String get currencySearchHint => 'نام یا کوڈ سے تلاش کریں';
+
+  @override
+  String get currencyNoMatch => 'تلاش سے کوئی کرنسی نہیں ملی۔';
+
+  @override
+  String currencyConfirmTitle(String code) {
+    return 'گھر کے لیے $code استعمال کریں؟';
+  }
+
+  @override
+  String get currencyConfirmBody =>
+      'کل حساب، رپورٹس اور نئے اکاؤنٹس اسی میں ہوں گے۔ پہلے سے موجود اکاؤنٹس اپنی کرنسی برقرار رکھیں گے۔';
+
+  @override
+  String get currencyConfirm => 'کرنسی بدلیں';
+
+  @override
+  String currencySaved(String code) {
+    return 'گھر کی کرنسی اب $code ہے';
+  }
+
+  @override
+  String get currencyAdminOnly => 'صرف گھر کا ایڈمن کرنسی بدل سکتا ہے۔';
+
+  @override
+  String get currencyOffline =>
+      'آپ آف لائن ہیں۔ انٹرنیٹ سے جڑیں اور دوبارہ کوشش کریں۔';
+
+  @override
+  String get currencySaveFailed => 'کرنسی نہیں بدلی جا سکی۔ دوبارہ کوشش کریں۔';
 }

@@ -764,5 +764,19 @@
   "accountFormLast4Help": "بینک کی الرٹ ای میلز کو اس اکاؤنٹ سے ملانے کے لیے۔",
   "accountFormLast4Invalid": "پورے 4 ہندسے لکھیں۔",
 
-  "bankAlertsUnverified": "تصدیق نہیں ہو سکی کہ یہ {domain} سے آئی ہے۔ رکھنے سے پہلے اسے جانچ لیں۔"
+  "bankAlertsUnverified": "تصدیق نہیں ہو سکی کہ یہ {domain} سے آئی ہے۔ رکھنے سے پہلے اسے جانچ لیں۔",
+
+  "settingsCurrencyTitle": "کرنسی",
+  "settingsCurrencySubtitle": "اپنے گھر کی کرنسی چنیں",
+  "currencyTitle": "کرنسی",
+  "currencyIntro": "آپ کے گھر کے کل حساب، رپورٹس اور نئے اکاؤنٹس اسی کرنسی میں ہوں گے۔ پہلے سے موجود اکاؤنٹس اپنی کرنسی برقرار رکھیں گے۔",
+  "currencySearchHint": "نام یا کوڈ سے تلاش کریں",
+  "currencyNoMatch": "تلاش سے کوئی کرنسی نہیں ملی۔",
+  "currencyConfirmTitle": "گھر کے لیے {code} استعمال کریں؟",
+  "currencyConfirmBody": "کل حساب، رپورٹس اور نئے اکاؤنٹس اسی میں ہوں گے۔ پہلے سے موجود اکاؤنٹس اپنی کرنسی برقرار رکھیں گے۔",
+  "currencyConfirm": "کرنسی بدلیں",
+  "currencySaved": "گھر کی کرنسی اب {code} ہے",
+  "currencyAdminOnly": "صرف گھر کا ایڈمن کرنسی بدل سکتا ہے۔",
+  "currencyOffline": "آپ آف لائن ہیں۔ انٹرنیٹ سے جڑیں اور دوبارہ کوشش کریں۔",
+  "currencySaveFailed": "کرنسی نہیں بدلی جا سکی۔ دوبارہ کوشش کریں۔"
 }

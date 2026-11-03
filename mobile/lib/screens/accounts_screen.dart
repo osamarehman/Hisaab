@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/account.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/privacy_provider.dart';
 import '../services/accounts_service.dart';
@@ -37,7 +38,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
   num? _netWorth;
   num? _assets;
   num? _liabilities;
-  String _currency = 'PKR';
+  late String _currency = context.read<AccountsProvider?>()?.familyCurrency ??
+      MoneyFormat.defaultCurrency;
   bool _showOwed = false;
   bool _loading = true;
   String? _error;

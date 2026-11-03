@@ -249,7 +249,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       _cashFlow?.currency ??
       _currency ??
       context.read<AccountsProvider>().familyCurrency ??
-      'PKR';
+      MoneyFormat.defaultCurrency;
 
   ({double income, double spending}) get _totals {
     final flow = _cashFlow;

@@ -2376,5 +2376,32 @@
   "@accountFormLast4Invalid": {"description": "Validation message for the last-4-digits field."},
 
   "bankAlertsUnverified": "Couldn't confirm this came from {domain}. Check it before you keep it.",
-  "@bankAlertsUnverified": {"description": "Warning on a bank alert whose sender failed the mail server's DMARC check. {domain} is the sender's domain.", "placeholders": {"domain": {"type": "String"}}}
+  "@bankAlertsUnverified": {"description": "Warning on a bank alert whose sender failed the mail server's DMARC check. {domain} is the sender's domain.", "placeholders": {"domain": {"type": "String"}}},
+
+  "settingsCurrencyTitle": "Currency",
+  "@settingsCurrencyTitle": {"description": "Settings row that opens the household currency picker."},
+  "settingsCurrencySubtitle": "Choose your household currency",
+  "@settingsCurrencySubtitle": {"description": "Subtitle of the currency row before the currency has loaded."},
+  "currencyTitle": "Currency",
+  "@currencyTitle": {"description": "Title of the household currency screen."},
+  "currencyIntro": "The currency for your household's totals, reports and new accounts. Accounts you already have keep their own currency.",
+  "@currencyIntro": {"description": "Intro text on the currency screen."},
+  "currencySearchHint": "Search by name or code",
+  "@currencySearchHint": {"description": "Search box hint on the currency screen."},
+  "currencyNoMatch": "No currency matches your search.",
+  "@currencyNoMatch": {"description": "Shown when the currency search has no results."},
+  "currencyConfirmTitle": "Use {code} for your household?",
+  "@currencyConfirmTitle": {"description": "Title of the dialog confirming a currency change.", "placeholders": {"code": {"type": "String"}}},
+  "currencyConfirmBody": "Totals, reports and new accounts will use it. Accounts you already have keep their own currency.",
+  "@currencyConfirmBody": {"description": "Body of the dialog confirming a currency change."},
+  "currencyConfirm": "Change currency",
+  "@currencyConfirm": {"description": "Confirm button of the currency change dialog."},
+  "currencySaved": "Household currency is now {code}",
+  "@currencySaved": {"description": "Toast after the household currency changes.", "placeholders": {"code": {"type": "String"}}},
+  "currencyAdminOnly": "Only a household admin can change the currency.",
+  "@currencyAdminOnly": {"description": "Shown when a member who isn't an admin tries to change the currency."},
+  "currencyOffline": "You're offline. Connect to the internet and try again.",
+  "@currencyOffline": {"description": "Shown when the currency screen can't reach the server."},
+  "currencySaveFailed": "Couldn't change the currency. Please try again.",
+  "@currencySaveFailed": {"description": "Generic failure when changing the currency."}
 }

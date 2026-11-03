@@ -39,7 +39,8 @@ class PeriodCashFlow {
     this.byCategory,
   });
 
-  final String currency;
+  /// The household currency; null when the server didn't say.
+  final String? currency;
   final double income;
   final double spending;
 
@@ -64,7 +65,7 @@ class PeriodCashFlow {
     final comparison = json['spending_comparison'];
     final categories = json['spending_by_category'];
     return PeriodCashFlow(
-      currency: json['currency']?.toString() ?? 'PKR',
+      currency: json['currency']?.toString(),
       income: parse(json['income']),
       spending: parse(json['spending']),
       spendingDelta: comparison is Map ? maybe(comparison['delta']) : null,

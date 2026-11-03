@@ -4678,6 +4678,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t confirm this came from {domain}. Check it before you keep it.'**
   String bankAlertsUnverified(String domain);
+
+  /// Settings row that opens the household currency picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get settingsCurrencyTitle;
+
+  /// Subtitle of the currency row before the currency has loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your household currency'**
+  String get settingsCurrencySubtitle;
+
+  /// Title of the household currency screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currencyTitle;
+
+  /// Intro text on the currency screen.
+  ///
+  /// In en, this message translates to:
+  /// **'The currency for your household\'s totals, reports and new accounts. Accounts you already have keep their own currency.'**
+  String get currencyIntro;
+
+  /// Search box hint on the currency screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or code'**
+  String get currencySearchHint;
+
+  /// Shown when the currency search has no results.
+  ///
+  /// In en, this message translates to:
+  /// **'No currency matches your search.'**
+  String get currencyNoMatch;
+
+  /// Title of the dialog confirming a currency change.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {code} for your household?'**
+  String currencyConfirmTitle(String code);
+
+  /// Body of the dialog confirming a currency change.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals, reports and new accounts will use it. Accounts you already have keep their own currency.'**
+  String get currencyConfirmBody;
+
+  /// Confirm button of the currency change dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Change currency'**
+  String get currencyConfirm;
+
+  /// Toast after the household currency changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Household currency is now {code}'**
+  String currencySaved(String code);
+
+  /// Shown when a member who isn't an admin tries to change the currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Only a household admin can change the currency.'**
+  String get currencyAdminOnly;
+
+  /// Shown when the currency screen can't reach the server.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Connect to the internet and try again.'**
+  String get currencyOffline;
+
+  /// Generic failure when changing the currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t change the currency. Please try again.'**
+  String get currencySaveFailed;
 }
 
 class _AppLocalizationsDelegate

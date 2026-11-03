@@ -37,6 +37,14 @@ class AccountsProvider with ChangeNotifier {
   String? get assetsFormatted => _assetsFormatted;
   String? get liabilitiesFormatted => _liabilitiesFormatted;
   String? get familyCurrency => _familyCurrency;
+
+  /// Applies a household currency change right away, before the next
+  /// balance sheet fetch confirms it.
+  void setFamilyCurrency(String currency) {
+    if (_familyCurrency == currency) return;
+    _familyCurrency = currency;
+    notifyListeners();
+  }
   bool get isBalanceSheetStale => _isBalanceSheetStale;
 
   List<Account> get assetAccounts {

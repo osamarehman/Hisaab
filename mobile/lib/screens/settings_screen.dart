@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/merchants_provider.dart';
@@ -20,6 +21,7 @@ import '../services/user_service.dart';
 import 'log_viewer_screen.dart';
 import 'ai_key_screen.dart';
 import 'bank_alerts_screen.dart';
+import 'currency_screen.dart';
 import 'passkeys_screen.dart';
 import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -902,6 +904,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const AiKeyScreen()),
+            ),
+          ),
+          ListTile(
+            key: const Key('settingsCurrency'),
+            leading: const Icon(Icons.currency_exchange),
+            title: Text(l.settingsCurrencyTitle),
+            subtitle: Text(context.select<AccountsProvider?, String?>(
+                    (p) => p?.familyCurrency) ??
+                l.settingsCurrencySubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const CurrencyScreen()),
             ),
           ),
           ListTile(
