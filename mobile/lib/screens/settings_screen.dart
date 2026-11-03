@@ -23,6 +23,7 @@ import 'log_viewer_screen.dart';
 import 'ai_key_screen.dart';
 import 'bank_alerts_screen.dart';
 import 'currency_screen.dart';
+import 'labels_screen.dart';
 import 'passkeys_screen.dart';
 import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -922,6 +923,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context,
               MaterialPageRoute<void>(builder: (_) => const AiKeyScreen()),
             ),
+          ),
+          ListTile(
+            key: const Key('settingsLabels'),
+            leading: const Icon(Icons.label_outline),
+            title: Text(l.settingsLabelsTitle),
+            subtitle: Text(l.settingsLabelsSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const LabelsScreen()),
+              );
+              if (!context.mounted) return;
+              final token =
+                  await context.read<AuthProvider>().getValidAccessToken();
+              if (token != null && context.mounted) {
+                await context
+                    .read<CategoriesProvider>()
+                    .fetchCategories(accessToken: token, force: true);
+              }
+            },
           ),
           ListTile(
             key: const Key('settingsCurrency'),

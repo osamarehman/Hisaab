@@ -2439,5 +2439,14 @@
   "csvMapSummary": "{count, plural, =1{1 line} other{{count} lines}} · in {moneyIn} · out {moneyOut}",
   "@csvMapSummary": {"description": "Summary of the lines the chosen columns produce.", "placeholders": {"count": {"type": "int"}, "moneyIn": {"type": "String"}, "moneyOut": {"type": "String"}}},
   "csvMapConfirm": "{count, plural, =1{Use these columns (1 line)} other{Use these columns ({count} lines)}}",
-  "@csvMapConfirm": {"description": "Button that confirms the columns and uploads the statement.", "placeholders": {"count": {"type": "int"}}}
+  "@csvMapConfirm": {"description": "Button that confirms the columns and uploads the statement.", "placeholders": {"count": {"type": "int"}}},
+
+  "settingsLabelsTitle": "Labels",
+  "@settingsLabelsTitle": {"description": "Settings row that opens the labels screen."},
+  "settingsLabelsSubtitle": "Add, rename, recolour or delete labels",
+  "@settingsLabelsSubtitle": {"description": "Subtitle of the Labels settings row."},
+  "activityEditLabels": "Edit labels",
+  "@activityEditLabels": {"description": "Chip at the end of Activity's label filters that opens the labels screen."},
+  "labelsTapToEdit": "Tap a label to rename, recolour or delete it.",
+  "@labelsTapToEdit": {"description": "Hint above the list of labels."}
 }

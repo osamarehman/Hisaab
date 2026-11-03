@@ -2771,4 +2771,16 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsLabelsTitle => 'Labels';
+
+  @override
+  String get settingsLabelsSubtitle => 'Add, rename, recolour or delete labels';
+
+  @override
+  String get activityEditLabels => 'Edit labels';
+
+  @override
+  String get labelsTapToEdit => 'Tap a label to rename, recolour or delete it.';
 }

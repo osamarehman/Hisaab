@@ -4858,6 +4858,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Use these columns (1 line)} other{Use these columns ({count} lines)}}'**
   String csvMapConfirm(int count);
+
+  /// Settings row that opens the labels screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get settingsLabelsTitle;
+
+  /// Subtitle of the Labels settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, rename, recolour or delete labels'**
+  String get settingsLabelsSubtitle;
+
+  /// Chip at the end of Activity's label filters that opens the labels screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit labels'**
+  String get activityEditLabels;
+
+  /// Hint above the list of labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a label to rename, recolour or delete it.'**
+  String get labelsTapToEdit;
 }
 
 class _AppLocalizationsDelegate

@@ -18,6 +18,7 @@ import '../services/log_service.dart';
 import '../services/transactions_service.dart';
 import '../widgets/activity_calendar.dart';
 import '../widgets/ledger/ledger.dart';
+import 'labels_screen.dart';
 import 'statements_screen.dart';
 import 'transaction_edit_screen.dart';
 
@@ -202,7 +203,9 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
 
   /// [categories] lets a parent label also match its subcategories, like
   /// the web Activity filter.
-  List<_Row> _applyFilters(List<_Row> rows, List<Category> categories) {
+  /// [search] defaults to the search box; pass '' to filter by label only.
+  List<_Row> _applyFilters(List<_Row> rows, List<Category> categories,
+      {String? search}) {
     final labelIds = _filter == null || _filter == TransactionsFilter.noLabel
         ? const <String>{}
         : {
@@ -210,7 +213,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
             for (final c in categories)
               if (c.parent?.id == _filter) c.id,
           };
-    final q = _searchController.text.trim().toLowerCase();
+    final q = (search ?? _searchController.text).trim().toLowerCase();
     return rows.where((r) {
       final t = r.tx;
       if (_filter == TransactionsFilter.noLabel) {
@@ -223,6 +226,25 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
           (t.categoryName?.toLowerCase().contains(q) ?? false) ||
           (t.notes?.toLowerCase().contains(q) ?? false);
     }).toList();
+  }
+
+  Future<void> _openLabels() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const LabelsScreen()),
+    );
+    if (!mounted) return;
+    final token = await context.read<AuthProvider>().getValidAccessToken();
+    if (token == null || !mounted) return;
+    final categories = context.read<CategoriesProvider>();
+    await categories.fetchCategories(accessToken: token, force: true);
+    if (!mounted) return;
+    // A deleted label can't stay selected.
+    if (_filter != null &&
+        _filter != TransactionsFilter.noLabel &&
+        !categories.categories.any((c) => c.id == _filter)) {
+      _filter = null;
+    }
+    reload();
   }
 
   double _signed(Transaction t) => t.isIncome ? t.absAmount : -t.absAmount;
@@ -302,8 +324,12 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
 
     final monthRows = _rows(provider);
     final rows = _applyFilters(monthRows, categories);
+    // With a label picked, In/Out/Entries cover only that label's rows.
+    final stripRows = _filter == null
+        ? monthRows
+        : _applyFilters(monthRows, categories, search: '');
     var moneyIn = 0.0, moneyOut = 0.0;
-    for (final r in monthRows) {
+    for (final r in stripRows) {
       if (r.tx.isTransfer || r.pendingDelete) continue;
       if (r.tx.isIncome) {
         moneyIn += r.tx.absAmount;
@@ -312,7 +338,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
       }
     }
     final flow = _flow;
-    if (flow != null && !_offline) {
+    if (flow != null && !_offline && _filter == null) {
       moneyIn = flow.income;
       moneyOut = flow.spending;
     }
@@ -403,9 +429,22 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: filters.length,
+                    itemCount: filters.length + 1,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, i) {
+                      if (i == filters.length) {
+                        return TextButton.icon(
+                          key: const Key('activity-edit-labels'),
+                          onPressed: _openLabels,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(44, 44),
+                            foregroundColor: c.muted,
+                          ),
+                          icon: const Icon(Icons.edit_outlined, size: 16),
+                          label: Text(l.activityEditLabels,
+                              style: LedgerText.body(size: 14, color: c.muted)),
+                        );
+                      }
                       final (id, name, color) = filters[i];
                       return LabelChip(
                         name: name,
@@ -421,7 +460,7 @@ class TransactionsListScreenState extends State<TransactionsListScreen> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
                 sliver: SliverList.list(children: [
-                  _strip(l, c, moneyIn, moneyOut, monthRows.length, currency),
+                  _strip(l, c, moneyIn, moneyOut, stripRows.length, currency),
                   if (_offline)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),

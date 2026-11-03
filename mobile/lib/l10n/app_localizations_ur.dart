@@ -2764,4 +2764,18 @@ class AppLocalizationsUr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsLabelsTitle => 'لیبل';
+
+  @override
+  String get settingsLabelsSubtitle =>
+      'لیبل شامل کریں، نام یا رنگ بدلیں یا حذف کریں';
+
+  @override
+  String get activityEditLabels => 'لیبل میں ترمیم';
+
+  @override
+  String get labelsTapToEdit =>
+      'نام یا رنگ بدلنے یا حذف کرنے کے لیے لیبل پر ٹیپ کریں۔';
 }

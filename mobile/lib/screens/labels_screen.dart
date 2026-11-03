@@ -164,9 +164,8 @@ class _LabelsScreenState extends State<LabelsScreen> {
     _keywordsController.clear();
     setState(() => _adding = false);
     final l = AppLocalizations.of(context);
-    _toast(keywordsOk
-        ? l.labelsAdded(name)
-        : l.labelsAddedKeywordsFailed(name));
+    _toast(
+        keywordsOk ? l.labelsAdded(name) : l.labelsAddedKeywordsFailed(name));
     await _load();
   }
 
@@ -237,8 +236,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
             controller: _nameController,
             textCapitalization: TextCapitalization.sentences,
             style: LedgerText.body(color: c.ink),
-            decoration: ledgerInputDecoration(context,
-                hint: l.labelsNameHint),
+            decoration: ledgerInputDecoration(context, hint: l.labelsNameHint),
           ),
           const SizedBox(height: 12),
           SwatchPicker(
@@ -282,12 +280,17 @@ class _LabelsScreenState extends State<LabelsScreen> {
     return [
       LedgerCapsHeader(
           label: l.labelsYourLabels, trailing: l.labelsUsesThisMonth),
+      if (_labels.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 4),
+          child: Text(l.labelsTapToEdit,
+              style: LedgerText.body(size: 13, color: c.muted)),
+        ),
       for (final label in _labels) _labelRow(c, l, label),
       if (_labels.isEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: Text(l.labelsEmpty,
-              style: LedgerText.body(color: c.muted)),
+          child: Text(l.labelsEmpty, style: LedgerText.body(color: c.muted)),
         ),
     ];
   }
@@ -297,6 +300,7 @@ class _LabelsScreenState extends State<LabelsScreen> {
         (_rulesByLabel[label.id] ?? const []).map((r) => r.keyword!).toList();
     final uses = _uses[label.id];
     return InkWell(
+      key: ValueKey('label-${label.id}'),
       onTap: () => _edit(label),
       child: Container(
         constraints: const BoxConstraints(minHeight: 56),
@@ -333,6 +337,12 @@ class _LabelsScreenState extends State<LabelsScreen> {
             const SizedBox(width: 12),
             Text(uses == null ? '' : '$uses',
                 style: LedgerText.figures(size: 14, color: c.muted)),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(Icons.edit_outlined,
+                  size: 18, color: c.muted, semanticLabel: l.labelsEditTitle),
+            ),
           ],
         ),
       ),
