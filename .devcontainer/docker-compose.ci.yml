@@ -1,0 +1,13 @@
+# bin/ci-local: run the devcontainer stack headless next to other services on
+# the host, so no ports are published (they clash with what's already bound).
+# The working copy's .env holds the host's production settings, which
+# dotenv-rails would load into the tests; GitHub's checkout has none.
+services:
+  app:
+    ports: !reset []
+    volumes:
+      - /dev/null:/workspace/.env:ro
+  db:
+    ports: !reset []
+  selenium:
+    ports: !reset []

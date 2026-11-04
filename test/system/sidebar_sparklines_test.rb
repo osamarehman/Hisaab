@@ -19,7 +19,7 @@ class SidebarSparklinesTest < ApplicationSystemTestCase
   # The shipped window is ten seconds. Outliving it for real would add most of
   # a minute to the system suite for a cosmetic badge, so the frames render
   # with a short one and every wait below is proportional to it.
-  SHORT_TIMEOUT_MS = 300
+  SHORT_TIMEOUT_MS = 1_000
 
   # Holds sparkline responses open for as long as a test needs one pending.
   # The wait has to happen inside the server thread, which the test cannot

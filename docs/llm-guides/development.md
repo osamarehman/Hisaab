@@ -39,6 +39,11 @@ email previews. Use Docker/devcontainers where useful for consistent environment
 Run these checks locally before **every** PR. All required checks must pass before
 PR creation; the full suite is also required to be green before pushing.
 
+On the Hisaab server, `bin/ci-local` runs the same checks as GitHub's CI workflow
+in the devcontainer stack (`bin/ci-local unit lint` runs a subset); logs land in
+`tmp/ci-local/`. GitHub's automatic workflows are switched off there, so this is
+the CI.
+
 1. `bin/rails test` — the full Minitest suite is always required.
 2. `DISABLE_PARALLELIZATION=true bin/rails test:system` — required when system tests
    are applicable to the change; keep system-test additions focused on critical flows.

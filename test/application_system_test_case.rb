@@ -25,6 +25,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     Capybara.register_driver :selenium_remote_chrome do |app|
       options = Selenium::WebDriver::Chrome::Options.new
       options.add_argument("--window-size=1400,1400")
+      # Headless like GitHub CI: a headed browser matches `(hover: hover)`,
+      # which switches on hover styles that CI never renders.
+      options.add_argument("--headless=new") if ENV["CI"].present?
 
       Capybara::Selenium::Driver.new(
         app,

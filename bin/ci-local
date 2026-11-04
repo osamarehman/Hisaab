@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Runs the same checks as .github/workflows/ci.yml on this machine, in the
+# devcontainer stack (project "hisaab-test"), against the working copy.
+#   bin/ci-local            all checks
+#   bin/ci-local unit lint  only the named ones
+# Checks: scan_ruby scan_js lint lint_js unit encryption system
+# Logs go to tmp/ci-local/<check>.log; exits non-zero if any check fails.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+compose=(docker compose -p hisaab-test -f .devcontainer/docker-compose.yml -f .devcontainer/docker-compose.ci.yml)
+container=hisaab-test-app-1
+checks=("$@")
+[ ${#checks[@]} -eq 0 ] && checks=(scan_ruby scan_js lint lint_js unit encryption system)
+logs=tmp/ci-local
+mkdir -p "$logs"
+
+"${compose[@]}" up -d --build app db redis selenium >"$logs/stack.log" 2>&1 || { echo "stack failed to start, see $logs/stack.log"; exit 1; }
+
+run() { # name, command (run inside the app container)
+  local name=$1 started=$SECONDS
+  shift
+  printf '%-11s ' "$name"
+  if docker exec -w /workspace -e CI=true -e RAILS_ENV=test -e PLAID_CLIENT_ID=foo -e PLAID_SECRET=bar "$container" bash -lc "$*" >"$logs/$name.log" 2>&1; then
+    echo "pass ($((SECONDS - started))s)"
+  else
+    echo "FAIL ($((SECONDS - started))s)  $logs/$name.log"
+    failed+=("$name")
+  fi
+}
+
+failed=()
+run setup "bundle install --quiet && DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bin/rails db:drop db:create db:schema:load db:seed"
+if [ ${#failed[@]} -gt 0 ]; then echo "setup failed; nothing else ran"; exit 1; fi
+
+enc="ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=test ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=test ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=test"
+for check in "${checks[@]}"; do
+  case $check in
+    scan_ruby)  run scan_ruby "bin/brakeman --no-pager --quiet" ;;
+    # Advisory on GitHub too (continue-on-error) unless the audit is required.
+    scan_js)    run scan_js "bin/importmap audit || echo 'importmap audit failed (advisory)'" ;;
+    lint)       run lint "bin/rubocop" ;;
+    lint_js)    run lint_js "npm install --silent && npm run lint" ;;
+    unit)       run unit "bin/rails test" ;;
+    encryption) run encryption "mapfile -t f < <(grep -rl --include='*_test.rb' 'encryption_ready?' test | sort); $enc bin/rails test \"\${f[@]}\"" ;;
+    system)     run system "DISABLE_PARALLELIZATION=true bin/rails test:system" ;;
+    *) echo "unknown check: $check"; exit 2 ;;
+  esac
+done
+
+if [ ${#failed[@]} -gt 0 ]; then echo "failed: ${failed[*]}"; exit 1; fi
+echo "all checks passed"
