@@ -13,7 +13,10 @@ import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/connectivity_service.dart';
 import '../services/transactions_service.dart';
+import '../utils/amount_parser.dart';
+import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
+import 'transaction_form_screen.dart' show GroupedAmountFormatter;
 
 /// Transaction detail: amount, label, receipt, name and note. Pops `true`
 /// when something changed.
@@ -32,6 +35,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
   final _formKey = GlobalKey<FormState>();
   final _service = TransactionsService();
+  late final TextEditingController _amountController;
   late final TextEditingController _nameController;
   late final TextEditingController _notesController;
   late Transaction _tx;
@@ -45,6 +49,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   void initState() {
     super.initState();
     _tx = widget.transaction;
+    _amountController =
+        TextEditingController(text: MoneyFormat.number(_tx.absAmount));
     _nameController = TextEditingController(text: _tx.name);
     _notesController = TextEditingController(text: _tx.notes ?? '');
     _categoryId = _tx.categoryId;
@@ -53,6 +59,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
   @override
   void dispose() {
+    _amountController.dispose();
     _nameController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -105,10 +112,18 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     final offline = tx is OfflineTransaction
         ? tx
         : OfflineTransaction.fromTransaction(tx, localId: tx.id!);
+    // Send the amount only when it changed: the server rejects any amount on
+    // split parents, even an unchanged one.
+    final amount = AmountParser.parse(_amountController.text, locale: 'en_US');
+    final amountChanged =
+        (amount.value.abs() - tx.absAmount).abs() >= 0.005;
     final success = await provider.updateTransaction(
       accessToken: token,
       transaction: offline,
       name: _nameController.text.trim(),
+      amount: amountChanged ? amount.canonicalValue : null,
+      // Nature tells the server which sign to store.
+      nature: amountChanged ? tx.nature : null,
       // Empty notes intentionally clear the server-side note.
       notes: _notesController.text.trim(),
       categoryId: _categoryId,
@@ -243,6 +258,21 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     return Transaction.fromJson(json);
   }
 
+  String? _validateAmount(String? value) {
+    final l = AppLocalizations.of(context);
+    if (value == null || value.trim().isEmpty) {
+      return l.transactionFormAmountRequiredPrompt;
+    }
+    try {
+      if (AmountParser.parse(value, locale: 'en_US').value <= 0) {
+        return l.transactionFormAmountTooSmall;
+      }
+    } on FormatException {
+      return l.transactionFormAmountInvalidNumber;
+    }
+    return null;
+  }
+
   String? _validateName(String? value) {
     final l = AppLocalizations.of(context);
     if (value == null || value.trim().isEmpty) {
@@ -330,11 +360,14 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
               if (subtitle.isNotEmpty)
                 Text(subtitle, style: TextStyle(fontSize: 14, color: c.muted)),
               const SizedBox(height: 6),
-              HeadlineAmount(
-                _tx.absAmount,
-                currency: _tx.currency,
-                size: 46,
-              ),
+              if (canEdit)
+                _amountField(c)
+              else
+                HeadlineAmount(
+                  _tx.absAmount,
+                  currency: _tx.currency,
+                  size: 46,
+                ),
               const SizedBox(height: 6),
               Text(
                 _tx.isIncome ? l.detailMoneyIn : l.detailMoneyOut,
@@ -441,6 +474,38 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     isDense: true,
     contentPadding: EdgeInsets.symmetric(vertical: 14),
   );
+
+  Widget _amountField(LedgerColors c) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text(
+          MoneyFormat.symbol(_tx.currency),
+          style: LedgerText.display(size: 23, color: c.muted),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextFormField(
+            controller: _amountController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [GroupedAmountFormatter()],
+            validator: _validateAmount,
+            style: LedgerText.display(
+              size: 46,
+              color: c.ink,
+              letterSpacing: -46 * 0.035,
+              height: 1.1,
+            ),
+            decoration: _bare.copyWith(
+              hintText: '0',
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _fieldRow(LedgerColors c, String label, Widget field) {
     return Container(
