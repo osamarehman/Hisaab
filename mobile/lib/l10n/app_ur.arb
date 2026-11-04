@@ -797,5 +797,10 @@
   "csvMapPreview": "نمونہ",
   "csvMapNoLines": "ان کالموں سے کوئی لائن نہیں پڑھی جا سکی۔ تاریخ کا کالم اور اس کا انداز چیک کریں۔",
   "csvMapSummary": "{count, plural, =1{1 لائن} other{{count} لائنیں}} · آئے {moneyIn} · گئے {moneyOut}",
-  "csvMapConfirm": "{count, plural, =1{یہ کالم استعمال کریں (1 لائن)} other{یہ کالم استعمال کریں ({count} لائنیں)}}"
+  "csvMapConfirm": "{count, plural, =1{یہ کالم استعمال کریں (1 لائن)} other{یہ کالم استعمال کریں ({count} لائنیں)}}",
+
+  "settingsLabelsTitle": "لیبل",
+  "settingsLabelsSubtitle": "لیبل شامل کریں، نام یا رنگ بدلیں یا حذف کریں",
+  "activityEditLabels": "لیبل میں ترمیم",
+  "labelsTapToEdit": "نام یا رنگ بدلنے یا حذف کرنے کے لیے لیبل پر ٹیپ کریں۔"
 }
