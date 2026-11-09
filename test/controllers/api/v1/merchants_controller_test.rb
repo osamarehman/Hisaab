@@ -184,6 +184,93 @@ class Api::V1::MerchantsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "invalid_file_type", body["error"]
   end
 
+  test "create builds a single merchant with contact details from json" do
+    assert_difference -> { @user.family.merchants.count }, 1 do
+      post api_v1_merchants_url,
+        params: { merchant: { name: "Ali Plumber", profession: "Plumber", phone: "+92 300 1234567",
+                              email: "ali@example.com", notes: "Fixes the kitchen sink" } },
+        headers: api_headers(read_write_api_key),
+        as: :json
+    end
+
+    assert_response :created
+    body = JSON.parse(response.body)
+    assert_equal "Ali Plumber", body["name"]
+    assert_equal "Plumber", body["profession"]
+    assert_equal "+92 300 1234567", body["phone"]
+    assert_equal "ali@example.com", body["email"]
+    assert_equal "Fixes the kitchen sink", body["notes"]
+  end
+
+  test "create single merchant needs only a name" do
+    post api_v1_merchants_url, params: { merchant: { name: "Corner shop" } },
+      headers: api_headers(read_write_api_key), as: :json
+
+    assert_response :created
+    body = JSON.parse(response.body)
+    assert_nil body["email"]
+    assert_nil body["phone"]
+  end
+
+  test "create single merchant rejects an invalid email" do
+    assert_no_difference -> { @user.family.merchants.count } do
+      post api_v1_merchants_url, params: { merchant: { name: "Bad email", email: "not-an-email" } },
+        headers: api_headers(read_write_api_key), as: :json
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "create single merchant rejects read-only api key" do
+    post api_v1_merchants_url, params: { merchant: { name: "Nope" } },
+      headers: api_headers(read_only_api_key), as: :json
+
+    assert_response :forbidden
+  end
+
+  test "update changes contact details and can clear them" do
+    @merchant.update!(phone: "123")
+
+    patch api_v1_merchant_url(@merchant),
+      params: { merchant: { profession: "Tutor", phone: "" } },
+      headers: api_headers(read_write_api_key), as: :json
+
+    assert_response :success
+    @merchant.reload
+    assert_equal "Tutor", @merchant.profession
+    assert_nil @merchant.phone
+  end
+
+  test "update returns 404 for merchant from another family" do
+    other_merchant = @other_family_user.family.merchants.create!(name: "Other Merchant")
+
+    patch api_v1_merchant_url(other_merchant), params: { merchant: { name: "Hijack" } },
+      headers: api_headers(read_write_api_key), as: :json
+
+    assert_response :not_found
+    assert_equal "Other Merchant", other_merchant.reload.name
+  end
+
+  test "destroy removes the merchant and unlinks its transactions" do
+    transaction = Transaction.joins(:entry).where(entries: { account_id: @user.family.accounts.select(:id) }).first
+    transaction.update!(merchant: @merchant)
+
+    delete api_v1_merchant_url(@merchant), headers: api_headers(read_write_api_key)
+
+    assert_response :no_content
+    assert_not Merchant.exists?(@merchant.id)
+    assert_nil transaction.reload.merchant_id
+  end
+
+  test "destroy returns 404 for merchant from another family" do
+    other_merchant = @other_family_user.family.merchants.create!(name: "Other Merchant")
+
+    delete api_v1_merchant_url(other_merchant), headers: api_headers(read_write_api_key)
+
+    assert_response :not_found
+    assert Merchant.exists?(other_merchant.id)
+  end
+
   private
 
     def auth_headers

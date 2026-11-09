@@ -2793,4 +2793,92 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get labelsTapToEdit => 'Tap a label to rename, recolour or delete it.';
+
+  @override
+  String get peopleTitle => 'People';
+
+  @override
+  String get peopleIntro =>
+      'Save the people and businesses you pay or get paid by, then pick them when adding an entry.';
+
+  @override
+  String get peopleAdd => 'Add person';
+
+  @override
+  String peopleAddNamed(String name) {
+    return 'Add \"$name\"';
+  }
+
+  @override
+  String get peopleLoadFailed =>
+      'Could not load people. Pull down to try again.';
+
+  @override
+  String get peopleEmpty =>
+      'No people yet. Add someone you pay or get paid by.';
+
+  @override
+  String get peopleEdit => 'Edit person';
+
+  @override
+  String get peopleNewPerson => 'New person';
+
+  @override
+  String get peopleName => 'Name';
+
+  @override
+  String get peopleNameHint => 'e.g. Ali the plumber, Al-Fatah Store';
+
+  @override
+  String get peopleProfession => 'Profession or business';
+
+  @override
+  String get peopleProfessionHint => 'Optional, e.g. Plumber, Tutor, Grocer';
+
+  @override
+  String get peoplePhone => 'Phone';
+
+  @override
+  String get peopleEmail => 'Email';
+
+  @override
+  String get peopleNameRequired => 'Give this person a name.';
+
+  @override
+  String get peopleEmailInvalid => 'That email doesn\'t look right.';
+
+  @override
+  String get peopleSaveFailed => 'Could not save this person.';
+
+  @override
+  String get peopleDelete => 'Delete person';
+
+  @override
+  String get peopleDeleteBody =>
+      'Entries linked to this person stay, they just won\'t show a name.';
+
+  @override
+  String get peopleDeleteFailed => 'Could not delete this person.';
+
+  @override
+  String get peopleSearchHint => 'Search people';
+
+  @override
+  String get peopleNoOne => 'No one';
+
+  @override
+  String get formPaidTo => 'Paid to';
+
+  @override
+  String get formReceivedFrom => 'Received from';
+
+  @override
+  String get formPickPerson => 'Choose (optional)';
+
+  @override
+  String get settingsPeopleTitle => 'People';
+
+  @override
+  String get settingsPeopleSubtitle =>
+      'People and businesses you pay or get paid by';
 }

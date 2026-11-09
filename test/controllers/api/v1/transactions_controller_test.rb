@@ -747,6 +747,23 @@ class Api::V1::TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated Transaction Name", response_data["name"]
   end
 
+  test "update clears the merchant when merchant_id is blank and keeps it when omitted" do
+    merchant = @transaction.entry.account.family.merchants.create!(name: "Ali Plumber")
+    @transaction.update!(merchant: merchant)
+
+    put api_v1_transaction_url(@transaction),
+        params: { transaction: { notes: "Kept" } },
+        headers: api_headers(@api_key), as: :json
+    assert_response :success
+    assert_equal merchant.id, @transaction.reload.merchant_id
+
+    put api_v1_transaction_url(@transaction),
+        params: { transaction: { merchant_id: "" } },
+        headers: api_headers(@api_key), as: :json
+    assert_response :success
+    assert_nil @transaction.reload.merchant_id
+  end
+
   test "should not sync the account when only notes change" do
     assert_no_enqueued_jobs only: SyncJob do
       put api_v1_transaction_url(@transaction),

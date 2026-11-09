@@ -4882,6 +4882,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap a label to rename, recolour or delete it.'**
   String get labelsTapToEdit;
+
+  /// Title of the saved people / businesses screen.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get peopleTitle;
+
+  /// Intro under the People title.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the people and businesses you pay or get paid by, then pick them when adding an entry.'**
+  String get peopleIntro;
+
+  /// Button that opens the new-person form.
+  ///
+  /// In en, this message translates to:
+  /// **'Add person'**
+  String get peopleAdd;
+
+  /// Picker row that saves the typed search text as a new person.
+  ///
+  /// In en, this message translates to:
+  /// **'Add \"{name}\"'**
+  String peopleAddNamed(String name);
+
+  /// Error when the people list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load people. Pull down to try again.'**
+  String get peopleLoadFailed;
+
+  /// Empty state of the people list.
+  ///
+  /// In en, this message translates to:
+  /// **'No people yet. Add someone you pay or get paid by.'**
+  String get peopleEmpty;
+
+  /// Title of the edit-person sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit person'**
+  String get peopleEdit;
+
+  /// Title of the new-person sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'New person'**
+  String get peopleNewPerson;
+
+  /// Name field label (required).
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get peopleName;
+
+  /// Hint in the person name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Ali the plumber, Al-Fatah Store'**
+  String get peopleNameHint;
+
+  /// Profession field label (optional).
+  ///
+  /// In en, this message translates to:
+  /// **'Profession or business'**
+  String get peopleProfession;
+
+  /// Hint in the profession field.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional, e.g. Plumber, Tutor, Grocer'**
+  String get peopleProfessionHint;
+
+  /// Phone field label (optional).
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get peoplePhone;
+
+  /// Email field label (optional).
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get peopleEmail;
+
+  /// Validation when the name is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Give this person a name.'**
+  String get peopleNameRequired;
+
+  /// Validation for a malformed email.
+  ///
+  /// In en, this message translates to:
+  /// **'That email doesn\'t look right.'**
+  String get peopleEmailInvalid;
+
+  /// Error when saving a person fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save this person.'**
+  String get peopleSaveFailed;
+
+  /// Destructive button in the edit-person sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete person'**
+  String get peopleDelete;
+
+  /// Body of the delete-person confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries linked to this person stay, they just won\'t show a name.'**
+  String get peopleDeleteBody;
+
+  /// Error when deleting a person fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete this person.'**
+  String get peopleDeleteFailed;
+
+  /// Hint in the person picker search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people'**
+  String get peopleSearchHint;
+
+  /// Picker option that removes the person from an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'No one'**
+  String get peopleNoOne;
+
+  /// Expense form row: who received the money.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid to'**
+  String get formPaidTo;
+
+  /// Income form row: who sent the money.
+  ///
+  /// In en, this message translates to:
+  /// **'Received from'**
+  String get formReceivedFrom;
+
+  /// Placeholder in the paid-to / received-from row.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose (optional)'**
+  String get formPickPerson;
+
+  /// Settings row that opens the people screen.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get settingsPeopleTitle;
+
+  /// Subtitle of the People settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'People and businesses you pay or get paid by'**
+  String get settingsPeopleSubtitle;
 }
 
 class _AppLocalizationsDelegate

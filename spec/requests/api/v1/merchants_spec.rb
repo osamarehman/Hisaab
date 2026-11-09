@@ -50,6 +50,7 @@ RSpec.describe 'API V1 Merchants', type: :request do
 
     post 'Import merchants from CSV' do
       tags 'Merchants'
+      description 'Send a multipart CSV `file` to import many merchants, or a JSON `merchant` object '                   '(see MerchantInput; only name is required) to create one.'
       security [ { apiKeyAuth: [] } ]
       consumes 'multipart/form-data'
       produces 'application/json'
@@ -132,6 +133,53 @@ RSpec.describe 'API V1 Merchants', type: :request do
 
         let(:id) { SecureRandom.uuid }
 
+        run_test!
+      end
+    end
+
+    patch 'Update a family merchant' do
+      tags 'Merchants'
+      security [ { apiKeyAuth: [] } ]
+      consumes 'application/json'
+      produces 'application/json'
+      description 'Blank values clear optional fields. Provider merchants cannot be updated.'
+      parameter name: :body, in: :body, required: true, schema: { '$ref' => '#/components/schemas/MerchantInput' }
+
+      let(:id) { family_merchant.id }
+
+      response '200', 'merchant updated' do
+        schema '$ref' => '#/components/schemas/MerchantDetail'
+        let(:body) { { merchant: { profession: 'Barista', phone: '+92 300 1234567' } } }
+        run_test!
+      end
+
+      response '404', 'merchant not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        let(:id) { SecureRandom.uuid }
+        let(:body) { { merchant: { name: 'Nope' } } }
+        run_test!
+      end
+
+      response '422', 'validation failed' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        let(:body) { { merchant: { email: 'not-an-email' } } }
+        run_test!
+      end
+    end
+
+    delete 'Delete a family merchant' do
+      tags 'Merchants'
+      security [ { apiKeyAuth: [] } ]
+      description 'Linked transactions are kept and lose their merchant.'
+
+      response '204', 'merchant deleted' do
+        let(:id) { family_merchant.id }
+        run_test!
+      end
+
+      response '404', 'merchant not found' do
+        schema '$ref' => '#/components/schemas/ErrorResponse'
+        let(:id) { SecureRandom.uuid }
         run_test!
       end
     end

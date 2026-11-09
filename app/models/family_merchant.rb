@@ -9,6 +9,13 @@ class FamilyMerchant < Merchant
   validates :color, presence: true, format: { with: /\A#[0-9A-Fa-f]{6}\z/ }
   validates :name, uniqueness: { scope: :family }
 
+  # Optional contact details, so a merchant can also stand for a person or
+  # business the family pays or gets paid by.
+  normalizes :email, :phone, :profession, :notes, with: ->(value) { value.strip.presence }
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
+  validates :email, :phone, :profession, length: { maximum: 255 }
+  validates :notes, length: { maximum: 2000 }
+
   # Reuses a family's existing merchant of this name instead of raising on the
   # uniqueness validation, and survives a concurrent create for the same name
   # (e.g. two imports, or an import racing a manual edit) landing on the

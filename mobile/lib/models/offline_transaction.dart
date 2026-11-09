@@ -156,7 +156,10 @@ class OfflineTransaction extends Transaction {
     }
 
     final nextCategoryId = categoryId ?? this.categoryId;
-    final nextMerchantId = merchantId ?? this.merchantId;
+    // An empty merchantId means the person was removed.
+    final nextMerchantId = merchantId == null
+        ? this.merchantId
+        : (merchantId.isEmpty ? null : merchantId);
 
     return Transaction(
       id: id,

@@ -24,6 +24,7 @@ import 'ai_key_screen.dart';
 import 'bank_alerts_screen.dart';
 import 'currency_screen.dart';
 import 'labels_screen.dart';
+import 'people_screen.dart';
 import 'passkeys_screen.dart';
 import 'report_export_screen.dart';
 import '../models/custom_proxy_header.dart';
@@ -944,6 +945,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     .fetchCategories(accessToken: token, force: true);
               }
             },
+          ),
+          ListTile(
+            key: const Key('settingsPeople'),
+            leading: const Icon(Icons.people_outline),
+            title: Text(l.settingsPeopleTitle),
+            subtitle: Text(l.settingsPeopleSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const PeopleScreen()),
+            ),
           ),
           ListTile(
             key: const Key('settingsCurrency'),

@@ -53,6 +53,67 @@ class MerchantsProvider with ChangeNotifier {
     }
   }
 
+  /// Saves a new person; returns it, or null with [error] set.
+  Future<Merchant?> createMerchant({
+    required String accessToken,
+    required Map<String, String?> fields,
+  }) async {
+    final result = await _merchantsService.createMerchant(
+      accessToken: accessToken,
+      fields: fields,
+    );
+    return _applyWrite(result);
+  }
+
+  Future<Merchant?> updateMerchant({
+    required String accessToken,
+    required String merchantId,
+    required Map<String, String?> fields,
+  }) async {
+    final result = await _merchantsService.updateMerchant(
+      accessToken: accessToken,
+      merchantId: merchantId,
+      fields: fields,
+    );
+    return _applyWrite(result);
+  }
+
+  Future<bool> deleteMerchant({
+    required String accessToken,
+    required String merchantId,
+  }) async {
+    final result = await _merchantsService.deleteMerchant(
+      accessToken: accessToken,
+      merchantId: merchantId,
+    );
+    if (result['success'] != true) {
+      _error = result['error'] as String?;
+      notifyListeners();
+      return false;
+    }
+    _merchants = _merchants.where((m) => m.id != merchantId).toList();
+    _error = null;
+    notifyListeners();
+    return true;
+  }
+
+  Merchant? _applyWrite(Map<String, dynamic> result) {
+    if (result['success'] != true) {
+      _error = result['error'] as String?;
+      _log.error('MerchantsProvider', 'Failed to save merchant: $_error');
+      notifyListeners();
+      return null;
+    }
+    final merchant = result['merchant'] as Merchant;
+    _merchants = [
+      ..._merchants.where((m) => m.id != merchant.id),
+      merchant,
+    ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    _error = null;
+    notifyListeners();
+    return merchant;
+  }
+
   void clear() {
     _merchants = [];
     _hasFetched = false;

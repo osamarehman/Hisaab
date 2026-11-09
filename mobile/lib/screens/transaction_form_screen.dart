@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../models/category.dart' as models;
+import '../models/merchant.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/categories_provider.dart';
@@ -22,6 +23,7 @@ import '../widgets/ledger/ledger.dart';
 import '../widgets/no_accounts_prompt.dart';
 import 'account_form_screen.dart';
 import 'labels_screen.dart';
+import 'people_screen.dart';
 
 /// Add expense / income. Saves offline-first, then uploads the receipt once
 /// the transaction reaches the server. Pops `true` when saved.
@@ -46,6 +48,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   DateTime _date = DateTime.now();
   String? _accountId;
   models.Category? _category;
+  Merchant? _person;
   File? _receipt;
   bool _submitting = false;
 
@@ -99,6 +102,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (account != null && mounted) setState(() => _accountId = account.id);
   }
 
+  Future<void> _pickPerson() async {
+    final pick = await showPersonPicker(context, selectedId: _person?.id);
+    if (pick != null && mounted) setState(() => _person = pick.person);
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -148,6 +156,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       final name = _nameController.text.trim().isNotEmpty
           ? _nameController.text.trim()
           : (_category?.name ??
+              _person?.name ??
               (_nature == 'income' ? l.formTypeIncome : l.formTypeExpense));
       final notes = _notesController.text.trim();
 
@@ -165,6 +174,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         notes: notes.isEmpty ? null : notes,
         categoryId: _category?.id,
         categoryName: _category?.name,
+        merchantId: _person?.id,
+        merchantName: _person?.name,
         attachments: _receipt == null ? null : [_receipt!],
       );
 
@@ -283,6 +294,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                       decoration: _bare.copyWith(hintText: l.formWhatForHint),
                       textInputAction: TextInputAction.next,
                     ),
+                  ),
+                  _row(
+                    c,
+                    isIncome ? l.formReceivedFrom : l.formPaidTo,
+                    _personField(c, l),
                   ),
                   _row(
                     c,
@@ -439,6 +455,30 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _personField(LedgerColors c, AppLocalizations l) {
+    return InkWell(
+      key: const Key('formPerson'),
+      onTap: _pickPerson,
+      child: Container(
+        alignment: AlignmentDirectional.centerStart,
+        constraints: const BoxConstraints(minHeight: 52),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                _person?.name ?? l.formPickPerson,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 16, color: _person == null ? c.muted : c.ink),
+              ),
+            ),
+            Icon(Icons.arrow_drop_down, color: c.muted),
           ],
         ),
       ),

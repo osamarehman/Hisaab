@@ -2778,4 +2778,92 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get labelsTapToEdit =>
       'نام یا رنگ بدلنے یا حذف کرنے کے لیے لیبل پر ٹیپ کریں۔';
+
+  @override
+  String get peopleTitle => 'لوگ';
+
+  @override
+  String get peopleIntro =>
+      'جن لوگوں یا کاروباروں کو آپ پیسے دیتے ہیں یا جن سے لیتے ہیں انہیں محفوظ کریں، پھر اندراج کرتے وقت چن لیں۔';
+
+  @override
+  String get peopleAdd => 'شخص شامل کریں';
+
+  @override
+  String peopleAddNamed(String name) {
+    return '\"$name\" شامل کریں';
+  }
+
+  @override
+  String get peopleLoadFailed =>
+      'لوگ لوڈ نہیں ہو سکے۔ دوبارہ کوشش کے لیے نیچے کھینچیں۔';
+
+  @override
+  String get peopleEmpty =>
+      'ابھی کوئی شخص نہیں۔ کسی ایسے شخص کو شامل کریں جسے آپ پیسے دیتے یا جس سے لیتے ہیں۔';
+
+  @override
+  String get peopleEdit => 'شخص میں ترمیم';
+
+  @override
+  String get peopleNewPerson => 'نیا شخص';
+
+  @override
+  String get peopleName => 'نام';
+
+  @override
+  String get peopleNameHint => 'مثلاً علی پلمبر، الفتح اسٹور';
+
+  @override
+  String get peopleProfession => 'پیشہ یا کاروبار';
+
+  @override
+  String get peopleProfessionHint => 'اختیاری، مثلاً پلمبر، ٹیوٹر، کریانہ';
+
+  @override
+  String get peoplePhone => 'فون';
+
+  @override
+  String get peopleEmail => 'ای میل';
+
+  @override
+  String get peopleNameRequired => 'اس شخص کا نام لکھیں۔';
+
+  @override
+  String get peopleEmailInvalid => 'یہ ای میل درست نہیں لگتی۔';
+
+  @override
+  String get peopleSaveFailed => 'یہ شخص محفوظ نہیں ہو سکا۔';
+
+  @override
+  String get peopleDelete => 'شخص حذف کریں';
+
+  @override
+  String get peopleDeleteBody =>
+      'اس شخص سے جڑے اندراجات رہیں گے، بس ان پر نام نہیں دکھے گا۔';
+
+  @override
+  String get peopleDeleteFailed => 'یہ شخص حذف نہیں ہو سکا۔';
+
+  @override
+  String get peopleSearchHint => 'لوگ تلاش کریں';
+
+  @override
+  String get peopleNoOne => 'کوئی نہیں';
+
+  @override
+  String get formPaidTo => 'کس کو دیا';
+
+  @override
+  String get formReceivedFrom => 'کس سے ملا';
+
+  @override
+  String get formPickPerson => 'چنیں (اختیاری)';
+
+  @override
+  String get settingsPeopleTitle => 'لوگ';
+
+  @override
+  String get settingsPeopleSubtitle =>
+      'لوگ اور کاروبار جنہیں آپ پیسے دیتے یا جن سے لیتے ہیں';
 }

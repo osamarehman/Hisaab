@@ -11,6 +11,15 @@ class LedgerBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = LedgerColors.of(context);
+    // Scaffold resizes only its body for the keyboard; lift the bar too, so
+    // the save button sits on top of the keyboard instead of under it.
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: _bar(c),
+    );
+  }
+
+  Widget _bar(LedgerColors c) {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: c.sheet,

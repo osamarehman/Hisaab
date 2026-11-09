@@ -850,8 +850,32 @@ RSpec.configure do |config|
               id: { type: :string, format: :uuid },
               name: { type: :string },
               type: { type: :string, enum: %w[FamilyMerchant ProviderMerchant] },
+              color: { type: :string, nullable: true },
+              website_url: { type: :string, nullable: true },
+              email: { type: :string, nullable: true },
+              phone: { type: :string, nullable: true },
+              profession: { type: :string, nullable: true },
+              notes: { type: :string, nullable: true },
               created_at: { type: :string, format: :'date-time' },
               updated_at: { type: :string, format: :'date-time' }
+            }
+          },
+          MerchantInput: {
+            type: :object,
+            required: %w[merchant],
+            properties: {
+              merchant: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  color: { type: :string, description: 'Hex color, e.g. #e99537' },
+                  website_url: { type: :string },
+                  email: { type: :string },
+                  phone: { type: :string },
+                  profession: { type: :string },
+                  notes: { type: :string }
+                }
+              }
             }
           },
           MerchantImportResult: {

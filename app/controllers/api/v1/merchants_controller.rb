@@ -4,8 +4,9 @@ module Api
   module V1
     class MerchantsController < BaseController
       before_action -> { authorize_scope!(:read) }, only: [ :index, :show ]
-      before_action -> { authorize_scope!(:write) }, only: [ :create ]
-      before_action :reject_guest_writes!, only: [ :create ]
+      before_action -> { authorize_scope!(:write) }, only: [ :create, :update, :destroy ]
+      before_action :reject_guest_writes!, only: [ :create, :update, :destroy ]
+      before_action :set_family_merchant, only: [ :update, :destroy ]
 
       def index
         family = current_resource_owner.family
@@ -50,8 +51,11 @@ module Api
         render json: { error: "Failed to fetch merchant" }, status: :internal_server_error
       end
 
+      # A CSV upload imports many merchants; a JSON `merchant` body creates one.
       def create
         family = current_resource_owner.family
+
+        return create_single(family) if params[:merchant].present?
 
         unless params[:file].present?
           return render json: { error: "missing_file", message: "Please provide a CSV file." },
@@ -125,13 +129,57 @@ module Api
                status: :internal_server_error
       end
 
+      def update
+        if @merchant.update(merchant_params)
+          render json: merchant_json(@merchant)
+        else
+          render json: { error: "validation_failed", message: @merchant.errors.full_messages.to_sentence,
+                         errors: @merchant.errors.full_messages },
+                 status: :unprocessable_entity
+        end
+      end
+
+      # Linked transactions keep their data and simply lose the merchant.
+      def destroy
+        @merchant.destroy!
+        head :no_content
+      end
+
       private
+
+        def create_single(family)
+          merchant = family.merchants.new(merchant_params)
+
+          if merchant.save
+            render json: merchant_json(merchant), status: :created
+          else
+            render json: { error: "validation_failed", message: merchant.errors.full_messages.to_sentence,
+                           errors: merchant.errors.full_messages },
+                   status: :unprocessable_entity
+          end
+        end
+
+        # Only the family's own merchants are editable; provider merchants are shared.
+        def set_family_merchant
+          @merchant = current_resource_owner.family.merchants.find_by(id: params[:id])
+          render json: { error: "not_found", message: "Merchant not found" }, status: :not_found unless @merchant
+        end
+
+        def merchant_params
+          params.require(:merchant).permit(:name, :color, :website_url, :email, :phone, :profession, :notes)
+        end
 
         def merchant_json(merchant)
           {
             id: merchant.id,
             name: merchant.name,
             type: merchant.type,
+            color: merchant.color,
+            website_url: merchant.website_url,
+            email: merchant.email,
+            phone: merchant.phone,
+            profession: merchant.profession,
+            notes: merchant.notes,
             created_at: merchant.created_at,
             updated_at: merchant.updated_at
           }

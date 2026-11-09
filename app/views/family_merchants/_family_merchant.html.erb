@@ -11,9 +11,15 @@
         <%= render partial: "shared/color_avatar", locals: { name: family_merchant.name, color: family_merchant.color } %>
       <% end %>
 
-      <p class="font-medium truncate">
-        <%= family_merchant.name %>
-      </p>
+      <div class="min-w-0">
+        <p class="font-medium truncate">
+          <%= family_merchant.name %>
+        </p>
+        <% contact = [ family_merchant.profession, family_merchant.phone, family_merchant.email ].compact_blank %>
+        <% if contact.any? %>
+          <p class="text-xs text-secondary truncate"><%= contact.join(" · ") %></p>
+        <% end %>
+      </div>
     </div>
   </td>
   <% unless Current.user&.guest? %>

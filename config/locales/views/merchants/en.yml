@@ -13,6 +13,11 @@ en:
       name_placeholder: Merchant name
       website_placeholder: Website (e.g., starbucks.com)
       website_hint: Enter the merchant's website to automatically display their logo
+      contact_hint: Optional contact details, for people or businesses you pay or get paid by
+      profession_placeholder: Profession or role (optional)
+      email_placeholder: Email (optional)
+      phone_placeholder: Phone number (optional)
+      notes_placeholder: Notes (optional)
     index:
       empty: No merchants yet
       new: New merchant

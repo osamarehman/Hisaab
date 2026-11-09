@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/merchant.dart';
 import '../models/offline_transaction.dart';
 import '../models/transaction.dart';
 import '../providers/accounts_provider.dart';
@@ -16,6 +17,7 @@ import '../services/transactions_service.dart';
 import '../utils/amount_parser.dart';
 import '../utils/money_format.dart';
 import '../widgets/ledger/ledger.dart';
+import 'people_screen.dart';
 import 'transaction_form_screen.dart' show GroupedAmountFormatter;
 
 /// Transaction detail: amount, label, receipt, name and note. Pops `true`
@@ -40,6 +42,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   late final TextEditingController _notesController;
   late Transaction _tx;
   String? _categoryId;
+  String? _personId;
+  String? _personName;
   bool _saving = false;
   bool _receiptBusy = false;
   bool _changed = false;
@@ -54,6 +58,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     _nameController = TextEditingController(text: _tx.name);
     _notesController = TextEditingController(text: _tx.notes ?? '');
     _categoryId = _tx.categoryId;
+    _personId = _tx.merchantId;
+    _personName = _tx.merchantName;
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -115,8 +121,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     // Send the amount only when it changed: the server rejects any amount on
     // split parents, even an unchanged one.
     final amount = AmountParser.parse(_amountController.text, locale: 'en_US');
-    final amountChanged =
-        (amount.value.abs() - tx.absAmount).abs() >= 0.005;
+    final amountChanged = (amount.value.abs() - tx.absAmount).abs() >= 0.005;
     final success = await provider.updateTransaction(
       accessToken: token,
       transaction: offline,
@@ -127,6 +132,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
       // Empty notes intentionally clear the server-side note.
       notes: _notesController.text.trim(),
       categoryId: _categoryId,
+      // Only send a person change; an empty id removes the person.
+      merchantId: _personId == tx.merchantId ? null : (_personId ?? ''),
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -135,6 +142,16 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     } else {
       _toast(provider.error ?? l.transactionEditUpdateFailed);
     }
+  }
+
+  Future<void> _pickPerson() async {
+    final pick = await showPersonPicker(context, selectedId: _personId);
+    if (pick == null || !mounted) return;
+    final Merchant? person = pick.person;
+    setState(() {
+      _personId = person?.id;
+      _personName = person?.name;
+    });
   }
 
   Future<void> _delete() async {
@@ -425,6 +442,35 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
                         decoration: _bare,
                         validator: _validateName,
                         textInputAction: TextInputAction.next,
+                      ),
+                    ),
+                    _fieldRow(
+                      c,
+                      _tx.isIncome ? l.formReceivedFrom : l.formPaidTo,
+                      InkWell(
+                        key: const Key('editPerson'),
+                        onTap: canEdit ? _pickPerson : null,
+                        child: Container(
+                          alignment: AlignmentDirectional.centerStart,
+                          constraints: const BoxConstraints(minHeight: 52),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _personName ?? l.formPickPerson,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: _personName == null
+                                          ? c.muted
+                                          : c.ink),
+                                ),
+                              ),
+                              if (canEdit)
+                                Icon(Icons.arrow_drop_down, color: c.muted),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     _fieldRow(

@@ -88,4 +88,25 @@ void main() {
     expect(run('12.3.4'), '12.34');
     expect(run(''), '');
   });
+
+  testWidgets('LedgerBottomBar sits above the keyboard', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: SureTheme.light,
+      home: MediaQuery(
+        data: const MediaQueryData(
+          size: Size(400, 800),
+          viewInsets: EdgeInsets.only(bottom: 300),
+        ),
+        child: Scaffold(
+          body: const SizedBox.expand(),
+          bottomNavigationBar: LedgerBottomBar(
+            child: ElevatedButton(onPressed: () {}, child: const Text('Save')),
+          ),
+        ),
+      ),
+    ));
+
+    final saveBottom = tester.getBottomLeft(find.text('Save')).dy;
+    expect(saveBottom, lessThanOrEqualTo(800 - 300));
+  });
 }

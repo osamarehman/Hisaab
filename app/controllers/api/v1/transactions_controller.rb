@@ -365,6 +365,11 @@ class Api::V1::TransactionsController < Api::V1::BaseController
         }.compact_blank
       }
 
+      # An explicit blank merchant_id removes the merchant; omitting it keeps it.
+      if params[:transaction].key?(:merchant_id) && transaction_params[:merchant_id].blank?
+        entry_params[:entryable_attributes][:merchant_id] = nil
+      end
+
       # Only update amount if provided
       if transaction_params[:amount].present?
         entry_params[:amount] = calculate_signed_amount
