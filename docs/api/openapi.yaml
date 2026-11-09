@@ -1499,12 +1499,53 @@ components:
           enum:
           - FamilyMerchant
           - ProviderMerchant
+        color:
+          type: string
+          nullable: true
+        website_url:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        profession:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+    MerchantInput:
+      type: object
+      required:
+      - merchant
+      properties:
+        merchant:
+          type: object
+          properties:
+            name:
+              type: string
+            color:
+              type: string
+              description: 'Hex color, e.g. #e99537'
+            website_url:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+            profession:
+              type: string
+            notes:
+              type: string
     MerchantImportResult:
       type: object
       required:
@@ -9787,6 +9828,8 @@ paths:
       summary: Import merchants from CSV
       tags:
       - Merchants
+      description: Send a multipart CSV `file` to import many merchants, or a JSON
+        `merchant` object (see MerchantInput; only name is required) to create one.
       security:
       - apiKeyAuth: []
       parameters: []
@@ -9855,6 +9898,52 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update a family merchant
+      tags:
+      - Merchants
+      security:
+      - apiKeyAuth: []
+      description: Blank values clear optional fields. Provider merchants cannot be
+        updated.
+      parameters: []
+      responses:
+        '200':
+          description: merchant updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MerchantDetail"
+        '404':
+          description: merchant not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '422':
+          description: validation failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MerchantInput"
+        required: true
+    delete:
+      summary: Delete a family merchant
+      tags:
+      - Merchants
+      security:
+      - apiKeyAuth: []
+      description: Linked transactions are kept and lose their merchant.
+      responses:
+        '204':
+          description: merchant deleted
+        '404':
+          description: merchant not found
   "/api/v1/passkeys":
     get:
       summary: List passkeys
