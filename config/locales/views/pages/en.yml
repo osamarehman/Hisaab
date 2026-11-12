@@ -50,9 +50,10 @@ en:
             - "Financial records: accounts, balances, transactions, labels, budgets, auto-label keywords and notes."
             - "Files: receipt photos and other attachments you add to transactions, and bank statements (PDF or CSV) you import."
             - "Assistant conversations: the messages you send to the AI assistant and its replies."
+            - "Bank alert emails: if you set up bank alerts, the alert emails you forward to your household's private address, so the amounts in them can be added as pending transactions for you to approve."
             - "Sign-in and device data: when you sign in we store your IP address, browser or device name, operating system version, app version and a random device identifier, so we can keep you signed in and let you sign out other devices."
           after:
-            - "If you choose Sign in with Google, Google shares your name and email address with us. We do not collect your location, contacts, or any data from other apps."
+            - "If you choose Sign in with Google or Sign in with Apple, that service shares your name and email address with us (with Apple, this can be a private relay address). If you use a passkey, your device keeps the private key; we store only the public key. We do not collect your location, contacts, or any data from other apps."
         use:
           heading: How we use it
           paragraphs:
@@ -66,6 +67,7 @@ en:
             - "Statement import: the text of a PDF bank statement you upload, so its lines can be read."
             - "Auto-labelling: transaction descriptions, amounts and your label names, so a label can be suggested."
           after:
+            - "If your household adds its own AI provider key in Settings, these requests go to the provider you chose (for example Google Gemini, OpenAI or Groq) instead of OpenRouter."
             - "Those services process the data to return a response, under their own privacy terms. Importing CSV statements and labelling by hand do not send anything to them."
         storage:
           heading: Where it is stored and how it is protected
